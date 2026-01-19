@@ -31,7 +31,7 @@ def hello_world() -> None:
 
 
 class TokenType(Enum):
-    EOF         = -1
+    NOP         = 0
     KEYWORD     = 1
     REFERENCE   = 2
     OPEN_PAREN  = 3
@@ -41,6 +41,11 @@ class TokenType(Enum):
     INT_LIT     = 7
     FLOAT_LIT   = 8
     COMMA       = 9
+    PLUS        = 10
+    DASH        = 11
+    STAR        = 12
+    SLASH       = 13
+    POWER       = 14
 
 
 @dataclass
@@ -127,7 +132,7 @@ class Parser(object):
     def tokenize(self) -> list[Token]:
         tokens = []
         current_token = ""
-        token_type = TokenType.EOF
+        token_type = TokenType.NOP
 
         logger.info(f"START parsing {self.path}")
 
@@ -215,6 +220,7 @@ class Parser(object):
 
 
 if __name__ == "__main__":
+    # clear the log file (doesn't happen otherwise, idk why)
     with open("latest.log", "wt") as _:
         pass
     logging.basicConfig(filename='latest.log', level=logging.DEBUG)
