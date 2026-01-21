@@ -165,17 +165,51 @@ class Parser(object):
                 tokens.append(Token(token_type, current_token))
                 c += i
                 continue
-
+            
             elif char in digits:
                 # TODO: handle floats
+                is_int = True
                 i = 0
                 while char in digits:
-                    # get the rest of the token
+                    # get the rest of integer part
                     current_token += char
                     i += 1
                     char = self.file[c + i]
-                tokens.append(Token(TokenType.INT_LIT, int(current_token)))
-                log_token(TokenType.INT_LIT, c)
+                if char == ".":
+                    # it's a float, it seems
+                    is_int = False
+                    current_token += char
+                    i+=1
+                    while char in digits:
+                        # get the decimal part
+                        current_token += char
+                        i += 1
+                        char = self.file[c + i]
+                if char == "e":
+                    # exponent
+                    is_int = False
+                    current_token += char
+                    i+=1
+                    char = self.file[c + i]
+                    if char in "+-":
+                        current_token += char
+                        i+=1
+                        char = self.file[c + i]
+                    if char in digits:
+                        while char in digits:
+                            # get the exponent
+                            current_token += char
+                            i += 1
+                            char = self.file[c + i]
+                    else:
+                        raise SyntaxError(f"Invalid float literal at position {c + i}")
+                    
+                if is_int:
+                    tokens.append(Token(TokenType.INT_LIT, int(current_token)))
+                    log_token(TokenType.INT_LIT, c)
+                else:
+                    tokens.append(Token(TokenType.FLOAT_LIT, float(current_token)))
+                    log_token(TokenType.FLOAT_LIT, c)
                 c += i
                 continue
 

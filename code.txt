@@ -2,4 +2,5 @@ hello()
 
 print("text")
 print(1234)
+print(1.0e-11, 1.1, -5., 5e5)
 exit()
