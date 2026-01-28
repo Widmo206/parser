@@ -165,9 +165,8 @@ class Parser(object):
                 tokens.append(Token(token_type, current_token))
                 c += i
                 continue
-            
+
             elif char in digits:
-                # TODO: handle floats
                 is_int = True
                 i = 0
                 while char in digits:
@@ -180,6 +179,7 @@ class Parser(object):
                     is_int = False
                     current_token += char
                     i+=1
+                    char = self.file[c + i]
                     while char in digits:
                         # get the decimal part
                         current_token += char
@@ -193,7 +193,7 @@ class Parser(object):
                     char = self.file[c + i]
                     if char in "+-":
                         current_token += char
-                        i+=1
+                        i += 1
                         char = self.file[c + i]
                     if char in digits:
                         while char in digits:
@@ -203,7 +203,7 @@ class Parser(object):
                             char = self.file[c + i]
                     else:
                         raise SyntaxError(f"Invalid float literal at position {c + i}")
-                    
+
                 if is_int:
                     tokens.append(Token(TokenType.INT_LIT, int(current_token)))
                     log_token(TokenType.INT_LIT, c)
@@ -255,31 +255,31 @@ class Parser(object):
                 tokens.append(Token(TokenType.NEWLINE, None))
                 c += 1
                 continue
-            
+
             elif char == "+":
                 log_token(TokenType.PLUS, c)
                 tokens.append(Token(TokenType.PLUS, None))
                 c += 1
                 continue
-            
+
             elif char == "-":
                 log_token(TokenType.DASH, c)
                 tokens.append(Token(TokenType.DASH, None))
                 c += 1
                 continue
-            
+
             elif char == "*":
                 log_token(TokenType.STAR, c)
                 tokens.append(Token(TokenType.STAR, None))
                 c += 1
                 continue
-            
+
             elif char == "/":
                 log_token(TokenType.SLASH, c)
                 tokens.append(Token(TokenType.SLASH, None))
                 c += 1
                 continue
-            
+
             elif char == ",":
                 log_token(TokenType.COMMA, c)
                 tokens.append(Token(TokenType.COMMA, None))
