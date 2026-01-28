@@ -36,7 +36,7 @@ class TokenType(Enum):
     REFERENCE   = 2
     OPEN_PAREN  = 3
     CLOSE_PAREN = 4
-    NEWLINE     = 5
+    SEMICOLON   = 5
     STRING_LIT  = 6
     INT_LIT     = 7
     FLOAT_LIT   = 8
@@ -250,9 +250,9 @@ class Parser(object):
                 c += 1
                 continue
 
-            elif char == "\n":
-                log_token(TokenType.NEWLINE, c)
-                tokens.append(Token(TokenType.NEWLINE, None))
+            elif char == ";":
+                log_token(TokenType.SEMICOLON, c)
+                tokens.append(Token(TokenType.SEMICOLON, None))
                 c += 1
                 continue
 
