@@ -17,17 +17,26 @@ from tilemap import Tilemap
 def main() -> None:
     root = ttk.Window(themename="darkly")
     root.attributes("-fullscreen", True)
-    root.rowconfigure(0, weight=1)
-    root.columnconfigure(0, weight=1)
+
+    style = ttk.Style()
 
     main_frame = ttk.Frame(root)
-    main_frame.grid()
+    main_frame.pack(anchor=CENTER, fill=BOTH, expand=True)
 
-    editor = Editor(main_frame)
-    editor.frame.grid(column=0, row=0, sticky=NSEW, padx=16)
+    paned_window = tk.PanedWindow(
+        main_frame,
+        orient=HORIZONTAL,
+        sashwidth=8,
+        borderwidth=0,
+        bg=style.colors.bg,
+    )
+    paned_window.pack(anchor=CENTER, fill=BOTH, expand=True)
 
-    tilemap = Tilemap(main_frame, 16, 16)
-    tilemap.frame.grid(column=1, row=0)
+    editor = Editor(paned_window)
+    paned_window.add(editor.frame)
+
+    tilemap = Tilemap(paned_window, 16, 16)
+    paned_window.add(tilemap.frame)
 
     root.mainloop()
 

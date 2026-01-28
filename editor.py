@@ -20,9 +20,9 @@ class Editor:
         self.frame = ttk.Frame(self.master)
 
         self.text = ttk.Text(self.frame, wrap="none")
-        self.text.pack(side=LEFT, expand=True, fill=BOTH)
+        self.text.pack(side=LEFT, fill=BOTH, expand=True)
 
         self.scrollbar = ttk.Scrollbar(self.frame, orient=VERTICAL, command=self.text.yview)
         self.scrollbar.pack(side=RIGHT, fill=Y)
 
-        self.text.configure(yscrollcommand=self.scrollbar.set)
+        self.text.config(yscrollcommand=self.scrollbar.set)
