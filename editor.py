@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import tkinter as tk
 
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import ttkbootstrap.constants as ttkc
 
 
 @dataclass
@@ -20,9 +20,9 @@ class Editor:
         self.frame = ttk.Frame(self.master)
 
         self.text = ttk.Text(self.frame, wrap="none")
-        self.text.pack(side=LEFT, fill=BOTH, expand=True)
+        self.text.pack(side=ttkc.LEFT, fill=ttkc.BOTH, expand=True)
 
-        self.scrollbar = ttk.Scrollbar(self.frame, orient=VERTICAL, command=self.text.yview)
-        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.scrollbar = ttk.Scrollbar(self.frame, orient=ttkc.VERTICAL, command=self.text.yview)
+        self.scrollbar.pack(side=ttkc.RIGHT, fill=ttkc.Y)
 
         self.text.config(yscrollcommand=self.scrollbar.set)

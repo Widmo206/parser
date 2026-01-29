@@ -6,11 +6,12 @@ Contributors:
 """
 
 from dataclasses import dataclass
+from pathlib import Path
 from PIL import ImageTk, Image
 import tkinter as tk
 
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import ttkbootstrap.constants as ttkc
 
 
 @dataclass
@@ -18,9 +19,9 @@ class Tile:
     master: tk.Misc
 
     def __post_init__(self) -> None:
-        self.image = Image.open("sprites\square-rounded.png")
+        self.image = Image.open(Path("sprites") / "tile_background.png")
         self.image_tk = ImageTk.PhotoImage(self.image)
-        self.label = ttk.Label(self.master, image=self.image_tk)
+        self.label = ttk.Label(self.master, image=self.image_tk, borderwidth=0)
 
     def resize(self, tile_size: int) -> None:
         if tile_size < 1:

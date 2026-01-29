@@ -8,7 +8,7 @@ Contributors:
 import tkinter as tk
 
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import ttkbootstrap.constants as ttkc
 
 from editor import Editor
 from tilemap import Tilemap
@@ -19,24 +19,23 @@ def main() -> None:
     root.attributes("-fullscreen", True)
 
     style = ttk.Style()
-    print(style.colors)
 
     main_frame = ttk.Frame(root)
-    main_frame.pack(anchor=CENTER, fill=BOTH, expand=True)
+    main_frame.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
 
     paned_window = tk.PanedWindow(
         main_frame,
-        orient=HORIZONTAL,
+        orient=ttkc.HORIZONTAL,
         sashwidth=8,
         borderwidth=0,
         bg=style.colors.bg,
     )
-    paned_window.pack(anchor=CENTER, fill=BOTH, expand=True)
+    paned_window.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
 
     editor = Editor(paned_window)
     paned_window.add(editor.frame)
 
-    tilemap = Tilemap(paned_window, 16, 9)
+    tilemap = Tilemap(paned_window, 7, 7)
     paned_window.add(tilemap.frame)
 
     root.mainloop()
