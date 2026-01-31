@@ -9,8 +9,8 @@ Contributors:
 from typing import Callable, Type, Any
 from dataclasses import dataclass
 from string import ascii_letters, digits, whitespace
-from enum import auto, Enum
 import logging
+from enums import TokenType
 
 
 logger = logging.getLogger(__name__)
@@ -31,24 +31,6 @@ class UnknownTokenError(ValueError):
 
 def hello_world() -> None:
     print("Hello World!")
-
-
-class TokenType(Enum):
-    NOP         = auto()
-    KEYWORD     = auto()
-    REFERENCE   = auto()
-    OPEN_PAREN  = auto()
-    CLOSE_PAREN = auto()
-    SEMICOLON   = auto()
-    ASSIGN      = auto()
-    STRING_LIT  = auto()
-    INT_LIT     = auto()
-    FLOAT_LIT   = auto()
-    COMMA       = auto()
-    PLUS        = auto()
-    DASH        = auto()
-    STAR        = auto()
-    SLASH       = auto()
 
 
 def log_token(token_type: TokenType, char: int) -> None:

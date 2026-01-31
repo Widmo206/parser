@@ -20,12 +20,13 @@ class Tilemap:
     master: tk.Misc
     width: int = 16
     height: int = 16
+    padding: int = 32
 
     def __post_init__(self) -> None:
         if self.width < 1 or self.height < 1:
             raise ValueError("Grid dimensions cannot be less than 1x1")
 
-        self.frame = ttk.Frame(self.master)
+        self.frame = ttk.Frame(self.master, padding=self.padding)
         self.frame.columnconfigure(0, weight=1)
         self.frame.rowconfigure(0, weight=1)
         
@@ -43,8 +44,8 @@ class Tilemap:
 
     def update_tile_size(self) -> None:
         tile_size = floor(min(
-            self.frame.winfo_width() / self.width,
-            self.frame.winfo_height() / self.height,
+            (self.frame.winfo_width() - self.padding * 2) / self.width,
+            (self.frame.winfo_height() - self.padding * 2) / self.height,
         ))
 
         for tile in self.tiles:

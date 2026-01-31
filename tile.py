@@ -17,6 +17,7 @@ import ttkbootstrap.constants as ttkc
 @dataclass
 class Tile:
     master: tk.Misc
+    padding_ratio: float = 0.05
 
     def __post_init__(self) -> None:
         self.image = Image.open(Path("sprites") / "tile_background.png")
@@ -27,8 +28,10 @@ class Tile:
         if tile_size < 1:
             raise ValueError("Tile size cannot be less than 1")
 
+        image_size = round(tile_size * (1 - self.padding_ratio))
+        pad_size = round(tile_size * self.padding_ratio / 2)
         self.image_tk = ImageTk.PhotoImage(self.image.resize(
-            (tile_size, tile_size),
+            (image_size, image_size),
             Image.LANCZOS,
         ))
-        self.label.configure(image=self.image_tk)
+        self.label.configure(image=self.image_tk, padding=pad_size)
