@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import yaml
+import yaml # pip install PyYAML
 
 from errors import LevelParserError
 
