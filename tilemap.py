@@ -20,7 +20,7 @@ from tile import Tile
 class Tilemap:
     master: tk.Misc
     layout: str
-    padding: int = 32
+    padding: int = 64
 
     def __post_init__(self) -> None:
         if self.layout == "":

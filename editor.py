@@ -19,7 +19,7 @@ class Editor:
     def __post_init__(self) -> None:
         self.frame = ttk.Frame(self.master)
 
-        self.text = ttk.Text(self.frame, wrap="none")
+        self.text = ttk.Text(self.frame, wrap=ttkc.NONE)
         self.text.pack(side=ttkc.LEFT, fill=ttkc.BOTH, expand=True)
 
         self.scrollbar = ttk.Scrollbar(self.frame, orient=ttkc.VERTICAL, command=self.text.yview)

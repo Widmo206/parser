@@ -13,6 +13,7 @@ import ttkbootstrap.constants as ttkc
 from editor import Editor
 from level import Level
 from tilemap import Tilemap
+from menu_bar import MenuBar
 
 
 def main() -> None:
@@ -22,7 +23,12 @@ def main() -> None:
     style = ttk.Style()
 
     main_frame = ttk.Frame(root)
+    main_frame.columnconfigure(0, weight=1)
+    main_frame.rowconfigure(1, weight=1)
     main_frame.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
+
+    menu_bar = MenuBar(main_frame)
+    menu_bar.frame.grid(column=0, row=0, sticky=ttkc.NSEW)
 
     paned_window = tk.PanedWindow(
         main_frame,
@@ -31,7 +37,7 @@ def main() -> None:
         borderwidth=0,
         bg=style.colors.bg,
     )
-    paned_window.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
+    paned_window.grid(column=0, row=1, sticky=ttkc.NSEW)
 
     editor = Editor(paned_window)
     paned_window.add(editor.frame)

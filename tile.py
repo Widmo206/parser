@@ -31,7 +31,7 @@ class Tile:
                     f"No tile type matching character: '{self.tile_type}'"
                 ) from e
 
-        self.image_tk = ImageTk.PhotoImage(self.tile_type.image)
+        self.image_tk = ImageTk.PhotoImage(self.tile_type.image) if self.tile_type.image else None
         self.label = ttk.Label(self.master, image=self.image_tk, borderwidth=0)
 
     def resize(self, tile_size: int) -> None:
@@ -43,5 +43,5 @@ class Tile:
         self.image_tk = ImageTk.PhotoImage(self.tile_type.image.resize(
             (image_size, image_size),
             Image.LANCZOS,
-        ))
+        )) if self.tile_type.image else None
         self.label.configure(image=self.image_tk, padding=pad_size)
