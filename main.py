@@ -9,7 +9,8 @@ from interface import Interface
 
 
 def main() -> None:
-    Interface()
+    interface = Interface()
+    interface.root.mainloop()
 
 
 if __name__ == "__main__":

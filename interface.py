@@ -20,7 +20,7 @@ from menu_bar import MenuBar
 
 class Interface:
     def __init__(self) -> None:
-        self.root = ttk.Window(themename="darkly")
+        self.root = ttk.Window(title="PyScript", themename="darkly")
 
         self.style = ttk.Style()
 
@@ -62,9 +62,4 @@ class Interface:
         self.level_bar = LevelBar(self.level_frame)
         self.level_bar.frame.grid(column=0, row=1, sticky=ttkc.NSEW)
 
-        self.paned_window.paneconfig(
-            self.level_frame,
-            minsize=Tilemap.PADDING * 2 + self.tilemap.width * Tile.MIN_SIZE,
-        )
-
-        self.root.mainloop()
+        self.paned_window.paneconfig(self.level_frame, minsize=370)
