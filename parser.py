@@ -28,10 +28,6 @@ def hello_world() -> None:
     print("Hello World!")
 
 
-def log_token(token_type: TokenType, char: int) -> None:
-    logger.debug(f"Found token {token_type._name_} at {char}")
-
-
 @dataclass
 class Function(object):
     func: Callable
@@ -117,16 +113,23 @@ class Parser(object):
         tokens = []
         current_token = ""
         token_type = TokenType.NOP
-
-        logger.info(f"Start tokenizing {self.path}")
-
+        logger.info(f"Start tokenizing '{self.path}'")
+        line = 1
+        def log_token(token_type: TokenType) -> None:
+            nonlocal line
+            logger.debug(f"Line {line}: found {token_type._name_}")
         c = 0
         while c < len(self.file):
             current_token = ""
             char = self.file[c]
+            
+            if char == "\n":
+                line += 1
+                c += 1
+                continue
 
             if char in whitespace:
-                logger.debug(f"Found whitespace at {c}")
+                #logger.debug(f"Found whitespace at {c}")
                 c += 1
                 continue
 
@@ -139,10 +142,10 @@ class Parser(object):
                     char = self.file[c + i]
                 if current_token in KEYWORDS:
                     token_type = TokenType.KEYWORD
-                    log_token(TokenType.KEYWORD, c)
+                    log_token(TokenType.KEYWORD)
                 else:
                     token_type = TokenType.REFERENCE
-                    log_token(TokenType.REFERENCE, c)
+                    log_token(TokenType.REFERENCE)
                 tokens.append(Token(token_type, current_token))
                 c += i
                 continue
@@ -183,14 +186,14 @@ class Parser(object):
                             i += 1
                             char = self.file[c + i]
                     else:
-                        raise SyntaxError(f"Invalid float literal at position {c + i}")
+                        raise SyntaxError(f"Invalid float literal in line {line}: '{current_token}'")
 
                 if is_int:
                     tokens.append(Token(TokenType.INT_LIT, int(current_token)))
-                    log_token(TokenType.INT_LIT, c)
+                    log_token(TokenType.INT_LIT)
                 else:
                     tokens.append(Token(TokenType.FLOAT_LIT, float(current_token)))
-                    log_token(TokenType.FLOAT_LIT, c)
+                    log_token(TokenType.FLOAT_LIT)
                 c += i
                 continue
 
@@ -217,66 +220,66 @@ class Parser(object):
                     else:
                         current_token += char
                 tokens.append(Token(TokenType.STRING_LIT, current_token))
-                log_token(TokenType.STRING_LIT, c)
+                log_token(TokenType.STRING_LIT)
                 continue
 
             elif char == "=":
-                log_token(TokenType.ASSIGN, c)
+                log_token(TokenType.ASSIGN)
                 tokens.append(Token(TokenType.ASSIGN, None))
                 c += 1
                 continue
 
             elif char == "(":
-                log_token(TokenType.OPEN_PAREN, c)
+                log_token(TokenType.OPEN_PAREN)
                 tokens.append(Token(TokenType.OPEN_PAREN, None))
                 c += 1
                 continue
 
             elif char == ")":
-                log_token(TokenType.CLOSE_PAREN, c)
+                log_token(TokenType.CLOSE_PAREN)
                 tokens.append(Token(TokenType.CLOSE_PAREN, None))
                 c += 1
                 continue
 
             elif char == ";":
-                log_token(TokenType.SEMICOLON, c)
+                log_token(TokenType.SEMICOLON)
                 tokens.append(Token(TokenType.SEMICOLON, None))
                 c += 1
                 continue
 
             elif char == "+":
-                log_token(TokenType.PLUS, c)
+                log_token(TokenType.PLUS)
                 tokens.append(Token(TokenType.PLUS, None))
                 c += 1
                 continue
 
             elif char == "-":
-                log_token(TokenType.DASH, c)
+                log_token(TokenType.DASH)
                 tokens.append(Token(TokenType.DASH, None))
                 c += 1
                 continue
 
             elif char == "*":
-                log_token(TokenType.STAR, c)
+                log_token(TokenType.STAR)
                 tokens.append(Token(TokenType.STAR, None))
                 c += 1
                 continue
 
             elif char == "/":
-                log_token(TokenType.SLASH, c)
+                log_token(TokenType.SLASH)
                 tokens.append(Token(TokenType.SLASH, None))
                 c += 1
                 continue
 
             elif char == ",":
-                log_token(TokenType.COMMA, c)
+                log_token(TokenType.COMMA)
                 tokens.append(Token(TokenType.COMMA, None))
                 c += 1
                 continue
 
             else:
-                raise UnknownTokenError(f"There are no tokens that start with '{char}' (character no. {c} in {self.path})")
-        logger.info(f"Finished tokenizing {self.path} into {len(tokens)} tokens")
+                raise UnknownTokenError(f"There are no tokens that start with '{char}' (line {line} in '{self.path}')")
+        logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
         return tokens
 
 
@@ -284,7 +287,7 @@ if __name__ == "__main__":
     # clear the log file (doesn't happen otherwise, idk why)
     with open("latest.log", "wt") as _:
         pass
-    logging.basicConfig(filename='latest.log', level=logging.DEBUG)
+    logging.basicConfig(filename='latest.log', level=logging.DEBUG, format="%(asctime)s.%(msecs)03d | %(levelname)-5s | %(name)-10s | %(message)s", datefmt='%Y.%m.%d %H:%M:%S')
 
     fh = FunctionHolder()
 
