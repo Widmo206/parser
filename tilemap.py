@@ -14,8 +14,6 @@ from tile import Tile
 
 
 class Tilemap(ttk.Frame):
-    PADDING = 64
-
     def __init__(
         self,
         master: tk.Misc,
@@ -36,7 +34,7 @@ class Tilemap(ttk.Frame):
         if self.width < 1 or self.height < 1:
             raise ValueError(f"Grid dimensions ({self.width}x{self.height}) cannot be less than 1x1")
 
-        kwargs["padding"] = self.PADDING
+        kwargs.setdefault("padding", 64)
         super().__init__(master, **kwargs)
 
         self.columnconfigure(0, weight=1)
@@ -55,9 +53,10 @@ class Tilemap(ttk.Frame):
                 self.tiles.append(tile)
 
     def update_tile_size(self) -> None:
+        padding = self.cget("padding")[0]
         tile_size = floor(min(
-            (self.winfo_width() - self.PADDING * 2) / self.width,
-            (self.winfo_height() - self.PADDING * 2) / self.height,
+            (self.winfo_width() - padding * 2) / self.width,
+            (self.winfo_height() - padding * 2) / self.height,
         ))
 
         for tile in self.tiles:

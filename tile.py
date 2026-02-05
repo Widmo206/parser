@@ -37,8 +37,8 @@ class Tile(ttk.Label):
 
         self.image_tk = ImageTk.PhotoImage(self.tile_type.image) if self.tile_type.image else None
 
-        kwargs["image"] = self.image_tk
-        kwargs["borderwidth"] = 0
+        kwargs.setdefault("image", self.image_tk)
+        kwargs.setdefault("borderwidth", 0)
         super().__init__(master, **kwargs)
 
     def resize(self, tile_size: int) -> None:

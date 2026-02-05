@@ -15,7 +15,7 @@ import ttkbootstrap.constants as ttkc
 
 class LevelBar(ttk.Frame):
     def __init__(self, master: tk.Misc, **kwargs) -> None:
-        kwargs["bootstyle"] = ttkc.DARK
+        kwargs.setdefault("bootstyle", ttkc.DARK)
         super().__init__(master, **kwargs)
 
         self.columnconfigure(1, weight=1)
@@ -26,7 +26,7 @@ class LevelBar(ttk.Frame):
         self.restart_button = ttk.Button(
             self,
             image=self.restart_image_tk,
-            bootstyle=ttkc.DARK,
+            bootstyle=kwargs["bootstyle"],
         )
         self.restart_button.grid(column=0, row=1)
 
@@ -34,7 +34,7 @@ class LevelBar(ttk.Frame):
         self.back_button = ttk.Button(
             self,
             image=self.back_image_tk,
-            bootstyle=ttkc.DARK,
+            bootstyle=kwargs["bootstyle"],
         )
         self.back_button.grid(column=2, row=1)
 
@@ -43,7 +43,7 @@ class LevelBar(ttk.Frame):
         self.play_button = ttk.Button(
             self,
             image=self.play_image_tk,
-            bootstyle=ttkc.DARK,
+            bootstyle=kwargs["bootstyle"],
         )
         self.play_button.grid(column=3, row=1)
 
@@ -51,7 +51,7 @@ class LevelBar(ttk.Frame):
         self.forward_button = ttk.Button(
             self,
             image=self.forward_image_tk,
-            bootstyle=ttkc.DARK,
+            bootstyle=kwargs["bootstyle"],
         )
         self.forward_button.grid(column=4, row=1)
         
@@ -59,6 +59,6 @@ class LevelBar(ttk.Frame):
         self.level_select_button = ttk.Button(
             self,
             image=self.level_select_image_tk,
-            bootstyle=ttkc.DARK,
+            bootstyle=kwargs["bootstyle"],
         )
         self.level_select_button.grid(column=6, row=1)

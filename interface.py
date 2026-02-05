@@ -17,9 +17,10 @@ from menu_bar import MenuBar
 
 class Interface(ttk.Window):
     def __init__(self, **kwargs) -> None:
-        kwargs["title"] = "PyScript"
-        kwargs["themename"] = "darkly"
+        kwargs.setdefault("title", "PyScript")
+        kwargs.setdefault("themename", "darkly")
         super().__init__(**kwargs)
+
         self.geometry("1280x720")
         self.state("zoom")
         self.bind("<F11>", lambda _: self.toggle_fullscreen())
