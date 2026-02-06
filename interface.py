@@ -11,7 +11,7 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
 from editor import Editor
-from level_player import LevelPlayer
+from level_manager import LevelManager
 from menu_bar import MenuBar
 
 
@@ -55,13 +55,13 @@ class Interface(ttk.Window):
         self.editor = Editor(self.paned_window, style=self.style)
         self.paned_window.add(self.editor)
 
-        self.level_player = LevelPlayer(self.paned_window)
-        self.paned_window.add(self.level_player)
+        self.level_manager = LevelManager(self.paned_window)
+        self.paned_window.add(self.level_manager)
 
-        self.paned_window.paneconfig(self.level_player, minsize=370)
+        self.paned_window.paneconfig(self.level_manager, minsize=370)
 
     def toggle_fullscreen(self) -> None:
         self.attributes(
             "-fullscreen",
-            not self.root.attributes("-fullscreen"),
+            not self.attributes("-fullscreen"),
         )

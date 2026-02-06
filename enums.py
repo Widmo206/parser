@@ -8,7 +8,6 @@ Contributors:
 from enum import auto, Enum
 from pathlib import Path
 from PIL import Image
-from typing import NamedTuple
 
 
 class TileType(Enum):

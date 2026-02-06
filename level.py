@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import yaml # pip install PyYAML
+from yaml.parser import ParserError
 
 from errors import LevelParserError
 
@@ -30,5 +31,5 @@ class Level:
         with open(path, "r", encoding="utf-8") as file:
             try:
                 return cls(**yaml.safe_load(file))
-            except yaml.parser.ParserError as e:
+            except ParserError as e:
                 raise LevelParserError(f"Failed to parse level from '{path}'") from e

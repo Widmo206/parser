@@ -51,6 +51,6 @@ class Tile(ttk.Label):
         pad_size = round(tile_size * self.PADDING_RATIO / 2)
         self.image_tk = ImageTk.PhotoImage(self.tile_type.image.resize(
             (image_size, image_size),
-            Image.LANCZOS,
+            Image.Resampling.LANCZOS,
         )) if self.tile_type.image else None
         self.configure(image=self.image_tk, padding=pad_size)

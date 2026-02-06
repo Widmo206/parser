@@ -109,11 +109,11 @@ class Editor(ttk.Frame):
         self.text.yview(*args)
         self.line_text.yview(*args)
 
-    def _on_change(self, event: tk.Event | None = None) -> None:
+    def _on_change(self, _event: tk.Event | None = None) -> None:
         self.text.edit_modified(False)
         self._update_line_numbers()
 
-    def _on_focus_change(self, event: tk.Event | None = None) -> None:
+    def _on_focus_change(self, _event: tk.Event | None = None) -> None:
         self._update_line_numbers()
 
     def _on_zoom(self, event: tk.Event) -> None:
