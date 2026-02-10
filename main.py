@@ -8,15 +8,18 @@ Contributors:
 
 import logging
 
+from common import USER_DATA_DIR
 from interface import Interface
 
 
 def main() -> None:
+    USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     interface = Interface()
     interface.mainloop()
 
 
-if __name__ == "__main__":
+def setup_logging() -> None:
     open("latest.log", "w").close() # Clears the previous logs
     logging.basicConfig(
         filename='latest.log',
@@ -27,6 +30,10 @@ if __name__ == "__main__":
     # Needed because PIL was flooding the logs
     logging.getLogger('PIL.PngImagePlugin').setLevel(logging.WARNING)
 
+
+if __name__ == "__main__":
+    setup_logging()
     main()
-else:
-    raise RuntimeError("main.py should not be imported")
+
+# Removed the "else raise RuntimeError" block,
+# ChatGPT said "This is not idiomatic Python and will bite you later."

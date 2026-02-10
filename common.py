@@ -6,8 +6,16 @@ Contributors:
 """
 
 from enum import Enum
+from pathlib import Path
 import tkinter as tk
+from tkinter.filedialog import askopenfilename
 from typing import Callable
+
+from platformdirs import user_data_dir
+
+APP_NAME = "PyScript"
+APP_AUTHOR = "WidRom"
+USER_DATA_DIR = Path(user_data_dir(APP_NAME, APP_AUTHOR))
 
 
 def bind_recursive(
@@ -32,5 +40,7 @@ def print_enum(enum: Enum) -> None:
             print(f"{str(entry).ljust(width)} = {entry.value}")
 
 
-def select_pyscript() -> None:
-    ...
+def select_pyscript() -> str:
+    return askopenfilename(
+        initialdir=USER_DATA_DIR,
+    )
