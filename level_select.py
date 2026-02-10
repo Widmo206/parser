@@ -12,6 +12,7 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 from ttkbootstrap.widgets.scrolled import ScrolledFrame
 
+from enums import VirtualEventSequence as Ves
 from level import Level
 from level_entry import LevelEntry
 
@@ -35,7 +36,7 @@ class LevelSelect(ScrolledFrame):
 
         for i, level_path in enumerate(Level.PATHS * 50):
             level_entry = LevelEntry(self, i + 1, level_path)
-            level_entry.bind("<<Clicked>>", self._on_level_entry_clicked)
+            level_entry.bind(Ves.CLICKED, self._on_level_entry_clicked)
             level_entry.grid(row=i * 2, column=0, sticky=tk.EW)
 
             if i < len(Level.PATHS * 50) - 1:
@@ -47,4 +48,4 @@ class LevelSelect(ScrolledFrame):
         self.selected_level_number = level_entry.level_number
         self.selected_level_path = level_entry.level_path
 
-        self.event_generate("<<LevelSelected>>")
+        self.event_generate(Ves.LEVEL_SELECTED)

@@ -8,10 +8,12 @@ Contributors:
 import logging
 from pathlib import Path
 import tkinter as tk
+from typing import Callable
 
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
+from enums import VirtualEventSequence as Ves
 from level_manager import LevelManager
 from menu_bar import MenuBar
 from pyscript_manager import PyscriptManager
@@ -64,9 +66,12 @@ class Interface(ttk.Window):
 
         self.paned_window.paneconfig(self.level_manager, minsize=370)
 
-        self.level_manager.bind("<<LevelOpened>>", self._on_level_manager_level_opened)
-        self.level_manager.bind("<<LevelSelectOpened>>", self._on_level_manager_level_select_opened)
-        self.level_manager.event_generate("<<LevelSelectOpened>>")
+        self.menu_bar.bind(Ves.FILE_NEW, lambda _: self.pyscript_manager.pyscript_editor.clear())
+        self.menu_bar.bind(Ves.EXIT, lambda _: self.destroy())
+
+        self.level_manager.bind(Ves.LEVEL_OPENED, self._on_level_manager_level_opened)
+        self.level_manager.bind(Ves.LEVEL_SELECT_OPENED, self._on_level_manager_level_select_opened)
+        self.level_manager.event_generate(Ves.LEVEL_SELECT_OPENED)
 
     def toggle_fullscreen(self) -> None:
         logger.debug(f"Toggling fullscreen mode")

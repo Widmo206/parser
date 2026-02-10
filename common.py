@@ -5,6 +5,7 @@ Contributors:
     Romcode
 """
 
+from enum import Enum
 import tkinter as tk
 from typing import Callable
 
@@ -19,3 +20,12 @@ def bind_recursive(
     widget.bind(sequence, func, add)
     for child in widget.winfo_children():
         bind_recursive(child, sequence, func, add)
+
+def print_enum(enum: Enum) -> None:
+    """Nicely fromats and prints enum members for debugging purposes."""
+    width = max(len(str(entry)) for entry in enum)
+    for entry in enum:
+        if isinstance(entry.value, str):
+            print(f"{str(entry).ljust(width)} = '{entry.value}'")
+        else:
+            print(f"{str(entry).ljust(width)} = {entry.value}")

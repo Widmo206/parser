@@ -3,6 +3,7 @@
 Created on 2026.01.28
 Contributors:
     Romcode
+    Widmo
 """
 
 import logging
@@ -16,7 +17,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    open("latest.log", "w").close()
+    open("latest.log", "w").close() # Clears the previous logs
     logging.basicConfig(
         filename='latest.log',
         level=logging.DEBUG,

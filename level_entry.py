@@ -12,6 +12,7 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
 from common import bind_recursive
+from enums import VirtualEventSequence as Ves
 from level import Level
 
 
@@ -69,4 +70,4 @@ class LevelEntry(ttk.Frame):
         self.name_label.config(bootstyle=(ttkc.PRIMARY, ttkc.INVERSE))
 
     def _on_clicked(self, _event: tk.Event) -> None:
-        self.event_generate("<<Clicked>>")
+        self.event_generate(Ves.CLICKED)

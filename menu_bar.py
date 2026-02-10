@@ -10,6 +10,8 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
+from enums import FileMenuCommand
+
 
 class MenuBar(ttk.Frame):
     def __init__(self, master: tk.Misc, **kwargs) -> None:
@@ -20,12 +22,8 @@ class MenuBar(ttk.Frame):
         self.file_menu_button.grid(column=0, row=0)
 
         self.file_menu = tk.Menu(self.file_menu_button)
-        self.file_menu.add_command(label="New...", command=None)
-        self.file_menu.add_command(label="Open...", command=None)
-        self.file_menu.add_command(label="Save", command=None)
-        self.file_menu.add_command(label="Save as...", command=None)
-        self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=None)
+        for menu_command in FileMenuCommand:
+            menu_command.add(self, self.file_menu)
         self.file_menu_button["menu"] = self.file_menu
 
         self.edit_menu_button = ttk.Menubutton(self, text="Edit", bootstyle=kwargs["bootstyle"])
