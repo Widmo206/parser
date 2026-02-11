@@ -1,0 +1,17 @@
+call "hello"
+call "print" "I'm a string!"
+var x
+set rega 1.0e-6
+set regb 5e7
+mul rega regb
+push rega
+set rega 1.1
+set regb -5.0
+div rega regb
+push rega
+pull regb
+pull rega
+add rega regb
+set x rega
+call "print" x
+exit 0

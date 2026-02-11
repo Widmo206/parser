@@ -3,4 +3,3 @@ hello();
 print("I'm a string!");
 var x = 1.0e-6 * 5e7 + 1.1 / -5.;
 print(x);
-exit 12;
