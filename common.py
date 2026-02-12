@@ -15,6 +15,8 @@ from platformdirs import user_data_dir
 
 APP_NAME = "PyScript"
 APP_AUTHOR = "WidRom"
+PYSCRIPT_EXTENSION = ".pyscript"
+PROJECT_DIR = Path.cwd()
 USER_DATA_DIR = Path(user_data_dir(APP_NAME, APP_AUTHOR))
 SOLUTIONS_DIR = USER_DATA_DIR / "solutions"
 SAVE_PATH = USER_DATA_DIR / "save.yaml"

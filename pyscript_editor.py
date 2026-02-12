@@ -10,6 +10,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
 
+from common import PROJECT_DIR
 from pyscript_editor_tab import PyscriptEditorTab
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,13 @@ class PyscriptEditor(ttk.Notebook):
 
     def open_pyscript(self, pyscript_path: Path) -> None:
         logger.debug(f"Creating new PyScript tab '{pyscript_path.name}'")
-        self.add(
-            PyscriptEditorTab(self, self.style, pyscript_path),
-            text=pyscript_path.name,
-        )
+        if pyscript_path.absolute().is_relative_to(PROJECT_DIR):
+            self.add(
+                PyscriptEditorTab(self, self.style, pyscript_path),
+                text=pyscript_path.name,
+            )
+        else:
+            self.add(
+                PyscriptEditorTab(self, self.style, pyscript_path),
+                text=pyscript_path.name,
+            )

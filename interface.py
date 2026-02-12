@@ -69,7 +69,9 @@ class Interface(ttk.Window):
 
         self.menu_bar.bind(
             Ves.FILE_NEW,
-            lambda _: self.pyscript_manager.pyscript_editor.clear(),
+            lambda _: self.pyscript_manager.pyscript_editor.open_pyscript(
+                self.level_manager.level_player.level_path
+            ),
         )
         self.menu_bar.bind(
             Ves.FILE_OPEN,

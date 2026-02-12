@@ -24,7 +24,7 @@ def setup_logging() -> None:
     logging.basicConfig(
         filename='latest.log',
         level=logging.DEBUG,
-        format="%(asctime)s.%(msecs)03d | %(levelname)-7s | %(name)-16s | %(message)s",
+        format="%(asctime)s.%(msecs)03d | %(levelname)-7s | %(name)-19s | %(message)s",
         datefmt='%Y.%m.%d %H:%M:%S',
     )
     # Needed because PIL was flooding the logs

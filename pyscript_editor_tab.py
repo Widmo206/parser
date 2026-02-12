@@ -25,6 +25,7 @@ class PyscriptEditorTab(ttk.Frame):
         master: tk.Misc,
         style: ttk.Style,
         pyscript_path: Path,
+        default_text: str | None = None,
         font: str = "Consolas",
         font_size: int = 11,
         min_font_size: int = 1,
@@ -94,12 +95,15 @@ class PyscriptEditorTab(ttk.Frame):
         ):
             self.line_text.bind(seqence, lambda _: "break")
 
-        logger.debug(f"Loading PyScript from '{self.pyscript_path}'")
-        try:
+        if self.pyscript_path.is_file():
+            logger.debug(f"Loading PyScript from '{self.pyscript_path}' into tab")
             with open(self.pyscript_path, "r", encoding="utf-8") as pyscript_file:
                 self.text.insert("1.0", pyscript_file.read())
-        except FileNotFoundError:
-            logger.error(f"Missing PyScript file at '{self.pyscript_path}'")
+        elif default_text is not None:
+            logger.debug(f"No PyScript file found at '{self.pyscript_path}', using default text")
+            self.text.insert("1.0", default_text)
+        else:
+            logger.debug(f"No PyScript file found at '{self.pyscript_path}', keeping empty tab")
 
     def zoom(self, zoom_delta: int) -> None:
         if zoom_delta == 0:
