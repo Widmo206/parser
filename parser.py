@@ -120,6 +120,24 @@ class Token(object):
 
 
 @dataclass
+class Instruction(object):
+    function: Callable
+    parameters: list
+
+
+class Processor(object):
+    program: list
+    stack: list
+    
+    def __init__(self, program: list):
+        self.program = program
+        self.stack = []
+        
+    def run(self):
+        ...
+
+
+@dataclass
 class Parser(object):
     functions: FunctionHolder
     variables: dict
@@ -307,17 +325,21 @@ class Parser(object):
         logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
         return tokens
 
-    def parse(self, tokens: list[Token]):
+    def parse(self, tokens: list[Token], is_root: bool=True):
         """Make sense of the tokens."""
-        linebreaks = (TokenType.SEMICOLON, TokenType.INDENT, TokenType.DEINDENT)
-        lines = []
-        line = []
-        for token in tokens:
-            line.append(token)
-            if token.type in linebreaks:
-                lines.append(line)
-                line = []
-        return lines
+#         linebreaks = (TokenType.SEMICOLON, TokenType.INDENT, TokenType.DEINDENT)
+#         lines = []
+#         line = []
+#         for token in tokens:
+#             line.append(token)
+#             if token.type in linebreaks:
+#                 lines.append(line)
+#                 line = []
+#         return lines
+        instruction = []
+        while len(tokens) > 0:
+            ...
+            break
 
     def compile(self):
         """"Compile" the parsers result into a python-based pseudo-assembly format that can be executed
