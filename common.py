@@ -45,5 +45,8 @@ def print_enum(enum: Enum) -> None:
 
 
 def select_pyscript() -> Path | None:
-    path_str = askopenfilename(initialdir=USER_DATA_DIR)
+    path_str = askopenfilename(
+        initialdir=SOLUTIONS_DIR,
+        filetypes=(("PyScript", "*.pyscript"), ("Any", "*")),
+    )
     return Path(path_str) if path_str != "" else None

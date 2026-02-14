@@ -5,6 +5,8 @@ Contributors:
     Romcode
 """
 
+# TODO: Fix TclError caused when brutally murdering a LevelSelect
+
 from pathlib import Path
 import tkinter as tk
 
@@ -30,7 +32,8 @@ class LevelSelect(ScrolledFrame):
 
         self.columnconfigure(0, weight=1)
 
-        # This is very ugly but tk events don't allow passing non str data
+        # This is very ugly but tk events don't allow passing non str data,
+        # so the parent has to grab these when receiving a level selected event
         self.selected_level_number: int | None = None
         self.selected_level_path: Path | None = None
 
