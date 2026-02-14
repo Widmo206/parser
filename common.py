@@ -6,6 +6,7 @@ Contributors:
 """
 
 from enum import Enum
+import logging
 from pathlib import Path
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
@@ -20,6 +21,8 @@ PROJECT_DIR = Path.cwd()
 USER_DATA_DIR = Path(user_data_dir(APP_NAME, APP_AUTHOR))
 SOLUTIONS_DIR = USER_DATA_DIR / "solutions"
 SAVE_PATH = USER_DATA_DIR / "save.yaml"
+
+logger = logging.getLogger(__name__)
 
 
 def bind_recursive(
@@ -45,8 +48,14 @@ def print_enum(enum: Enum) -> None:
 
 
 def select_pyscript() -> Path | None:
+    logger.debug("Asking for user PyScript file selection")
     path_str = askopenfilename(
         initialdir=SOLUTIONS_DIR,
         filetypes=(("PyScript", "*.pyscript"), ("Any", "*")),
     )
     return Path(path_str) if path_str != "" else None
+
+
+def get_solution_path(path: Path) -> Path | None:
+    logger.debug(f"Creating solution path for '{path.name}'")
+    return SOLUTIONS_DIR / f"{path.stem}_solution{PYSCRIPT_EXTENSION}"

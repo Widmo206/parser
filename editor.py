@@ -11,7 +11,7 @@ import tkinter as tk
 
 import ttkbootstrap as ttk
 
-from common import PYSCRIPT_EXTENSION, SOLUTIONS_DIR
+from common import get_solution_path
 from editor_tab import EditorTab
 from errors import EditorTabCreationError
 
@@ -49,9 +49,7 @@ class Editor(ttk.Notebook):
             logger.error(f"Failed to create tab '{path.name}'")
 
     def open_tab_solution(self, path: Path) -> None:
-        logger.debug(f"Creating solution path for '{path.name}'")
-        solution_path = SOLUTIONS_DIR / f"{path.stem}_solution{PYSCRIPT_EXTENSION}"
-
+        solution_path = get_solution_path(path)
         logger.debug(f"Creating new tab '{solution_path.name}'")
 
         try:
