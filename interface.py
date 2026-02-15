@@ -13,7 +13,6 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
 from common import select_pyscript
-from enums import VirtualEventSequence as Ves
 from level_manager import LevelManager
 from menu_bar import MenuBar
 from pyscript_manager import PyscriptManager
@@ -67,32 +66,9 @@ class Interface(ttk.Window):
 
         self.paned_window.paneconfig(self.level_manager, minsize=370)
 
-        self.menu_bar.bind(
-            Ves.FILE_NEW,
-            self._on_menu_bar_file_new,
-        )
-        self.menu_bar.bind(
-            Ves.FILE_OPEN,
-            self._on_menu_bar_file_open,
-        )
-        self.menu_bar.bind(
-            Ves.EXIT,
-            self._on_menu_bar_exit,
-        )
-
-        self.level_manager.bind(
-            Ves.LEVEL_OPENED,
-            self._on_level_manager_level_opened,
-        )
-        self.level_manager.bind(
-            Ves.LEVEL_SELECT_OPENED,
-            self._on_level_manager_level_select_opened,
-        )
-
         self.update_idletasks()
         self.paned_window.sash_place(0, int(self.paned_window.winfo_width() * 0.5), 0)
         self.pyscript_manager.sash_place(0, 0, int(self.pyscript_manager.winfo_height() * 0.75))
-        self.level_manager.event_generate(Ves.LEVEL_SELECT_OPENED)
 
     def toggle_fullscreen(self) -> None:
         new_mode = not self.attributes("-fullscreen")
@@ -110,7 +86,7 @@ class Interface(ttk.Window):
         if path is not None:
             self.pyscript_manager.editor.open_tab(path)
 
-    def _on_menu_bar_exit(self, _event: tk.Event) -> None:
+    def _on_exit_requested(self, _event: tk.Event) -> None:
         logger.debug("Exiting application")
         self.destroy()
 

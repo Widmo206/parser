@@ -42,12 +42,3 @@ class LevelPlayer(ttk.Frame):
 
         self.level_bar = LevelBar(self)
         self.level_bar.grid(column=0, row=1, sticky=ttkc.NSEW)
-
-        self.level_bar.play_button.config(command=self.play)
-
-    def play(self) -> None:
-        # TODO: Hook up LevelPlayer.play to events and stuff
-        logger.debug(f"Playing level '{self.level.name}'")
-
-        parser = Parser(FunctionHolder(), get_solution_path(self.level_path))
-        print(parser.tokenize())

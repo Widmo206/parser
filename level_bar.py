@@ -12,6 +12,8 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
+import events
+
 
 class LevelBar(ttk.Frame):
     def __init__(self, master: tk.Misc, **kwargs) -> None:
@@ -38,14 +40,15 @@ class LevelBar(ttk.Frame):
         )
         self.back_button.grid(column=2, row=1)
 
-        self.play_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/play.png")))
+        self.run_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/run.png")))
         self.pause_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/pause.png")))
-        self.play_button = ttk.Button(
+        self.run_button = ttk.Button(
             self,
-            image=self.play_image_tk,
+            command=events.RunButtonPressed,
+            image=self.run_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
-        self.play_button.grid(column=3, row=1)
+        self.run_button.grid(column=3, row=1)
 
         self.forward_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/forward.png")))
         self.forward_button = ttk.Button(
@@ -58,6 +61,7 @@ class LevelBar(ttk.Frame):
         self.level_select_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/level_select.png")))
         self.level_select_button = ttk.Button(
             self,
+            command=events.LevelSelectButtonPressed,
             image=self.level_select_image_tk,
             bootstyle=kwargs["bootstyle"],
         )

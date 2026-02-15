@@ -12,7 +12,7 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
 from common import bind_recursive
-from enums import VirtualEventSequence as Ves
+import events
 from level import Level
 
 
@@ -20,8 +20,8 @@ class LevelEntry(ttk.Frame):
     def __init__(
         self,
         master: tk.Misc,
-        level_number: int,
-        level_path: Path,
+        number: int,
+        path: Path,
         number_label_width: int = 3,
         separation: int = 4,
         **kwargs,
@@ -32,12 +32,12 @@ class LevelEntry(ttk.Frame):
         self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
 
-        self.level_number = level_number
-        self.level_path = level_path
+        self.number = number
+        self.path = path
 
         self.number_label = ttk.Label(
             self,
-            text=str(self.level_number),
+            text=str(self.number),
             width=number_label_width,
             anchor=ttkc.CENTER,
             font=("Segoe UI", 16),
@@ -48,7 +48,7 @@ class LevelEntry(ttk.Frame):
 
         self.name_label = ttk.Label(
             self,
-            text=Level.from_path(self.level_path).name,
+            text=Level.from_path(self.path).name,
             font=("Segoe UI", 16),
             padding=16,
             bootstyle=(ttkc.PRIMARY, ttkc.INVERSE),
@@ -70,4 +70,4 @@ class LevelEntry(ttk.Frame):
         self.name_label.config(bootstyle=(ttkc.PRIMARY, ttkc.INVERSE))
 
     def _on_clicked(self, _event: tk.Event) -> None:
-        self.event_generate(Ves.CLICKED)
+        events.LevelSelected(self.path)

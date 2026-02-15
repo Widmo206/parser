@@ -11,7 +11,16 @@ from PIL import Image
 
 from common import print_enum
 from errors import UnknownTileTypeError
+import events
 from menu_command import MenuCommand
+
+
+class FileMenuCommand(MenuCommand, Enum):
+    NEW     = ("New", events.FileNewRequested, "Ctrl+N", "<Control-n>")
+    OPEN    = ("Open...", events.FileOpenRequested, "Ctrl+O", "<Control-o>")
+    SAVE    = ("Save", events.FileSaveRequested, "Ctrl+S", "<Control-s>")
+    SAVE_AS = ("Save as...", events.FileSaveAsRequested, "Ctrl+Shift+S", "<Control-Shift-n>")
+    EXIT    = ("Exit", events.ExitRequested, "Ctrl+Q", "<Control-q>")
 
 
 class TileType(Enum):
@@ -78,35 +87,11 @@ class TokenType(Enum):
 #     SLASH       = auto() # /
 
 
-class VirtualEventSequence(str, Enum):
-    @staticmethod
-    def _generate_next_value_(name: str, *_args) -> str:
-        return f"<<{name.title().replace('_', '')}>>"
-
-    CLICKED             = auto()
-    EXIT                = auto()
-    FILE_NEW            = auto()
-    FILE_OPEN           = auto()
-    FILE_SAVE           = auto()
-    FILE_SAVE_AS        = auto()
-    LEVEL_SELECTED      = auto()
-    LEVEL_OPENED        = auto()
-    LEVEL_SELECT_OPENED = auto()
-
-
-class FileMenuCommand(MenuCommand, Enum):
-    NEW     = ("New", VirtualEventSequence.FILE_NEW, "Ctrl+N", "<Control-n>")
-    OPEN    = ("Open...", VirtualEventSequence.FILE_OPEN, "Ctrl+O", "<Control-o>")
-    SAVE    = ("Save", VirtualEventSequence.FILE_SAVE, "Ctrl+S", "<Control-s>")
-    SAVE_AS = ("Save as...", VirtualEventSequence.FILE_SAVE_AS, "Ctrl+Shift+S", "<Control-Shift-n>")
-    EXIT    = ("Exit", VirtualEventSequence.EXIT, "Ctrl+Q", "<Control-q>")
-
-
 def _test() -> None:
     print()
-    print_enum(VirtualEventSequence)
-    print()
     print_enum(FileMenuCommand)
+    print()
+    print_enum(TileType)
 
 
 if __name__ == "__main__":

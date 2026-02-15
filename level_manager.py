@@ -12,7 +12,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
-from enums import VirtualEventSequence as Ves
+import events
 from level_player import LevelPlayer
 from level_select import LevelSelect
 
@@ -26,6 +26,9 @@ class LevelManager(ttk.Frame):
         self.level_select: LevelSelect | None = None
         self.level_player: LevelPlayer | None = None
 
+        events.LevelSelected.connect(self._on_level_selected)
+        events.LevelSelectButtonPressed.connect(self._on_level_select_button_pressed)
+
         self.open_level_select()
 
     def open_level(self, level_path: Path) -> None:
@@ -38,9 +41,8 @@ class LevelManager(ttk.Frame):
 
         self.level_player = LevelPlayer(self, level_path)
         self.level_player.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
-        self.level_player.level_bar.level_select_button.config(command=self.open_level_select)
 
-        self.event_generate(Ves.LEVEL_OPENED)
+        events.LevelOpened(self.level_player.level)
 
     def open_level_select(self) -> None:
         logger.debug(f"Opening level select")
@@ -52,9 +54,11 @@ class LevelManager(ttk.Frame):
 
         self.level_select = LevelSelect(self)
         self.level_select.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
-        self.level_select.bind(Ves.LEVEL_SELECTED, self._on_level_select_level_selected)
 
-        self.event_generate(Ves.LEVEL_SELECT_OPENED)
+        events.LevelSelectOpened()
 
-    def _on_level_select_level_selected(self, _event: tk.Event) -> None:
-        self.open_level(self.level_select.selected_level_path)
+    def _on_level_selected(self, event: events.LevelSelected) -> None:
+        self.open_level(event.path)
+
+    def _on_level_select_button_pressed(self, _event: events.LevelSelectButtonPressed) -> None:
+        self.open_level_select()
