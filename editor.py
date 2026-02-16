@@ -10,6 +10,7 @@ from pathlib import Path
 import tkinter as tk
 
 import ttkbootstrap as ttk
+from ttkbootstrap import constants as ttkc
 
 from common import get_solution_path, select_pyscript
 from editor_tab import EditorTab
@@ -37,6 +38,20 @@ class Editor(ttk.Notebook):
         events.FileOpenRequested.connect(self._on_file_open_requested)
         events.LevelOpened.connect(self._on_level_opened)
         events.LevelSelectOpened.connect(self._on_level_select_opened)
+        events.RunButtonPressed.connect(self._on_run_button_pressed)
+
+    def get_selected_tab(self) -> EditorTab | None:
+        tab_id = self.select()
+        if tab_id is None:
+            return None
+
+        widget = self.nametowidget(tab_id)
+
+        if not isinstance(widget, EditorTab):
+            logger.error("Selected widget is not an EditorTab")
+            return None
+
+        return widget
 
     def new_tab(self) -> None:
         logger.debug("Creating new untitled tab")
@@ -76,8 +91,29 @@ class Editor(ttk.Notebook):
         if path is not None:
             self.open_tab(path)
 
+    def _on_file_save_requested(self, _event: events.FileSaveRequested) -> None:
+        selected_tab = self.get_selected_tab()
+        if selected_tab is None:
+            return
+
+        if selected_tab.path is None:
+            pass
+            # TODO: Implement save as
+        else:
+            selected_tab.path.write_text(selected_tab.text.get("1.0", ttkc.END))
+
     def _on_level_opened(self, event: events.LevelOpened) -> None:
         self.open_tab_solution(event.level.pyscript_path)
 
     def _on_level_select_opened(self, _event: events.LevelSelectOpened) -> None:
         self.open_tab(LEVEL_SELECT_PYSCRIPT_PATH)
+
+    def _on_run_button_pressed(self, _event: events.RunButtonPressed) -> None:
+        events.FileSaveRequested()
+
+        selected_tab = self.get_selected_tab()
+        if selected_tab is None:
+            return
+
+        if selected_tab.path is not None:
+            events.RunRequested(self.get_selected_tab().path)

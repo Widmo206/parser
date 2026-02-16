@@ -9,11 +9,15 @@ Contributors:
 import logging
 
 from common import SOLUTIONS_DIR
+import events
 from interface import Interface
+from parser import FunctionHolder, Parser
 
 
 def main() -> None:
     SOLUTIONS_DIR.mkdir(parents=True, exist_ok=True)
+
+    events.RunRequested.connect(_on_run_requested)
 
     interface = Interface()
     interface.mainloop()
@@ -29,6 +33,11 @@ def setup_logging() -> None:
     )
     # Needed because PIL was flooding the logs
     logging.getLogger("PIL.PngImagePlugin").setLevel(logging.WARNING)
+
+
+def _on_run_requested(event: events.RunRequested) -> None:
+    parser = Parser(FunctionHolder(), event.path)
+    print(parser.tokenize())
 
 
 if __name__ == "__main__":

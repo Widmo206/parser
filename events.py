@@ -51,11 +51,6 @@ class Event:
 
 
 @dataclass(frozen=True, slots=True)
-class ActivePyscriptChanged(Event):
-    pyscript_path: Path | None
-
-
-@dataclass(frozen=True, slots=True)
 class FileNewRequested(Event):
     pass
 
@@ -103,3 +98,8 @@ class LevelSelectOpened(Event):
 @dataclass(frozen=True, slots=True)
 class RunButtonPressed(Event):
     pass
+
+
+@dataclass(frozen=True, slots=True)
+class RunRequested(Event):
+    path: Path

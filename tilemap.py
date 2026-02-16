@@ -11,6 +11,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 from enums import Direction, TileActionType, TileType
+import events
 from tile_label import TileLabel
 
 
