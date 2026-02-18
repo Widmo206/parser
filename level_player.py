@@ -1,4 +1,4 @@
-"""LevelPlayer class that links LevelBar and Tilemap
+"""LevelPlayer class that contains LevelController and LevelView
 
 Created on 2026.02.05
 Contributors:
@@ -14,9 +14,9 @@ import ttkbootstrap.constants as ttkc
 
 from common import get_solution_path
 from level import Level
-from level_bar import LevelBar
+from level_controller import LevelController
+from level_view import LevelView
 from parser import FunctionHolder, Parser
-from tilemap import Tilemap
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +36,9 @@ class LevelPlayer(ttk.Frame):
         self.level_path = level_path
         self.level = Level.from_path(self.level_path)
 
-        logger.debug(f"Creating tilemap from layout\n{self.level.tilemap_layout}")
-        self.tilemap = Tilemap(self, self.level.tilemap_layout)
-        self.tilemap.grid(column=0, row=0, sticky=ttkc.NSEW)
+        logger.debug(f"Creating level view from layout\n{self.level.tilemap_layout}")
+        self.level_view = LevelView(self, self.level.tilemap_layout)
+        self.level_view.grid(column=0, row=0, sticky=ttkc.NSEW)
 
-        self.level_bar = LevelBar(self)
-        self.level_bar.grid(column=0, row=1, sticky=ttkc.NSEW)
+        self.level_controller = LevelController(self)
+        self.level_controller.grid(column=0, row=1, sticky=ttkc.NSEW)

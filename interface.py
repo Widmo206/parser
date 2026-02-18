@@ -76,6 +76,6 @@ class Interface(ttk.Window):
         logger.debug(f"Setting fullscreen mode to {new_mode}")
         self.attributes("-fullscreen", new_mode)
 
-    def _on_exit_requested(self, _event: tk.Event) -> None:
+    def _on_exit_requested(self, _event: events.ExitRequested) -> None:
         logger.debug("Exiting application")
         self.destroy()

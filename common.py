@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
-from typing import Callable
+from typing import Callable, Literal
 
 from platformdirs import user_data_dir
 
@@ -29,7 +29,7 @@ def bind_recursive(
     widget: tk.Widget,
     sequence: str | None = None,
     func: Callable | None = None,
-    add: str | bool | None = None,
+    add: Literal["", "+"] | bool | None = None,
 ) -> None:
     """Same as Widget.bind, but affects all children recursively."""
     widget.bind(sequence, func, add)

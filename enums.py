@@ -5,6 +5,7 @@ Contributors:
     Romcode
 """
 
+from __future__ import annotations
 from enum import auto, Enum
 from pathlib import Path
 from PIL import Image
@@ -12,8 +13,6 @@ from typing import NamedTuple
 
 from common import print_enum
 from errors import UnknownTileTypeError
-import events
-from menu_command import MenuCommand
 
 
 class DirectionMixin(NamedTuple):
@@ -33,14 +32,6 @@ class TileActionType(Enum):
     ATTACK = auto
 
 
-class FileMenuCommand(MenuCommand, Enum):
-    NEW     = ("New", events.FileNewRequested, "Ctrl+N", "<Control-n>")
-    OPEN    = ("Open...", events.FileOpenRequested, "Ctrl+O", "<Control-o>")
-    SAVE    = ("Save", events.FileSaveRequested, "Ctrl+S", "<Control-s>")
-    SAVE_AS = ("Save as...", events.FileSaveAsRequested, "Ctrl+Shift+S", "<Control-Shift-n>")
-    EXIT    = ("Exit", events.ExitRequested, "Ctrl+Q", "<Control-q>")
-
-
 class TileType(Enum):
     BLOCKED = ("X", None, None, False)
     EMPTY   = ("O", Path("sprites/tile_background.png"), None, True)
@@ -55,8 +46,8 @@ class TileType(Enum):
         character: str,
         background_path: Path | None,
         foreground_path: Path | None,
-        walkable: bool,
-    ):
+        is_walkable: bool,
+    ) -> TileType:
         bg = Image.open(background_path).convert("RGBA") if background_path else None
         fg = Image.open(foreground_path).convert("RGBA") if foreground_path else None
 
@@ -71,12 +62,12 @@ class TileType(Enum):
 
         obj.character = character
         obj.image = composed
-        obj.walkable = walkable
+        obj.is_walkable = is_walkable
 
         return obj
 
     @classmethod
-    def _missing_(cls, value):
+    def _missing_(cls, value: object) -> TileType:
         raise UnknownTileTypeError(f"No tile type matching value '{value}'")
 
 
@@ -108,7 +99,6 @@ class TokenType(Enum):
 def _test() -> None:
     for enum in (
         Direction,
-        FileMenuCommand,
         TileType,
         TokenType,
     ):

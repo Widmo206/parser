@@ -27,22 +27,14 @@ class TileLabel(ttk.Label):
         self,
         master: tk.Misc,
         tile_type: TileType | str = TileType.EMPTY,
+        tile_size: int = MIN_SIZE,
         **kwargs,
     ) -> None:
         kwargs.setdefault("borderwidth", 0)
         super().__init__(master, **kwargs)
 
-        self.tile_type: TileType | None = None
-        self.image_tk: ImageTk.PhotoImage | None = None
-
-        self.set_tile_type(tile_type)
-
-    def get_action(self) -> TileAction | None:
-        if self.tile_type == TileType.PLAYER:
-            # TODO: Implement action choice
-            return TileAction(TileActionType.MOVE, Direction.UP)
-        else:
-            return None
+        self.tile_size = tile_size
+        self.resize(self.tile_size)
 
     def resize(self, tile_size: int) -> None:
         tile_size = max(tile_size, self.MIN_SIZE)
@@ -50,23 +42,18 @@ class TileLabel(ttk.Label):
         if tile_size < 1:
             raise ValueError(f"TileLabel size ({tile_size}) cannot be less than 1")
 
+        self.tile_size = tile_size
+
         image_size = round(tile_size * (1 - self.PADDING_RATIO))
         pad_size = round(tile_size * self.PADDING_RATIO / 2)
-        self.image_tk = ImageTk.PhotoImage(self.tile_type.image.resize(
-            (image_size, image_size),
-            Image.Resampling.LANCZOS,
-        )) if self.tile_type.image else None
-        self.configure(image=self.image_tk, padding=pad_size)
 
-    def set_tile_type(self, tile_type: TileType | str) -> None:
-        if isinstance(tile_type, str):
-            try:
-                self.tile_type = TileType(tile_type)
-            except UnknownTileTypeError:
-                logger.error(f"No tile type matching character '{self.tile_type}'")
-                self.tile_type = TileType.EMPTY
+        if self.tile_type.image is None:
+            self.image_tk = None
         else:
-            self.tile_type = tile_type
+            image = self.tile_type.image.resize(
+                (image_size, image_size),
+                Image.Resampling.LANCZOS,
+            )
+            self.image_tk = ImageTk.PhotoImage(image)
 
-        self.image_tk = ImageTk.PhotoImage(self.tile_type.image) if self.tile_type.image else None
-        self.config(image=self.image_tk)
+        self.configure(image=self.image_tk, padding=pad_size)

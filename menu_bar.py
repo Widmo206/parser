@@ -10,7 +10,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
-from enums import FileMenuCommand
+from menu_command import FileMenuCommand
 
 
 class MenuBar(ttk.Frame):

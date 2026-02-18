@@ -1,4 +1,4 @@
-"""LevelBar class to select and play through levels
+"""LevelController class to holds buttons for playing through levels
 
 Created on 2026.02.04
 Contributors:
@@ -15,7 +15,7 @@ import ttkbootstrap.constants as ttkc
 import events
 
 
-class LevelBar(ttk.Frame):
+class LevelController(ttk.Frame):
     def __init__(self, master: tk.Misc, **kwargs) -> None:
         kwargs.setdefault("bootstyle", ttkc.DARK)
         super().__init__(master, **kwargs)

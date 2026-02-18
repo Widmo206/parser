@@ -1,4 +1,4 @@
-"""Tilemap class to manage tiles
+"""LevelView class to manage TileLabels and obey LevelModel
 
 Created on 2026.01.28
 Contributors:
@@ -15,7 +15,7 @@ import events
 from tile_label import TileLabel
 
 
-class Tilemap(ttk.Frame):
+class LevelView(ttk.Frame):
     def __init__(
         self,
         master: tk.Misc,
@@ -52,33 +52,11 @@ class Tilemap(ttk.Frame):
                 tile.grid(column=x, row=y)
                 self.tiles.append(tile)
 
-        self.bind_all("<w>", lambda _: self.cycle(Direction.UP))
-        self.bind_all("<s>", lambda _: self.cycle(Direction.DOWN))
-        self.bind_all("<a>", lambda _: self.cycle(Direction.LEFT))
-        self.bind_all("<d>", lambda _: self.cycle(Direction.RIGHT))
-
-    def cycle(self, direction: Direction) -> None:
         # TODO: Remove manual movement
-        actions = []
-        for y in range(self.height):
-            for x in range(self.width):
-                actions.append(self.get_tile(x, y).get_action())
-
-        for y in range(self.height):
-            for x in range(self.width):
-                action = actions[y * self.width + x]
-                if action is None:
-                    continue
-                match action.type:
-                    case TileActionType.MOVE:
-                        # action.direction
-                        if direction is None:
-                            continue
-                        self.move_tile(x, y, direction)
-                    case TileActionType.ATTACK:
-                        pass
-                    case _:
-                        pass
+        self.bind_all("<w>", lambda _: events.MoveRequested(Direction.UP))
+        self.bind_all("<s>", lambda _: events.MoveRequested(Direction.DOWN))
+        self.bind_all("<a>", lambda _: events.MoveRequested(Direction.LEFT))
+        self.bind_all("<d>", lambda _: events.MoveRequested(Direction.RIGHT))
 
     def get_tile(self, x: int, y: int) -> TileLabel | None:
         try:
@@ -95,10 +73,9 @@ class Tilemap(ttk.Frame):
         if from_tile is not None and to_tile is not None and to_tile.tile_type.walkable:
             to_tile.set_tile_type(from_tile.tile_type)
             from_tile.set_tile_type(TileType.EMPTY)
-            self.update_tile_size()
 
     def update_tile_size(self) -> None:
-        padding = int(str(self.cget("padding")[0])) # Weird conversion issues
+        padding = int(str(self.cget("padding")[0])) # TODO: clean up this weird conversion issue
         tile_size = floor(min(
             (self.winfo_width() - padding * 2) / self.width,
             (self.winfo_height() - padding * 2) / self.height,

@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 from typing import Callable, ClassVar
 
+from enums import Direction
 from level import Level
 
 logger = logging.getLogger(__name__)
@@ -76,6 +77,11 @@ class ExitRequested(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class LayoutChanged(Event):
+    layout: str
+
+
+@dataclass(frozen=True, slots=True)
 class LevelOpened(Event):
     level: Level
 
@@ -93,6 +99,12 @@ class LevelSelected(Event):
 @dataclass(frozen=True, slots=True)
 class LevelSelectOpened(Event):
     pass
+
+
+# TODO: Remove manual movement
+@dataclass(frozen=True, slots=True)
+class MoveRequested(Event):
+    direction: Direction
 
 
 @dataclass(frozen=True, slots=True)
