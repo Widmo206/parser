@@ -12,16 +12,9 @@ from level import Level
 class LevelModel:
     def __init__(self, level: Level) -> None:
         self.level = level
-        self.
+        self.tiles = 
 
         events.MoveRequested.connect(self._on_move_requested)
-
-    def get_action(self) -> TileAction | None:
-        if self.tile_type == TileType.PLAYER:
-            # TODO: Implement action choice
-            return TileAction(TileActionType.MOVE, Direction.UP)
-        else:
-            return None
 
     def cycle(self, direction: Direction) -> None:
         # TODO: Remove manual movement
