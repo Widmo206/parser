@@ -6,8 +6,6 @@ Contributors:
     Widmo
 """
 
-# TODO: Annotate all instance attributes
-
 import logging
 
 from common import SOLUTIONS_DIR
@@ -18,14 +16,16 @@ from parser import FunctionHolder, Parser
 
 
 class Main:
+    interface: Interface
+    level_model: LevelModel | None
+    parser: Parser | None
+
     def __init__(self) -> None:
         SOLUTIONS_DIR.mkdir(parents=True, exist_ok=True)
 
         events.LevelSelectButtonPressed.connect(self._on_level_select_button_pressed)
         events.LevelSelected.connect(self._on_level_selected)
         events.RunRequested.connect(self._on_run_requested)
-
-        self.level_model: LevelModel | None = None
 
         self.interface = Interface()
         self.interface.mainloop()
@@ -57,6 +57,3 @@ def setup_logging() -> None:
 if __name__ == "__main__":
     setup_logging()
     Main()
-
-# Removed the "else raise RuntimeError" block,
-# ChatGPT said "This is not idiomatic Python and will bite you later."

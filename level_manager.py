@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 class LevelManager(ttk.Frame):
+    level_player: LevelPlayer | None
+    level_select: LevelSelect | None
+
     def __init__(self, master: tk.Misc, **kwargs) -> None:
         super().__init__(master, **kwargs)
-
-        self.level_player: LevelPlayer | None = None
-        self.level_select: LevelSelect | None = None
 
         events.LevelClosed.connect(self._on_level_closed)
         events.LevelOpened.connect(self._on_level_opened)

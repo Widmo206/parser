@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class PyscriptManager(tk.PanedWindow):
+    editor: Editor
+    output: Output
+
     def __init__(
         self,
         master: tk.Misc,

@@ -19,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 class LevelPlayer(ttk.Frame):
+    level: Level
+
+    level_controller: LevelController
+    level_view: LevelView
+
     def __init__(
         self,
         master: tk.Misc,

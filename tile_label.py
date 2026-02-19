@@ -21,6 +21,10 @@ class TileLabel(ttk.Label):
     MIN_SIZE = 32
     PADDING_RATIO = 0.05
 
+    tile_type: TileType
+    tile_size: int
+    image_tk: ImageTk.PhotoImage
+
     def __init__(
         self,
         master: tk.Misc,

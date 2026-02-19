@@ -23,6 +23,8 @@ LEVEL_SELECT_PYSCRIPT_PATH = Path("pyscript/level_select.pyscript")
 
 
 class Editor(ttk.Notebook):
+    style: ttk.Style
+
     def __init__(
         self,
         master: tk.Misc,

@@ -17,6 +17,12 @@ from level import Level
 
 
 class LevelEntry(ttk.Frame):
+    number: int
+    path: Path
+
+    number_label: ttk.Label
+    name_label: ttk.Label
+
     def __init__(
         self,
         master: tk.Misc,

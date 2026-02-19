@@ -21,6 +21,13 @@ logger = logging.getLogger(__name__)
 
 
 class Interface(ttk.Window):
+    main_frame: ttk.Frame
+    menu_bar: MenuBar
+    margin_frame: ttk.Frame
+    paned_window: tk.PanedWindow
+    pyscript_manager: PyscriptManager
+    level_manager: LevelManager
+
     def __init__(self, **kwargs) -> None:
         kwargs.setdefault("title", "PyScript")
         kwargs.setdefault("themename", "darkly")

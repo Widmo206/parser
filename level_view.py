@@ -17,6 +17,13 @@ from tile_label import TileLabel
 
 
 class LevelView(ttk.Frame):
+    level: Level
+    width: int
+    height: int
+
+    grid_frame: ttk.Frame
+    tile_labels: list[TileLabel]
+
     def __init__(
         self,
         master: tk.Misc,

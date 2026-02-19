@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 class Output(ScrolledText):
     DELTA_PER_ZOOM = 120
 
+    font: str
+    font_size: int
+    padx_ratio: float
+
     def __init__(
         self,
         master: tk.Misc,

@@ -25,9 +25,9 @@ class Event:
 
     Works almost exactly like Godot signals.
 
-    We annotate with Self instead of __future__ annotations because
-    Event is too general while Self takes the form of the event subclass.
-    Nevermind, Self is python 3.11+ only, general Event it isssss.
+    We would use typing.Self instead of __future__ annotations because
+    Event is general while Self takes the form of the event subclass,
+    but Self is python 3.11+ only.
     """
     _listeners: ClassVar[list[Callable[[Event], None]]]
 

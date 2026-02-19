@@ -14,6 +14,11 @@ from menu_command import FileMenuCommand
 
 
 class MenuBar(ttk.Frame):
+    file_menu: ttk.Menu
+    edit_menu: ttk.Menu
+    file_menu_button: ttk.Menubutton
+    edit_menu_button: ttk.Menubutton
+
     def __init__(self, master: tk.Misc, **kwargs) -> None:
         kwargs.setdefault("bootstyle", ttkc.DARK)
         super().__init__(master, **kwargs)

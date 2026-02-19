@@ -16,6 +16,19 @@ import events
 
 
 class LevelController(ttk.Frame):
+    restart_image_tk: ImageTk.PhotoImage
+    back_image_tk: ImageTk.PhotoImage
+    run_image_tk: ImageTk.PhotoImage
+    pause_image_tk: ImageTk.PhotoImage
+    forward_image_tk: ImageTk.PhotoImage
+    level_select_image_tk: ImageTk.PhotoImage
+
+    restart_button: ttk.Button
+    back_button: ttk.Button
+    run_button: ttk.Button
+    forward_button: ttk.Button
+    level_select_button: ttk.Button
+
     def __init__(self, master: tk.Misc, **kwargs) -> None:
         kwargs.setdefault("bootstyle", ttkc.DARK)
         super().__init__(master, **kwargs)

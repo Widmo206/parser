@@ -17,6 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 class LevelModel:
+    level: Level
+    width: int
+    height: int
+    tile_types: list[TileType]
+
     def __init__(self, path: Path) -> None:
         self.level = Level.from_path(path)
 

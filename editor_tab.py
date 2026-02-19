@@ -23,6 +23,19 @@ logger = logging.getLogger(__name__)
 class EditorTab(ttk.Frame):
     DELTA_PER_ZOOM = 120
 
+    path: Path | None
+    font: str
+    font_size: int
+    min_font_size: int
+    max_font_size: int
+    line_text_width: int
+    padx_ratio: float
+    zoom_factor: float
+
+    line_text: tk.Text
+    scrolled_text: ScrolledText
+    text: tk.Text
+
     def __init__(
         self,
         master: tk.Misc,
