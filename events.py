@@ -84,7 +84,6 @@ class LevelClosed(Event):
 @dataclass(frozen=True, slots=True)
 class LevelOpened(Event):
     level: Level
-    tile_instance_events: tuple[TileTypeChanged, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,5 +119,7 @@ class RunRequested(Event):
 
 @dataclass(frozen=True, slots=True)
 class TileTypeChanged(Event):
+    x: int
+    y: int
     tile_type: TileType
 

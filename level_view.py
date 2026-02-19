@@ -10,7 +10,9 @@ import tkinter as tk
 
 import ttkbootstrap as ttk
 
+from enums import TileType
 import events
+from level import Level
 from tile_label import TileLabel
 
 
@@ -18,20 +20,17 @@ class LevelView(ttk.Frame):
     def __init__(
         self,
         master: tk.Misc,
-        event: events.LevelOpened,
+        level: Level,
         **kwargs,
     ) -> None:
-        if event.level.layout == "":
-            raise ValueError("Tilemap layout cannot be empty")
+        self.level = level
 
-        self.layout = event.level.layout
-
-        rows = self.layout.splitlines()
+        rows = self.level.layout.splitlines()
         self.width = len(rows[0])
         self.height = len(rows)
 
         if any(len(row) != self.width for row in rows):
-            raise ValueError(f"Mismatched row length in tilemap layout\n{self.layout}")
+            raise ValueError(f"Mismatched row length in tilemap layout\n{self.level.layout}")
 
         kwargs.setdefault("padding", 64)
         super().__init__(master, **kwargs)
@@ -44,16 +43,21 @@ class LevelView(ttk.Frame):
 
         self.bind("<Configure>", lambda _: self.update_tile_size())
 
-        self.tiles = []
+        self.tile_labels = []
         for y in range(self.height):
             for x in range(self.width):
-                tile = TileLabel(
-                    self.grid_frame,
-                    rows[y][x],
-                    event.tile_instance_events[y * self.width + x],
-                )
-                tile.grid(column=x, row=y)
-                self.tiles.append(tile)
+                tile_label = TileLabel(self.grid_frame, rows[y][x])
+                tile_label.grid(column=x, row=y)
+                self.tile_labels.append(tile_label)
+
+        events.TileTypeChanged.connect(self._on_model_tile_type_changed)
+
+    def destroy(self) -> None:
+        events.TileTypeChanged.disconnect(self._on_model_tile_type_changed)
+        ttk.Frame.destroy(self)
+
+    def set_tile_type(self, x: int, y: int, tile_type: TileType) -> None:
+        self.tile_labels[y * self.width + x].set_tile_type(tile_type)
 
     def update_tile_size(self) -> None:
         padding = int(str(self.cget("padding")[0])) # TODO: clean up this weird conversion issue
@@ -62,5 +66,8 @@ class LevelView(ttk.Frame):
             (self.winfo_height() - padding * 2) / self.height,
         ))
 
-        for tile in self.tiles:
+        for tile in self.tile_labels:
             tile.resize(tile_size)
+
+    def _on_model_tile_type_changed(self, event: events.TileTypeChanged) -> None:
+        self.set_tile_type(event.x, event.y, event.tile_type)

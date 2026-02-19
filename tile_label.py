@@ -25,7 +25,6 @@ class TileLabel(ttk.Label):
         self,
         master: tk.Misc,
         tile_type: TileType | str = TileType.EMPTY,
-        tile_instance_event: type[events.TileTypeChanged] | None = None,
         tile_size: int = MIN_SIZE,
         **kwargs,
     ) -> None:
@@ -35,10 +34,6 @@ class TileLabel(ttk.Label):
         self.tile_type = TileType.normalize(tile_type)
         self.tile_size = tile_size
         self.resize(self.tile_size)
-
-        # This is needed to allow conceptual tiles to remotely update their visual counterpart.
-        if tile_instance_event is not None:
-            tile_instance_event.connect(self._on_remote_tile_type_changed)
 
     def resize(self, tile_size: int | None = None) -> None:
         if tile_size is not None:
