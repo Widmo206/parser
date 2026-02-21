@@ -40,7 +40,7 @@ class TileType(Enum):
     BLOCKED = ("X", None, None, False)
     EMPTY   = ("O", Path("sprites/tile_background.png"), None, True)
     PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), False)
-    GOAL    = ("G", Path("sprites/tile_background.png"), Path("sprites/goal.png"), True)
+    FLAG    = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"), True)
     KEY     = ("K", Path("sprites/tile_background.png"), None, True)
     LOCK    = ("L", Path("sprites/tile_background.png"), None, False)
     ENEMY   = ("E", Path("sprites/tile_background.png"), None, False)

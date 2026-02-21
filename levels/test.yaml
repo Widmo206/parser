@@ -1,7 +1,7 @@
 name: "Test"
 pyscript_path: "pyscript/test.pyscript"
 layout: |-
-  GOOOO
+  FOOOO
   XXXXO
   OOOXO
   OXOXO

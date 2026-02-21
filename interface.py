@@ -1,4 +1,4 @@
-"""Main interface class containing all tk elements
+"""Interface class containing all tk elements
 
 Created on 2026.02.04
 Contributors:

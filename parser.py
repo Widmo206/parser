@@ -13,6 +13,8 @@ from typing import Callable, Type, Any
 
 from enums import TokenType
 from errors import UnknownTokenError
+import events
+from pyscript_token import Token
 
 logger = logging.getLogger(__name__)
 REFERENCE_CHARS = ascii_letters + digits + "_"
@@ -117,18 +119,6 @@ class FunctionHolder(object):
         """
         func = self.get(function_name)
         return func(*args)
-
-
-@dataclass(frozen=True)
-class Token(object):
-    type: TokenType
-    value: Any
-
-    def __repr__(self):
-        if self.value is None:
-            return f"Token({self.type.name})"
-        else:
-            return f"Token({self.type.name}, {repr(self.value)})"
 
 
 @dataclass
@@ -311,6 +301,7 @@ class Parser(object):
                     raise UnknownTokenError(f"There are no tokens that start with {repr(char)} (line {line} in '{self.path}')")
             skip_operators = False
         logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
+        events.TokenizingFinished(tokens)
         return tokens
 
     def parse(self, tokens: list[Token], is_root: bool=True):

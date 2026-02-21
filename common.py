@@ -9,7 +9,7 @@ from enum import Enum
 import logging
 from pathlib import Path
 import tkinter as tk
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import Callable, Literal
 
 from platformdirs import user_data_dir
@@ -17,10 +17,17 @@ from platformdirs import user_data_dir
 APP_NAME = "PyScript"
 APP_AUTHOR = "WidRom"
 PYSCRIPT_EXTENSION = ".pyscript"
+
 PROJECT_DIR = Path.cwd()
 USER_DATA_DIR = Path(user_data_dir(APP_NAME, APP_AUTHOR))
 SOLUTIONS_DIR = USER_DATA_DIR / "solutions"
 SAVE_PATH = USER_DATA_DIR / "save.yaml"
+
+FILE_DIALOG_OPTIONS = {
+    "initialdir": SOLUTIONS_DIR,
+    "filetypes": (("PyScript", f"*{PYSCRIPT_EXTENSION}"), ("Any", "*")),
+    "defaultextension": PYSCRIPT_EXTENSION,
+}
 
 logger = logging.getLogger(__name__)
 
@@ -47,12 +54,15 @@ def print_enum(enum: Enum) -> None:
             print(f"{str(entry).ljust(width)} = {entry.value}")
 
 
-def select_pyscript() -> Path | None:
-    logger.debug("Asking for user PyScript file selection")
-    path_str = askopenfilename(
-        initialdir=SOLUTIONS_DIR,
-        filetypes=(("PyScript", "*.pyscript"), ("Any", "*")),
-    )
+def ask_open_pyscript() -> Path | None:
+    logger.debug("Asking user for PyScript file to open")
+    path_str = askopenfilename(**FILE_DIALOG_OPTIONS)
+    return Path(path_str) if path_str != "" else None
+
+
+def ask_save_as_pyscript() -> Path | None:
+    logger.debug("Asking user for PyScript file save path")
+    path_str = asksaveasfilename(**FILE_DIALOG_OPTIONS)
     return Path(path_str) if path_str != "" else None
 
 

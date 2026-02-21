@@ -1,4 +1,4 @@
-"""An event system to pass around data through the composition tree
+"""A global event system to pass around data through the composition tree
 
 We'll probably need it, so better build it right now.
 We need it. But be careful choosing between tk events and these events.
@@ -16,6 +16,7 @@ from typing import Callable, ClassVar
 
 from enums import Direction, TileType
 from level import Level
+from pyscript_token import Token
 
 logger = logging.getLogger(__name__)
 
@@ -123,3 +124,7 @@ class TileTypeChanged(Event):
     y: int
     tile_type: TileType
 
+
+@dataclass(frozen=True, slots=True)
+class TokenizingFinished(Event):
+    tokens: list[Token]
