@@ -62,8 +62,11 @@ class ViewMenuCommand(MenuCommandEnum):
 
 
 def _test() -> None:
+    for enum in (FileMenuCommand, EditMenuCommand, ViewMenuCommand):
+        if len(enum) == 0:
+            continue
         print()
-        print_enum(FileMenuCommand)
+        print_enum(enum)
 
 
 if __name__ == "__main__":
