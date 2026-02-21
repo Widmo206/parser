@@ -35,7 +35,6 @@ class Interface(ttk.Window):
 
         self.geometry("1280x720")
         self.state("zoom")
-        self.bind("<F11>", lambda _: self.toggle_fullscreen())
 
         self.style.colors.set("primary", "#191919")
         self.style.layout("TNotebook", [])
@@ -84,6 +83,7 @@ class Interface(ttk.Window):
         self.bind_all("<d>", lambda _: events.MoveRequested(Direction.RIGHT))
 
         events.ExitRequested.connect(self._on_exit_requested)
+        events.ToggleFullscreenRequested.connect(lambda _: self.toggle_fullscreen())
 
     def toggle_fullscreen(self) -> None:
         new_mode = not self.attributes("-fullscreen")

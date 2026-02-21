@@ -39,6 +39,7 @@ class Editor(ttk.Notebook):
         events.FileNewRequested.connect(lambda _: self.new_tab())
         events.FileOpenRequested.connect(self._on_file_open_requested)
         events.FileSaveRequested.connect(lambda _: self.save())
+        events.FileSaveAsRequested.connect(lambda _: self.save_as())
         events.LevelOpened.connect(self._on_level_opened)
         events.LevelSelectOpened.connect(lambda _: self.open_tab(LEVEL_SELECT_PYSCRIPT_PATH))
         events.RunButtonPressed.connect(self._on_run_button_pressed)

@@ -126,5 +126,10 @@ class TileTypeChanged(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class ToggleFullscreenRequested(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class TokenizingFinished(Event):
     tokens: list[Token]
