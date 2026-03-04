@@ -8,6 +8,7 @@ Contributors:
 from dataclasses import dataclass, field
 
 import logging
+from math import inf
 
 from astar import astar
 from enums import TileAction, TileType
@@ -56,7 +57,7 @@ class TileModel:
                 walkable_matrix = tile_data_matrix.map(
                     lambda tile_data: tile_data.tile_type.is_walkable
                 )
-                sequence = min(
+                shortest_sequence = min(
                     (
                         astar(
                             self_x,
@@ -69,14 +70,14 @@ class TileModel:
                         for target_x, target_y
                         in player_positions
                     ),
-                    key=len,
+                    key=lambda sequence: inf if sequence is None else len(sequence),
                 )
-                direction = sequence[0]
+                first_direction = shortest_sequence[0]
 
-                if direction is self.tile_data.tile_direction:
+                if first_direction is self.tile_data.tile_direction:
                     return TileAction.MOVE_FORWARD
 
-                if direction is self.tile_data.tile_direction.rotate(True):
+                if first_direction is self.tile_data.tile_direction.rotate(True):
                     return TileAction.TURN_RIGHT
 
                 return TileAction.TURN_LEFT
