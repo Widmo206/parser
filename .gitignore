@@ -187,3 +187,4 @@ cython_debug/
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/pyscript.iml
 /.idea/vcs.xml
+.idea/inspectionProfiles/Project_Default.xml

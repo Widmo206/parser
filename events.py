@@ -125,6 +125,11 @@ class RedoRequested(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class RestartButtonPressed(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class RunButtonPressed(Event):
     pass
 
@@ -132,6 +137,16 @@ class RunButtonPressed(Event):
 @dataclass(frozen=True, slots=True)
 class RunRequested(Event):
     path: Path
+
+
+@dataclass(frozen=True, slots=True)
+class StepBackButtonPressed(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class StepForwardButtonPressed(Event):
+    pass
 
 
 @dataclass(frozen=True, slots=True)

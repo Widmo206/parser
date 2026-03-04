@@ -1,4 +1,4 @@
-"""LevelModel class to handle level logic and interact with LevelController and LevelView
+"""LevelModel class to handle level logic and interact with LevelBar and LevelView
 
 Created on 2026.02.18
 Contributors:

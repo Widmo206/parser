@@ -1,4 +1,4 @@
-"""LevelController class to holds buttons for playing through levels
+"""LevelBar class to holds buttons for playing through levels
 
 Created on 2026.02.04
 Contributors:
@@ -15,18 +15,18 @@ import ttkbootstrap.constants as ttkc
 import events
 
 
-class LevelController(ttk.Frame):
+class LevelBar(ttk.Frame):
     restart_image_tk: ImageTk.PhotoImage
-    back_image_tk: ImageTk.PhotoImage
+    step_back_image_tk: ImageTk.PhotoImage
     run_image_tk: ImageTk.PhotoImage
     pause_image_tk: ImageTk.PhotoImage
-    forward_image_tk: ImageTk.PhotoImage
+    step_forward_image_tk: ImageTk.PhotoImage
     level_select_image_tk: ImageTk.PhotoImage
 
     restart_button: ttk.Button
-    back_button: ttk.Button
+    step_back_button: ttk.Button
     run_button: ttk.Button
-    forward_button: ttk.Button
+    step_forward_button: ttk.Button
     level_select_button: ttk.Button
 
     def __init__(self, master: tk.Misc, **kwargs) -> None:
@@ -40,18 +40,20 @@ class LevelController(ttk.Frame):
         self.restart_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/restart.png")))
         self.restart_button = ttk.Button(
             self,
+            command=events.RestartButtonPressed,
             image=self.restart_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
         self.restart_button.grid(column=0, row=1)
 
-        self.back_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/back.png")))
-        self.back_button = ttk.Button(
+        self.step_back_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/step_back.png")))
+        self.step_back_button = ttk.Button(
             self,
-            image=self.back_image_tk,
+            command=events.StepBackButtonPressed,
+            image=self.step_back_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
-        self.back_button.grid(column=2, row=1)
+        self.step_back_button.grid(column=2, row=1)
 
         self.run_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/run.png")))
         self.pause_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/pause.png")))
@@ -63,13 +65,14 @@ class LevelController(ttk.Frame):
         )
         self.run_button.grid(column=3, row=1)
 
-        self.forward_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/forward.png")))
-        self.forward_button = ttk.Button(
+        self.step_forward_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/step_forward.png")))
+        self.step_forward_button = ttk.Button(
             self,
-            image=self.forward_image_tk,
+            command=events.StepForwardButtonPressed,
+            image=self.step_forward_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
-        self.forward_button.grid(column=4, row=1)
+        self.step_forward_button.grid(column=4, row=1)
         
         self.level_select_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/level_select.png")))
         self.level_select_button = ttk.Button(
