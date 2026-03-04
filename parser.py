@@ -3,8 +3,9 @@
 Created on 2026.01.14
 Contributors:
     Widmo
-    (Romcode)
 """
+
+# TODO: Please refactor into one file per class.
 
 from dataclasses import dataclass
 import logging
@@ -151,7 +152,7 @@ class Processor(object):
             "Advancing processor for tile %s at (%s, %s)",
             tile_data_matrix.get(processor_x, processor_y).tile_type,
             processor_x,
-            processor_y
+            processor_y,
         )
 
         # TODO: Advance program based on level state, block at next player action and return it.
@@ -373,5 +374,3 @@ if __name__ == "__main__":
     print(tokenized)
     parsed = parser.parse(tokenized)
     print(parsed)
-
-# TODO: Please refactor into one file per class.

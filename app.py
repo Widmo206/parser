@@ -9,16 +9,19 @@ from common import SOLUTIONS_DIR
 import events
 from game_controller import GameController
 from interface import Interface
+from scheduler import Scheduler
 
 
 class App:
     interface: Interface
+    scheduler: Scheduler
     game_controller: GameController | None
 
     def __init__(self) -> None:
         SOLUTIONS_DIR.mkdir(parents=True, exist_ok=True)
 
         self.interface = Interface()
+        self.scheduler = Scheduler(self.interface)
         self.game_controller = None
 
         events.LevelSelectButtonPressed.connect(self._on_level_select_button_pressed)
@@ -33,4 +36,4 @@ class App:
             self.game_controller = None
 
     def _on_level_selected(self, event: events.LevelSelected) -> None:
-        self.game_controller = GameController.from_path(event.path)
+        self.game_controller = GameController(self.scheduler, event.path)

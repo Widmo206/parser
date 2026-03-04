@@ -70,6 +70,16 @@ class CycleRequested(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class CyclingStarted(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class CyclingStopped(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class FileNewRequested(Event):
     pass
 

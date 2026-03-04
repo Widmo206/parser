@@ -82,3 +82,18 @@ class LevelBar(ttk.Frame):
             bootstyle=kwargs["bootstyle"],
         )
         self.level_select_button.grid(column=6, row=1)
+
+        events.CyclingStarted.connect(self._on_cycling_started)
+        events.CyclingStopped.connect(self._on_cycling_stopped)
+
+    def destroy(self) -> None:
+        events.CyclingStarted.disconnect(self._on_cycling_started)
+        events.CyclingStopped.disconnect(self._on_cycling_stopped)
+        super().destroy()
+
+    def _on_cycling_started(self, _event: events.CyclingStarted) -> None:
+        self.run_button.config(image=self.pause_image_tk)
+
+    def _on_cycling_stopped(self, _event: events.CyclingStopped) -> None:
+        self.run_button.config(image=self.run_image_tk)
+
