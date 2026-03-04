@@ -179,12 +179,5 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
-/.idea/.gitignore
-/.idea/codeStyles/codeStyleConfig.xml
-/.idea/material_theme_project_new.xml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/pyscript.iml
-/.idea/vcs.xml
-.idea/inspectionProfiles/Project_Default.xml
+/.idea
+/.vscode

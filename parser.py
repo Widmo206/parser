@@ -213,11 +213,11 @@ class Parser(object):
                 #logger.debug(f"Found whitespace at {c}")
                 c += 1
 
-            if char == SINGLE_COMMENT:
+            elif char == SINGLE_COMMENT:
                 i = 1
                 while char != "\n":
                     i += 1
-                    char = self.file[c]
+                    char = self.file[c+i]
                 c += i+1
 
             elif char in REFERENCE_START_CHARS:
@@ -318,12 +318,7 @@ class Parser(object):
                 add_token(SINGLE_CHAR_TOKENS[char])
 
             else:
-                if char == "\n":
-                    # TODO: store line numbers in tokens
-                    line += 1
-                    c += 1
-                else:
-                    raise UnknownTokenError(f"There are no tokens that start with {repr(char)} (line {line} in '{self.path}')")
+                raise UnknownTokenError(f"There are no tokens that start with {repr(char)} (line {line} in '{self.path}')")
             skip_operators = False
         logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
         events.TokenizingFinished(tokens)
