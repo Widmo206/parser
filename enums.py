@@ -68,7 +68,7 @@ class Direction(Enum):
 
         raise ValueError("Invalid direction negation")
 
-    def rotate(self, clockwise: bool = True) -> Direction:
+    def rotate(self, clockwise: bool = False) -> Direction:
         if clockwise:
             new_x, new_y = -self.y, self.x
         else:

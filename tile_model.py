@@ -1,4 +1,4 @@
-"""TileModel class that holds tile data and can hold a processor
+"""TileModel class that holds tile data and can hold a pyscript processor
 
 Created on 2026.03.01
 Contributors:
@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 import logging
 
+from astar import astar
 from enums import TileAction, TileType
 from matrix import Matrix
 from parser import Processor
@@ -23,17 +24,17 @@ class TileModel:
     processor: Processor | None = None
 
     def __post_init__(self) -> None:
-        if self.processor is None and self.tile_data.tile_type == TileType.PLAYER:
+        if self.processor is None and self.tile_data.tile_type is TileType.PLAYER:
             object.__setattr__(self, "processor", Processor([]))
 
     def get_action(
         self,
-        x: int,
-        y: int,
+        self_x: int,
+        self_y: int,
         tile_data_matrix: Matrix[TileData]
     ) -> TileAction | None:
         if self.processor is not None:
-            return self.processor.advance(x, y, tile_data_matrix)
+            return self.processor.advance(self_x, self_y, tile_data_matrix)
 
         match self.tile_data.tile_type:
             case TileType.PLAYER:
@@ -41,8 +42,44 @@ class TileModel:
                 return None
 
             case TileType.ENEMY:
-                # TODO: Implement enemy AI.
-                return None
+                # Set target x and y to closest player.
+                player_positions = tuple(
+                    (x, y)
+                    for x, y, tile_data
+                    in tile_data_matrix.iter_xy()
+                    if tile_data.tile_type is TileType.PLAYER
+                )
+
+                if len(player_positions) == 0:
+                    return None
+
+                walkable_matrix = tile_data_matrix.map(
+                    lambda tile_data: tile_data.tile_type.is_walkable
+                )
+                sequence = min(
+                    (
+                        astar(
+                            self_x,
+                            self_y,
+                            self.tile_data.tile_direction,
+                            target_x,
+                            target_y,
+                            walkable_matrix,
+                        ),
+                        for target_x, target_y
+                        in player_positions
+                    ),
+                    key=len,
+                )
+                direction = sequence[0]
+
+                if direction is self.tile_data.tile_direction:
+                    return TileAction.MOVE_FORWARD
+
+                if direction is self.tile_data.tile_direction.rotate(True):
+                    return TileAction.TURN_RIGHT
+
+                return TileAction.TURN_LEFT
 
             case _:
                 return None

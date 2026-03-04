@@ -141,8 +141,8 @@ class Processor(object):
 
     def advance(
         self,
-        processor_x: int,
-        processor_y: int,
+        self_x: int,
+        self_y: int,
         tile_data_matrix: Matrix[TileData],
     ) -> TileAction | None:
         # Keeping possibility for multiple player tiles,
@@ -150,9 +150,9 @@ class Processor(object):
         # One processor per player tile, to keep variables separate.
         logger.debug(
             "Advancing processor for tile %s at (%s, %s)",
-            tile_data_matrix.get(processor_x, processor_y).tile_type,
-            processor_x,
-            processor_y,
+            tile_data_matrix.get(self_x, self_y).tile_type,
+            self_x,
+            self_y,
         )
 
         # TODO: Advance program based on level state, block at next player action and return it.

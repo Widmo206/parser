@@ -30,7 +30,7 @@ class GameController:
         self.level_model.destroy()
 
     def _on_run_requested(self, event: events.RunRequested) -> None:
-        if self.cycle_controller.running:
+        if self.cycle_controller.is_running:
             self.cycle_controller.stop()
         else:
             parser = Parser(FunctionHolder(), event.path)

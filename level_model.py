@@ -83,10 +83,10 @@ class LevelModel:
                 self.move_tile(x, y, -tile_data.tile_direction)
 
             case TileAction.TURN_LEFT:
-                self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate(False))
+                self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate())
 
             case TileAction.TURN_RIGHT:
-                self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate())
+                self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate(True))
 
             case TileAction.ATTACK:
                 # TODO: Implement attacking.

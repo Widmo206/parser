@@ -1,4 +1,4 @@
-"""Output class to display the output of running PyScript programs
+"""Output class to display the output of is_running PyScript programs
 
 Created on 2026.02.08
 Contributors:
