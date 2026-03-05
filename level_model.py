@@ -33,10 +33,12 @@ class LevelModel:
 
     def __post_init__(self) -> None:
         events.CycleRequested.connect(self._on_cycle_requested)
+        events.RestartButtonPressed.connect(self._on_restart_button_pressed)
         events.LevelOpened(self.level)
 
     def destroy(self) -> None:
         events.CycleRequested.disconnect(self._on_cycle_requested)
+        events.RestartButtonPressed.disconnect(self._on_restart_button_pressed)
         events.LevelClosed()
 
     def cycle(self) -> None:
@@ -95,6 +97,10 @@ class LevelModel:
             case _:
                 pass
 
+    def restart(self) -> None:
+        for x, y, tile_data in self.level.get_tile_data_matrix().iter_xy():
+            self.set_tile_model(x, y, TileModel(tile_data))
+
     def set_tile_model(
         self,
         x: int,
@@ -123,3 +129,6 @@ class LevelModel:
 
     def _on_cycle_requested(self, _event: events.CycleRequested) -> None:
         self.cycle()
+
+    def _on_restart_button_pressed(self, _event: events.RestartButtonPressed) -> None:
+        self.restart()

@@ -5,7 +5,6 @@ Contributors:
     Romcode
 """
 
-from dataclasses import dataclass
 from pathlib import Path
 
 from cycle_controller import CycleController
