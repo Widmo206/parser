@@ -6,10 +6,11 @@ Contributors:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 import logging
 from pathlib import Path
 
+import dacite
 import yaml
 from yaml.parser import ParserError
 
@@ -39,30 +40,21 @@ class Save:
             message_error("Missing save file at '%s'", path)
             return cls()
         except ParserError:
-            message_error("Failed to parse save from '%s'", path)
+            message_error("Failed to parse YAML data from '%s'", path)
             return cls()
 
         try:
-            return cls(data["level_scores"])
-        except KeyError:
-            message_error("Missing field 'level_scores' in '%s'", path)
+            config = dacite.Config(strict=True)
+            return dacite.from_dict(cls, data, config)
+        except dacite.DaciteError as e:
+            message_error("Failed to parse save from YAML data from '%s': %s", path, e)
 
         return cls()
 
     def save(self, path: Path) -> None:
         logger.debug("Saving save to '%s'", path)
 
-        data = {
-            "level_scores": {
-                str(level_path): {
-                    "solution_path": str(level_score.solution_path),
-                    "token_count": level_score.token_count,
-                }
-                for level_path, level_score
-                in self.level_scores.items()
-            }
-        }
-
+        data = asdict(self)
         try:
             with open(path, "w", encoding="utf-8") as file:
                 yaml.safe_dump(data, file)
