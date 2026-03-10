@@ -27,6 +27,10 @@ class LevelScore:
 
 @dataclass(frozen=True)
 class Save:
+    DACITE_CONFIG = dacite.Config(
+        strict=True,
+    )
+
     level_scores: dict[Path, LevelScore] = field(default_factory=dict)
 
     @classmethod
@@ -36,7 +40,7 @@ class Save:
         try:
             with open(path, "r", encoding="utf-8") as file:
                 data = yaml.safe_load(file)
-            return dacite.from_dict(cls, data, dacite.Config(strict=True))
+            return dacite.from_dict(cls, data, cls.DACITE_CONFIG)
         except FileNotFoundError:
             message_error("Missing save file at '%s'", path)
         except ParserError:

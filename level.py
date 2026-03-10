@@ -34,6 +34,10 @@ class Level:
         "layout",
         "direction_layout",
     )
+    DACITE_CONFIG = dacite.Config(
+        cast=[Path],
+        strict=True,
+    )
 
     name: str = "Missing level name"
     pyscript_path: Path | None = None
@@ -49,7 +53,7 @@ class Level:
         try:
             with open(path, "r", encoding="utf-8") as file:
                 data = yaml.safe_load(file)
-            return dacite.from_dict(cls, data, dacite.Config(strict=True))
+            return dacite.from_dict(cls, data, cls.DACITE_CONFIG)
         except FileNotFoundError:
             message_error("Missing level file at '%s'", path)
         except ParserError:

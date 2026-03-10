@@ -90,13 +90,13 @@ class TileAction(Enum):
 
 
 class TileType(Enum):
-    BLOCKED = ("X", None, None, False)
-    EMPTY   = ("O", Path("sprites/tile_background.png"), None, True)
-    PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), True)
-    FLAG    = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"), True)
-    KEY     = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"), True)
-    GATE    = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png"), False)
-    ENEMY   = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png"), False)
+    BLOCKED = ("X", None                               , None                      , False, 2)
+    EMPTY   = ("O", Path("sprites/tile_background.png"), None                      , True , 2)
+    PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), True , 0)
+    FLAG    = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png")  , True , 2)
+    KEY     = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png")   , True , 2)
+    GATE    = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png")  , False, 2)
+    ENEMY   = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png") , False, 1)
 
     character: str
     image: PILImage | None
@@ -108,6 +108,7 @@ class TileType(Enum):
         background_path: Path | None,
         foreground_path: Path | None,
         is_walkable: bool,
+        action_priority: int,
     ) -> TileType:
         bg = Image.open(background_path).convert("RGBA") if background_path else None
         fg = Image.open(foreground_path).convert("RGBA") if foreground_path else None
@@ -124,6 +125,7 @@ class TileType(Enum):
         obj.character = character
         obj.image = composed
         obj.is_walkable = is_walkable
+        obj.action_priority = action_priority
 
         return obj
 

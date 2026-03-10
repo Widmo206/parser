@@ -43,11 +43,19 @@ class LevelModel:
         tile_data_matrix = self.tile_model_matrix.map(
             lambda tile_model: tile_model.tile_data
         )
-        action_matrix = self.tile_model_matrix.map_xy(
-            lambda x, y, tile_model: tile_model.get_action(x, y, tile_data_matrix)
+        tile_actions = [
+            (x, y, action)
+            for x, y, tile_model in self.tile_model_matrix.iter_xy()
+            if (action := tile_model.get_action(x, y, tile_data_matrix)) is not None
+        ]
+        tile_actions.sort(
+            key=lambda xyaction: tile_data_matrix.get(
+                xyaction[0],
+                xyaction[1],
+            ).tile_type.action_priority
         )
 
-        for x, y, action in action_matrix.iter_xy():
+        for x, y, action in tile_actions:
             self.process_tile_action(x, y, action)
 
     def move_tile(self, x: int, y: int, direction: Direction) -> None:
@@ -72,7 +80,7 @@ class LevelModel:
         self.set_tile_model(to_x, to_y, from_tile_model)
         self.set_tile_model(x, y, TileModel())
 
-    def process_tile_action(self, x: int, y: int, action: TileAction | None) -> None:
+    def process_tile_action(self, x: int, y: int, action: TileAction) -> None:
         tile_data = self.tile_model_matrix.get(x, y).tile_data
 
         match action:
