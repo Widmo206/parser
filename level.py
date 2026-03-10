@@ -10,11 +10,11 @@ from dataclasses import dataclass
 import logging
 from pathlib import Path
 
+import dacite
 import yaml
 from yaml.parser import ParserError
 
 from common import message_error, normalize_path
-from errors import InvalidLayoutError
 from matrix import Matrix
 from tile_data import TileData
 
@@ -49,43 +49,27 @@ class Level:
         try:
             with open(path, "r", encoding="utf-8") as file:
                 data = yaml.safe_load(file)
+            return dacite.from_dict(cls, data, dacite.Config(strict=True))
         except FileNotFoundError:
-            error_message = "Missing level file at '%s'"
-            message_error(error_message, path)
-            return cls(error_message % path)
+            message_error("Missing level file at '%s'", path)
         except ParserError:
-            error_message = "Failed to parse level from '%s'"
-            message_error(error_message, path)
-            return cls(error_message % path)
+            message_error("Failed to parse YAML data from '%s'", path)
+        except dacite.DaciteError as e:
+            message_error("Failed to parse level from YAML data from '%s': %s", path, e)
 
-        constructor_kwargs = {}
-
-        for field in cls.YAML_FIELDS:
-            try:
-                constructor_kwargs[field] = data.pop(field)
-            except KeyError:
-                message_error("Missing field '%s' in '%s'", field, path)
-
-        for field in data:
-            logger.warning("Found unexpected field '%s' in '%s'", field, path)
-
-        return cls(**constructor_kwargs)
+        return cls()
 
     def __post_init__(self) -> None:
         def raise_dimension_mismatch() -> None:
             # Commonly used error message
-            raise InvalidLayoutError(
+            message_error(
                 "Mismatched dimensions in layout\n%s\n and direction layout\n%s",
                 self.layout,
                 self.direction_layout,
             )
-
-        if self.pyscript_path is not None:
-            object.__setattr__(
-                self,
-                "pyscript_path",
-                normalize_path(self.pyscript_path),
-            )
+            object.__setattr__(self, "layout", "")
+            object.__setattr__(self, "direction_layout", "")
+            return
 
         if self.layout == "":
             object.__setattr__(self, "width", 0)
@@ -101,7 +85,7 @@ class Level:
         object.__setattr__(self, "height", len(rows))
 
         if any(len(row) != self.width for row in rows):
-            raise InvalidLayoutError(f"Mismatched row length in layout\n{self.layout}")
+            raise message_error("Mismatched row length in layout\n%s", self.layout)
 
         if self.direction_layout == "":
             raise_dimension_mismatch()

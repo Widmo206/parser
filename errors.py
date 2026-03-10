@@ -11,11 +11,6 @@ class EditorTabCreationError(ValueError):
     pass
 
 
-class InvalidLayoutError(ValueError):
-    """Raised when trying to parse a level with an invalid tile type or direction layout."""
-    pass
-
-
 class UnknownDirectionError(ValueError):
     """Raised when trying to convert a character to a direction that doesn't exist."""
     pass

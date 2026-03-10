@@ -36,16 +36,11 @@ class Save:
         try:
             with open(path, "r", encoding="utf-8") as file:
                 data = yaml.safe_load(file)
+            return dacite.from_dict(cls, data, dacite.Config(strict=True))
         except FileNotFoundError:
             message_error("Missing save file at '%s'", path)
-            return cls()
         except ParserError:
             message_error("Failed to parse YAML data from '%s'", path)
-            return cls()
-
-        try:
-            config = dacite.Config(strict=True)
-            return dacite.from_dict(cls, data, config)
         except dacite.DaciteError as e:
             message_error("Failed to parse save from YAML data from '%s': %s", path, e)
 
