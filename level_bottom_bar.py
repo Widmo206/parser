@@ -1,4 +1,4 @@
-"""LevelBar class to holds buttons for playing through levels
+"""LevelBottomBar class to holds buttons for playing through levels
 
 Created on 2026.02.04
 Contributors:
@@ -15,7 +15,7 @@ import ttkbootstrap.constants as ttkc
 import events
 
 
-class LevelBar(ttk.Frame):
+class LevelBottomBar(ttk.Frame):
     restart_image_tk: ImageTk.PhotoImage
     step_back_image_tk: ImageTk.PhotoImage
     run_image_tk: ImageTk.PhotoImage

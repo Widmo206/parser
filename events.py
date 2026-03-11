@@ -110,6 +110,11 @@ class LevelClosed(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class LevelComplete(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class LevelOpened(Event):
     level: Level
 

@@ -1,4 +1,4 @@
-"""LevelModel class to handle level logic and interact with LevelBar and LevelView
+"""LevelModel class to handle level logic and interact with LevelBottomBar and LevelView
 
 Created on 2026.02.18
 Contributors:
@@ -14,6 +14,7 @@ from enums import Direction, TileAction, TileType
 import events
 from level import Level
 from matrix import Matrix
+from tile_data import TileData
 from tile_model import TileModel
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,11 @@ class LevelModel:
         events.CycleRequested.disconnect(self._on_cycle_requested)
         events.RestartButtonPressed.disconnect(self._on_restart_button_pressed)
 
+    def check_win_state(self) -> bool:
+        return all(self.tile_model_matrix.map(
+            lambda tile_model: tile_model.tile_data.tile_type != TileType.FLAG
+        ))
+
     def cycle(self) -> None:
         tile_data_matrix = self.tile_model_matrix.map(
             lambda tile_model: tile_model.tile_data
@@ -57,6 +63,9 @@ class LevelModel:
 
         for x, y, action in tile_actions:
             self.process_tile_action(x, y, action)
+
+        if self.check_win_state():
+            events.LevelComplete()
 
     def move_tile(self, x: int, y: int, direction: Direction) -> None:
         to_x = x + direction.x
@@ -77,7 +86,15 @@ class LevelModel:
             direction,
             to_tile_model.tile_data.tile_type,
         )
-        self.set_tile_model(to_x, to_y, from_tile_model)
+
+        if (
+            from_tile_model.tile_data.tile_type is TileType.PLAYER
+            and to_tile_model.tile_data.tile_type is TileType.FLAG
+        ):
+            self.set_tile_model(to_x, to_y, TileModel(TileData(TileType.WIN)))
+        else:
+            self.set_tile_model(to_x, to_y, from_tile_model)
+
         self.set_tile_model(x, y, TileModel())
 
     def process_tile_action(self, x: int, y: int, action: TileAction) -> None:

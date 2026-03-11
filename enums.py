@@ -97,6 +97,7 @@ class TileType(Enum):
     KEY     = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png")   , True , 2)
     GATE    = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png")  , False, 2)
     ENEMY   = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png") , False, 1)
+    WIN     = ("W", Path("sprites/tile_background.png"), Path("sprites/win.png")   , False, 2)
 
     character: str
     image: PILImage | None
