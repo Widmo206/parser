@@ -12,7 +12,6 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 import events
-from level import Level
 from matrix import Matrix
 from tile_data import TileData
 from tile_label import TileLabel
