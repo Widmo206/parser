@@ -14,21 +14,20 @@ import ttkbootstrap as ttk
 import events
 from level import Level
 from matrix import Matrix
+from tile_data import TileData
 from tile_label import TileLabel
 
 logger = logging.getLogger(__name__)
 
 
 class LevelView(ttk.Frame):
-    level: Level
-
     grid_frame: ttk.Frame
     tile_label_matrix: Matrix[TileLabel]
 
     def __init__(
         self,
         master: tk.Misc,
-        level: Level,
+        tile_data_matrix: Matrix[TileData],
         **kwargs,
     ) -> None:
         kwargs.setdefault("padding", 64)
@@ -40,9 +39,7 @@ class LevelView(ttk.Frame):
         self.grid_frame = ttk.Frame(self)
         self.grid_frame.grid()
 
-        self.level = level
-
-        self.tile_label_matrix = level.get_tile_data_matrix().map(
+        self.tile_label_matrix = tile_data_matrix.map(
             lambda tile_data: TileLabel(self.grid_frame, tile_data)
         )
 
@@ -60,8 +57,8 @@ class LevelView(ttk.Frame):
     def update_tile_size(self) -> None:
         padding = int(str(self.cget("padding")[0])) # TODO: clean up this weird conversion issue
         tile_size = floor(min(
-            (self.winfo_width() - padding * 2) / self.level.width,
-            (self.winfo_height() - padding * 2) / self.level.height,
+            (self.winfo_width() - padding * 2) / self.tile_label_matrix.width,
+            (self.winfo_height() - padding * 2) / self.tile_label_matrix.height,
         ))
 
         for tile_label in self.tile_label_matrix:
