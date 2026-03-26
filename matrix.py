@@ -13,7 +13,7 @@ T = TypeVar('T')
 U = TypeVar('U')
 
 
-@dataclass
+@dataclass(frozen=True)
 class Matrix(Generic[T]):
     width: int
     height: int
@@ -21,7 +21,7 @@ class Matrix(Generic[T]):
 
     def __post_init__(self) -> None:
         if not isinstance(self._elements, list):
-            self._elements = list(self._elements)
+            object.__setattr__(self, "_elements", list(self._elements))
 
         if self.width <= 0 or self.height <= 0:
             raise ValueError("Matrix width and height must be positive")

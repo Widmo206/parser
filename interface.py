@@ -69,7 +69,7 @@ class Interface(ttk.Window):
         self.level_manager = LevelManager(self.paned_window)
         self.paned_window.add(self.level_manager)
 
-        self.paned_window.paneconfig(self.level_manager, minsize=370)
+        self.paned_window.paneconfig(self.level_manager, minsize=500)
 
         self.update_idletasks()
         self.paned_window.sash_place(0, int(self.paned_window.winfo_width() * 0.5), 0)

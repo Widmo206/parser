@@ -6,7 +6,7 @@ Contributors:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 
@@ -15,6 +15,7 @@ import events
 from level import Level
 from matrix import Matrix
 from tile_data import TileData
+from tile_history_entry import TileHistoryEntry
 from tile_model import TileModel
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 class LevelModel:
     level: Level
     tile_model_matrix: Matrix[TileModel]
+    history: list[tuple[TileHistoryEntry]] = field(default_factory=list)
 
     @classmethod
     def from_path(cls, path: Path) -> LevelModel:
