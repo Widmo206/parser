@@ -377,10 +377,20 @@ class Parser(object):
 #                 lines.append(line)
 #                 line = []
 #         return lines
-        instruction = []
+        process_tree = ProcessTree()
+        code_stack = [process_tree.get_root()]
+        current_node = code_stack[0]
+
         while len(tokens) > 0:
-            ...
-            break
+            current_token = tokens.pop(0)
+            match current_token.type:
+                case TokenType.REFERENCE:
+                    if tokens[0] == TokenType.OPEN_PAREN:
+                        # looks like a function call
+                        current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
+                        current_node = current_node.get_children()[-1]
+                        code_stack.append(current_node)
+
 
     def compile(self):
         """"Compile" the parsers result into a python-based pseudo-assembly format that can be executed
