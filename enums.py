@@ -2,6 +2,7 @@
 
 Created on 2026.01.30
 Contributors:
+    Widmo
     Romcode
 """
 
@@ -168,6 +169,17 @@ class TokenType(Enum):
 #     MINUS       = auto() # -
 #     STAR        = auto() # *
 #     SLASH       = auto() # /
+
+
+class NodeType(Enum):
+    "Used by Parser to organize a list of tokens into a ProcessTree."
+    CLOSURE   = auto()
+    READ      = auto()
+    WRITE     = auto()
+    DEFINE    = auto()
+    LITERAL   = auto()
+    CALL      = auto()
+    OPERATION = auto()
 
 
 def _test() -> None:
