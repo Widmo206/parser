@@ -18,36 +18,16 @@ class CycleController:
         self.scheduler = scheduler
         self.is_running = False
         self.after_id = None
-        events.RestartButtonPressed.connect(self._on_restart_button_pressed)
-        events.StepBackButtonPressed.connect(self._on_step_back_button_pressed)
-        events.StepForwardButtonPressed.connect(self._on_step_forward_button_pressed)
-
-    def destroy(self) -> None:
-        events.RestartButtonPressed.disconnect(self._on_restart_button_pressed)
-        events.StepBackButtonPressed.disconnect(self._on_step_back_button_pressed)
-        events.StepForwardButtonPressed.disconnect(self._on_step_forward_button_pressed)
 
     def start(self) -> None:
         self.is_running = True
         events.CyclingStarted()
         self._cycle()
 
-    def restart(self) -> None:
-        if self.is_running:
-            self.stop()
-        events.RestartRequested()
-
-    def step_back(self) -> None:
-        if self.is_running:
-            self.stop()
-        events.StepBackRequested()
-
-    def step_forward(self) -> None:
-        if self.is_running:
-            self.stop()
-        events.StepForwardRequested()
-
     def stop(self) -> None:
+        if not self.is_running:
+            return
+
         self.scheduler.after_cancel(self.after_id)
         self.is_running = False
         self.after_id = None
@@ -57,14 +37,5 @@ class CycleController:
         if not self.is_running:
             return
 
-        events.StepForwardRequested()
+        events.Cycled()
         self.after_id = self.scheduler.after(250, self._cycle)
-
-    def _on_restart_button_pressed(self, _event: events.RestartButtonPressed) -> None:
-        self.restart()
-
-    def _on_step_back_button_pressed(self, _event: events.StepBackButtonPressed) -> None:
-        self.step_back()
-
-    def _on_step_forward_button_pressed(self, _event: events.StepForwardButtonPressed) -> None:
-        self.step_forward()

@@ -11,6 +11,7 @@ import logging
 from math import inf
 from tkinter.simpledialog import askstring
 
+import events
 from astar import astar
 from enums import TileAction, TileType
 from matrix import Matrix
@@ -47,6 +48,8 @@ class TileModel:
                         return TileAction.TURN_LEFT
                     case "d":
                         return TileAction.TURN_RIGHT
+                    case _:
+                        events.RunRequested(None)
             # return self.processor.advance(self_x, self_y, tile_data_matrix)
 
         # If no pyscript processor, match behavior to tile type.

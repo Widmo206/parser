@@ -34,16 +34,6 @@ class LevelModel:
 
         return cls(level, tile_model_matrix)
 
-    def __post_init__(self) -> None:
-        events.RestartButtonPressed.connect(self._on_restart_button_pressed)
-        events.StepBackRequested.connect(self._on_step_back_requested)
-        events.StepForwardRequested.connect(self._on_step_forward_requested)
-
-    def destroy(self) -> None:
-        events.RestartButtonPressed.disconnect(self._on_restart_button_pressed)
-        events.StepBackRequested.disconnect(self._on_step_back_requested)
-        events.StepForwardRequested.disconnect(self._on_step_forward_requested)
-
     def check_win_state(self) -> bool:
         return all(self.tile_model_matrix.map(
             lambda tile_model: tile_model.tile_data.tile_type != TileType.FLAG
@@ -167,12 +157,3 @@ class LevelModel:
             tile_data.tile_direction = Direction.normalize(tile_direction)
 
         events.TileDataChanged(x, y, tile_data)
-
-    def _on_restart_button_pressed(self, _event: events.RestartButtonPressed) -> None:
-        self.restart()
-
-    def _on_step_back_requested(self, _event: events.StepBackRequested) -> None:
-        self.step_back()
-
-    def _on_step_forward_requested(self, _event: events.StepForwardRequested) -> None:
-        self.step_forward()

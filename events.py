@@ -65,6 +65,11 @@ class Event:
 
 
 @dataclass(frozen=True, slots=True)
+class Cycled(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class CyclingStarted(Event):
     pass
 
