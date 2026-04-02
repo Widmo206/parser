@@ -21,7 +21,7 @@ class CycleController:
 
     def start(self) -> None:
         self.is_running = True
-        events.CyclingStarted()
+        events.CyclingToggled(True)
         self._cycle()
 
     def stop(self) -> None:
@@ -31,7 +31,7 @@ class CycleController:
         self.scheduler.after_cancel(self.after_id)
         self.is_running = False
         self.after_id = None
-        events.CyclingStopped()
+        events.CyclingToggled(False)
 
     def _cycle(self) -> None:
         if not self.is_running:

@@ -70,13 +70,8 @@ class Cycled(Event):
 
 
 @dataclass(frozen=True, slots=True)
-class CyclingStarted(Event):
-    pass
-
-
-@dataclass(frozen=True, slots=True)
-class CyclingStopped(Event):
-    pass
+class CyclingToggled(Event):
+    is_running: bool
 
 
 @dataclass(frozen=True, slots=True)
