@@ -41,6 +41,8 @@ class LevelBottomBar(ttk.Frame):
         self.restart_button = ttk.Button(
             self,
             command=events.RestartRequested,
+            compound=tk.TOP,
+            text="Restart",
             image=self.restart_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
@@ -50,7 +52,10 @@ class LevelBottomBar(ttk.Frame):
         self.step_back_button = ttk.Button(
             self,
             command=events.StepBackRequested,
+            compound=tk.TOP,
+            text="Step back",
             image=self.step_back_image_tk,
+
             bootstyle=kwargs["bootstyle"],
         )
         self.step_back_button.grid(column=2, row=1)
@@ -60,6 +65,8 @@ class LevelBottomBar(ttk.Frame):
         self.run_button = ttk.Button(
             self,
             command=events.RunButtonPressed,
+            compound=tk.TOP,
+            text="Run",
             image=self.run_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
@@ -69,6 +76,8 @@ class LevelBottomBar(ttk.Frame):
         self.step_forward_button = ttk.Button(
             self,
             command=events.StepForwardRequested,
+            compound=tk.TOP,
+            text="Step forward",
             image=self.step_forward_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
@@ -77,7 +86,9 @@ class LevelBottomBar(ttk.Frame):
         self.level_select_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/level_select.png")))
         self.level_select_button = ttk.Button(
             self,
-            command=events.LevelSelectButtonPressed,
+            command=events.CloseLevelRequested,
+            compound=tk.TOP,
+            text="Level select",
             image=self.level_select_image_tk,
             bootstyle=kwargs["bootstyle"],
         )
@@ -91,6 +102,7 @@ class LevelBottomBar(ttk.Frame):
 
     def _on_cycling_toggled(self, event: events.CyclingToggled) -> None:
         self.run_button.config(
+            text="Pause" if event.is_running else "Run",
             image=self.pause_image_tk if event.is_running else self.run_image_tk
         )
 

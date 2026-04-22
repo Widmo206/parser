@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 class Event:
     """Base type for all events.
 
-    Works almost exactly like Godot signals.
+    Works almost like Godot signals, with a static list of listeners.
+    Instantiate an event to emit it.
 
     We would use typing.Self instead of __future__ annotations because
     Event is general while Self takes the form of the event subclass,
@@ -62,6 +63,11 @@ class Event:
         )
         for callback in cls._listeners:
             callback(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ClosePopupRequested(Event):
+    pass
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,7 +122,7 @@ class LevelOpened(Event):
 
 
 @dataclass(frozen=True, slots=True)
-class LevelSelectButtonPressed(Event):
+class CloseLevelRequested(Event):
     pass
 
 
