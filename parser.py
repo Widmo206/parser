@@ -393,6 +393,22 @@ class Parser(object):
                         code_stack.append(current_node)
                     else:
                         raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.\nCurrent ProcessTree: {repr(process_tree)}")
+                
+                case TokenType.CLOSE_PAREN:
+                    if code_stack[-1].get_type() == NodeType.CALL: # TODO: update for other uses of parentheses
+                        # exit function call
+                        code_stack.pop(-1)
+                    else:
+                        raise SyntaxError(f"Encountered incorrect parenthesis ({current_token}) while parsing {self.path}.\nCurrent ProcessTree: {repr(process_tree)}")
+
+                case TokenType.SEMICOLON:
+                    if code_stack[-1].get_type() == NodeType.CLOSURE: # TODO: update for other uses of semicolon
+                        pass # end of an instruction
+                    else:
+                        raise SyntaxError(f"Encountered SEMICOLON ({current_token}) inside an instruction while parsing {self.path}.\nCurrent ProcessTree: {repr(process_tree)}")
+
+                case _:
+                    raise NotImplementedError(f"Encountered unimplemented token ({current_token}) while parsing {self.path}.\nCurrent ProcessTree: {repr(process_tree)}")
 
 
     def compile(self):
