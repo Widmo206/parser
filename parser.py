@@ -21,6 +21,10 @@ from matrix import Matrix
 from pyscript_token import Token
 from tile_data import TileData
 
+if __name__ == "__main__":
+    # debug only stuff; shouldn't be imported when actually running the project
+    from parser_debug_tools import make_process_tree
+
 logger = logging.getLogger(__name__)
 REFERENCE_CHARS = ascii_letters + digits + "_"
 REFERENCE_START_CHARS = ascii_letters + "_"
@@ -201,6 +205,11 @@ class ProcessTree(object):
 
     def __init__(self):
         self._root = ProcessNode(None, NodeType.CLOSURE, None, None)
+
+    # !!! bad design !!!
+    if __name__ == "__main__":
+        def __repr__(self):
+            return make_process_tree(self)
 
     def get_root(self):
         return self._root
