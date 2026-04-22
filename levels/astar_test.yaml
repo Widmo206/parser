@@ -1,7 +1,7 @@
 name: "A* Test"
 pyscript_path: "pyscript/astar_test.pyscript"
 layout: |-
-  OOOOOOOOOOO
+  OOOOOOOOOOF
   OOXXOOXOOOX
   OXOOOXXOXOO
   OOOXOOOOXOO

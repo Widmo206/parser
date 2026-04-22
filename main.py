@@ -1,5 +1,7 @@
 """Pyscript - a coding learning game
 
+yaml module error: pip install pyyaml
+
 Created on 2026.01.28
 Contributors:
     Romcode
@@ -28,3 +30,4 @@ if __name__ == "__main__":
     App().run()
 
 # TODO: Replace all logging f-strings with % formatting. (source: Kessler said it was a bit faster)
+# TODO: Ensure all events get disconnected on widget destroy.

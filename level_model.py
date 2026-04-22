@@ -153,7 +153,7 @@ class LevelModel:
         x: int,
         y: int,
         tile_type: TileType | str | None = None,
-        tile_direction: Direction | None = None,
+        tile_direction: Direction | str  | None = None,
     ) -> None:
         tile_data = self.tile_model_matrix.get(x, y).tile_data
 

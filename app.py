@@ -31,21 +31,21 @@ class App:
         self.save = Save.from_path(SAVE_PATH) if SAVE_PATH.exists() else Save()
 
         events.ExitRequested.connect(self._on_exit_requested)
-        events.LevelSelectButtonPressed.connect(self._on_level_select_button_pressed)
+        events.CloseLevelRequested.connect(self._on_close_level_requested)
         events.LevelSelected.connect(self._on_level_selected)
 
     def run(self) -> None:
         self.interface.mainloop()
 
-    def _on_exit_requested(self, _event: events.ExitRequested) -> None:
-        logger.debug("Exiting application")
-        self.interface.destroy()
-
-    def _on_level_select_button_pressed(self, _event: events.LevelSelectButtonPressed) -> None:
+    def _on_close_level_requested(self, _event: events.CloseLevelRequested) -> None:
         if self.game_controller is not None:
             self.game_controller.destroy()
             self.game_controller = None
             events.LevelClosed()
+
+    def _on_exit_requested(self, _event: events.ExitRequested) -> None:
+        logger.debug("Exiting application")
+        self.interface.destroy()
 
     def _on_level_selected(self, event: events.LevelSelected) -> None:
         self.game_controller = GameController(self.scheduler, event.path)
