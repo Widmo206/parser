@@ -1,0 +1,31 @@
+[
+    Token(REFERENCE, 'hello'),
+        Token(OPEN_PAREN),
+        Token(CLOSE_PAREN),
+    Token(SEMICOLON),
+
+    Token(REFERENCE, 'print'),
+        Token(OPEN_PAREN),
+        Token(STRING_LIT, "I'm a string!"),
+        Token(CLOSE_PAREN),
+    Token(SEMICOLON),
+
+    Token(KEYWORD, 'var'),
+        Token(REFERENCE, 'x'),
+        Token(ASSIGN),
+            Token(FLOAT_LIT, 1e-06),
+            Token(OPERATOR, '*'),
+            Token(FLOAT_LIT, 50000000.0),
+            Token(OPERATOR, '+'),
+            Token(FLOAT_LIT, 1.1),
+            Token(OPERATOR, '/'), 
+            Token(OPERATOR, '-'),
+            Token(FLOAT_LIT, 5.0),
+    Token(SEMICOLON),
+
+    Token(REFERENCE, 'print'),
+        Token(OPEN_PAREN),
+        Token(REFERENCE, 'x'),
+        Token(CLOSE_PAREN),
+    Token(SEMICOLON)
+]
