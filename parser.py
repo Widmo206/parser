@@ -385,11 +385,14 @@ class Parser(object):
             current_token = tokens.pop(0)
             match current_token.type:
                 case TokenType.REFERENCE:
-                    if tokens[0] == TokenType.OPEN_PAREN:
+                    if tokens[0].type == TokenType.OPEN_PAREN:
                         # looks like a function call
-                        current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
+                        tokens.pop(0) # consume the OPEN_PAREN
+                        current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token.value))
                         current_node = current_node.get_children()[-1]
                         code_stack.append(current_node)
+                    else:
+                        raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.\nCurrent ProcessTree: {repr(process_tree)}")
 
 
     def compile(self):
@@ -422,6 +425,6 @@ if __name__ == "__main__":
 
     parser = Parser(fh)
     tokenized = parser.tokenize()
-    print(tokenized)
+    #print(tokenized)
     parsed = parser.parse(tokenized)
     print(parsed)
