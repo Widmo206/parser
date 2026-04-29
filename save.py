@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class LevelScore:
     solution_path: Path
+    step_count: int
     token_count: int
 
 

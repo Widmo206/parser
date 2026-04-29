@@ -73,7 +73,7 @@ class LevelModel:
         else:
             self.set_tile_model(to_x, to_y, from_tile_model)
 
-        self.set_tile_model(x, y, TileModel())
+        self.set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
 
     def process_tile_action(self, x: int, y: int, action: TileAction) -> None:
         tile_data = self.tile_model_matrix.get(x, y).tile_data
@@ -163,11 +163,7 @@ class LevelModel:
         tile_type: TileType | str | None = None,
         tile_direction: Direction | str  | None = None,
     ) -> None:
-        tile_data = self.tile_model_matrix.get(x, y).tile_data
+        tile_model = self.tile_model_matrix.get(x, y)
+        tile_model.config(tile_type, tile_direction)
 
-        if tile_type is not None:
-            tile_data.tile_type = TileType.normalize(tile_type)
-        if tile_direction is not None:
-            tile_data.tile_direction = Direction.normalize(tile_direction)
-
-        events.TileDataChanged(x, y, tile_data)
+        events.TileDataChanged(x, y, tile_model.tile_data)

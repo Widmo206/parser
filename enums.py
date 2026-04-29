@@ -128,17 +128,19 @@ class TileType(Enum):
         bg = Image.open(background_path).convert("RGBA") if background_path else None
         fg = Image.open(foreground_path).convert("RGBA") if foreground_path else None
 
-        if bg and fg:
-            composed = bg.copy()
-            composed.alpha_composite(fg)
+        if bg is None:
+            image = fg
+        elif fg is None:
+            image = bg
         else:
-            composed = bg or fg
+            image = bg.copy()
+            image.alpha_composite(fg)
 
         obj = object.__new__(cls)
         obj._value_ = character
 
         obj.character = character
-        obj.image = composed
+        obj.image = image
         obj.is_walkable = is_walkable
         obj.action_priority = action_priority
 

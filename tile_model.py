@@ -13,7 +13,7 @@ from tkinter.simpledialog import askstring
 
 import events
 from astar import astar
-from enums import TileAction, TileType
+from enums import Direction, TileAction, TileType
 from matrix import Matrix
 from parser import Processor
 from tile_data import TileData
@@ -21,14 +21,24 @@ from tile_data import TileData
 logger = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass
 class TileModel:
+    INPUT_ACTION_MAP = {
+        "w": TileAction.MOVE_FORWARD,
+        "s": TileAction.MOVE_BACK,
+        "a": TileAction.TURN_LEFT,
+        "d": TileAction.TURN_RIGHT,
+        "x": TileAction.ATTACK,
+    }
+
     tile_data: TileData = field(default_factory=TileData)
     processor: Processor | None = None
+    floor_tile_data: TileData = field(default_factory=TileData) # Hm yes the floor here is made out of floor
+
 
     def __post_init__(self) -> None:
         if self.processor is None and self.tile_data.tile_type is TileType.PLAYER:
-            object.__setattr__(self, "processor", Processor([]))
+            self.processor = Processor([])
 
     def get_action(
         self,
@@ -37,19 +47,16 @@ class TileModel:
         tile_data_matrix: Matrix[TileData]
     ) -> TileAction | None:
         if self.processor is not None:
-            # TODO: Remove manual movement.
-            match askstring("Player movement", "Player movement (wasd): "):
-                case "w":
-                    return TileAction.MOVE_FORWARD
-                case "s":
-                    return TileAction.MOVE_BACK
-                case "a":
-                    return TileAction.TURN_LEFT
-                case "d":
-                    return TileAction.TURN_RIGHT
-                case _:
-                    events.RunRequested(None)
             # return self.processor.advance(self_x, self_y, tile_data_matrix)
+            # TODO: Remove manual actions once processor is implemented.
+            try:
+                return self.INPUT_ACTION_MAP[askstring(
+                    "Player action",
+                    "Player action (wasdx): ",
+                )]
+            except KeyError:
+                events.RunButtonPressed()
+                return None
 
         # If no pyscript processor, match behavior to tile type.
         match self.tile_data.tile_type:
@@ -105,3 +112,13 @@ class TileModel:
 
             case _:
                 return None
+
+    def config(
+        self,
+        tile_type: TileType | str | None = None,
+        tile_direction: Direction | str | None = None,
+    ) -> None:
+        self.tile_data = TileData(
+            self.tile_data.tile_type if tile_type is None else tile_type,
+            self.tile_data.tile_direction if tile_direction is None else tile_direction,
+        )
