@@ -92,9 +92,10 @@ class LevelModel:
                 self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate(True))
 
             case TileAction.ATTACK:
-                target_x = x + tile_data.tile_direction.x
-                target_y = y + tile_data.tile_direction.y
-                self.attack_tile(target_x, target_y)
+                self.attack_tile(
+                    x + tile_data.tile_direction.x,
+                    y + tile_data.tile_direction.y,
+                )
 
             case _:
                 logger.error("Unknown tile action %s", action)
