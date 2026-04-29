@@ -187,6 +187,24 @@ class TokenType(Enum):
 #     SLASH       = auto() # /
 
 
+class Operators(Enum):
+    # NAME    = ('chars', priority)
+    EQUALS    = ('==', 4)
+    NOTEQUALS = ('!=', 4)
+    LESS_EQ   = ('<=', 4)
+    MORE_EQ   = ('>=', 4)
+    LESS_THAN = ('<',  4)
+    MORE_THAN = ('>',  4)
+
+    POW       = ('**', 1)
+    FLOOR_DIV = ('//', 2)
+    ADD       = ('+',  3)
+    SUB       = ('-',  3)
+    MULT      = ('*',  2)
+    DIV       = ('/',  2)
+    MOD       = ('%',  2)
+
+
 def _test() -> None:
     for enum in (
         Direction,
