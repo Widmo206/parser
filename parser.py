@@ -401,7 +401,8 @@ class Parser(object):
                     if tokens[0].type == TokenType.OPEN_PAREN:
                         # looks like a function call
                         tokens.pop(0) # consume the OPEN_PAREN
-                        current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token.value))
+                        current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
+                        # step into function arguments
                         current_node = current_node.get_children()[-1]
                         code_stack.append(current_node)
                     else:
