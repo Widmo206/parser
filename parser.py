@@ -14,7 +14,7 @@ from string import ascii_letters, digits, whitespace
 from pathlib import Path
 from typing import Callable, Type, Any
 
-from enums import TileAction, TokenType, NodeType
+from enums import TileAction, TokenType, NodeType, Operators
 from errors import UnknownTokenError
 import events
 from matrix import Matrix
@@ -37,22 +37,22 @@ KEYWORDS = (
     "return",
     "exit",
     )
-OPERATORS = (
-    '**',
-    '//',
-    '==',
-    '!=',
-    '<=',
-    '>=',
-    '+',
-    '-',
-    '*',
-    '/',
-    '%',
-    '<',
-    '>',
-    )
-operator_initial_characters = {op[0] for op in OPERATORS}
+# OPERATORS = (
+#     '**',
+#     '//',
+#     '==',
+#     '!=',
+#     '<=',
+#     '>=',
+#     '+',
+#     '-',
+#     '*',
+#     '/',
+#     '%',
+#     '<',
+#     '>',
+#     )
+operator_initial_characters = {op.value[0] for op in Operators}
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
     TokenType.INDENT:     TokenType.DEINDENT,
@@ -358,12 +358,12 @@ class Parser(object):
 
             elif char in operator_initial_characters and not skip_operators:
                 i = 0
-                while current_token + char in OPERATORS:
+                while current_token + char in Operators:
                     # get the rest of the token
                     current_token += char
                     i += 1
                     char = self.file[c + i]
-                if current_token not in OPERATORS:
+                if current_token not in Operators:
                     # prevent infinite loop
                     skip_operators = True
                     continue
