@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 class Direction(Enum):
-    UP    = ("U", 0, -1, Image.Transpose.ROTATE_90)
-    DOWN  = ("D", 0, 1, Image.Transpose.ROTATE_270)
-    LEFT  = ("L", -1, 0, Image.Transpose.ROTATE_180)
-    RIGHT = ("R", 1, 0, None)
+    UP    = ("U",  0, -1, Image.Transpose.ROTATE_90)
+    DOWN  = ("D",  0,  1, Image.Transpose.ROTATE_270)
+    LEFT  = ("L", -1,  0, Image.Transpose.ROTATE_180)
+    RIGHT = ("R",  1,  0, None)
 
     character: str
     x: int
@@ -82,6 +82,17 @@ class Direction(Enum):
         raise ValueError("Invalid direction rotation")
 
 
+class NodeType(Enum):
+    """Used by Parser to organize a list of tokens into a ProcessTree."""
+    CLOSURE   = auto()
+    READ      = auto()
+    WRITE     = auto()
+    DEFINE    = auto()
+    LITERAL   = auto()
+    CALL      = auto()
+    OPERATION = auto()
+
+
 class TileAction(Enum):
     MOVE_FORWARD = auto()
     MOVE_BACK    = auto()
@@ -94,6 +105,7 @@ class TileType(Enum):
     BLOCKED = ("X", None,                                None,                       False, 2)
     EMPTY   = ("O", Path("sprites/tile_background.png"), None,                       True,  2)
     PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), True,  0)
+    ATTACK  = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"), True,  2)
     FLAG    = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"),   True,  2)
     KEY     = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"),    True,  2)
     GATE    = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png"),   False, 2)
@@ -103,6 +115,7 @@ class TileType(Enum):
     character: str
     image: PILImage | None
     is_walkable: bool
+    action_priority: int # smaller number = higher priority
 
     def __new__(
         cls,
@@ -172,20 +185,10 @@ class TokenType(Enum):
 #     SLASH       = auto() # /
 
 
-class NodeType(Enum):
-    """Used by Parser to organize a list of tokens into a ProcessTree."""
-    CLOSURE   = auto()
-    READ      = auto()
-    WRITE     = auto()
-    DEFINE    = auto()
-    LITERAL   = auto()
-    CALL      = auto()
-    OPERATION = auto()
-
-
 def _test() -> None:
     for enum in (
         Direction,
+        NodeType,
         TileAction,
         TileType,
         TokenType,

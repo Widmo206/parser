@@ -34,6 +34,12 @@ class LevelModel:
 
         return cls(level, tile_model_matrix)
 
+    def attack_tile(self, x: int, y: int) -> None:
+        if not self.tile_model_matrix.get(x, y).tile_data.tile_type.is_walkable:
+            return
+
+        # TODO Implement attacking.
+
     def check_win_state(self) -> bool:
         return all(self.tile_model_matrix.map(
             lambda tile_model: tile_model.tile_data.tile_type != TileType.FLAG
@@ -86,8 +92,9 @@ class LevelModel:
                 self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate(True))
 
             case TileAction.ATTACK:
-                # TODO: Implement attacking.
-                pass
+                target_x = x + tile_data.tile_direction.x
+                target_y = y + tile_data.tile_direction.y
+                self.attack_tile(target_x, target_y)
 
             case _:
                 logger.error("Unknown tile action %s", action)
