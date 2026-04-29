@@ -407,6 +407,7 @@ class Parser(object):
                     if code_stack[-1].get_type() == NodeType.CALL: # TODO: update for other uses of parentheses
                         # exit function call
                         code_stack.pop(-1)
+                        current_node = code_stack[-1]
                     else:
                         raise SyntaxError(f"Encountered incorrect parenthesis ({current_token}) while parsing {self.path}.\nCurrent ProcessTree: {repr(process_tree)}")
 
