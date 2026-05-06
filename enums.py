@@ -105,7 +105,7 @@ class TileAction(Enum):
 class TileType(Enum):
     BLOCKED = ("X", None,                                None,                       False, 2)
     EMPTY   = ("O", Path("sprites/tile_background.png"), None,                       True,  2)
-    PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), True,  0)
+    PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), False, 0)
     ATTACK  = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"), True,  2)
     FLAG    = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"),   True,  2)
     KEY     = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"),    True,  2)
