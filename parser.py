@@ -18,12 +18,9 @@ from enums import TileAction, TokenType, NodeType, Operators
 from errors import UnknownTokenError
 import events
 from matrix import Matrix
-from pyscript_token import Token
+from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Function, FunctionHolder
 from tile_data import TileData
 
-if __name__ == "__main__":
-    # debug only stuff; shouldn't be imported when actually running the project
-    from parser_debug_tools import make_process_tree
 
 logger = logging.getLogger(__name__)
 REFERENCE_CHARS = ascii_letters + digits + "_"
@@ -73,74 +70,6 @@ class PyScriptSyntaxError(ValueError):
     pass
 
 
-def hello_world() -> None:
-    print("Hello World!")
-
-
-@dataclass
-class Function(object):
-    func: Callable
-    arg_types: tuple
-
-    def __init__(self, func: Callable, arg_types: tuple[Type]|Type|None=None):
-        self.func = func
-        if arg_types is None:
-            self.arg_types = tuple()
-        elif type(arg_types) == tuple:
-            self.arg_types = arg_types
-        else:
-            self.arg_types = (arg_types,)
-
-    def __call__(self, *args, **kwargs) -> Any:
-        self.func(*args, **kwargs)
-
-    @property
-    def name(self) -> str:
-        """Return the name of this function"""
-        return self.func.__name__
-
-
-# do we even need this?
-@dataclass
-class FunctionHolder(object):
-    functions: dict[str, Function]
-
-    def __init__(self):
-        self.functions = {}
-
-    def add(self, function: Function, name_override: str="") -> None:
-        """Add a new function to this FunctionHolder.
-
-        The function can be referenced by its name.
-        """
-        if name_override == "":
-            self.functions[function.name] = function
-        else:
-            self.functions[name_override] = function
-
-    def has(self, function_name: str) -> bool:
-        """Check whether a given function is contained in this FunctionHolder."""
-        return function_name in self.functions.keys()
-
-    def get(self, function_name: str) -> Function:
-        """Retrieve a function by its name."""
-        return self.functions[function_name]
-
-    def run(self, function_name: str, *args) -> Any:
-        """Run a stored function.
-
-        Return value is determined by the function itself.
-        """
-        func = self.get(function_name)
-        return func(*args)
-
-
-@dataclass
-class Instruction(object):
-    function: Callable
-    parameters: list
-
-
 class Processor(object):
     program: list
     stack: list
@@ -173,51 +102,6 @@ class Processor(object):
         # TileAction.TURN_RIGHT
         # TileAction.ATTACK
         # None (idle)
-
-
-@dataclass
-class ProcessNode(object):
-    _parent: ProcessNode | None
-    _type: NodeType
-    _value: Any=None
-    _children: tuple[ProcessNode, ...] | None=None
-
-    def get_type(self) -> NodeType:
-        return self._type
-
-    def get_parent(self) -> ProcessNode | None:
-        return self._parent
-
-    def has_children(self):
-        return self._children is None
-
-    def get_children(self) -> tuple[ProcessNode, ...]:
-        if self._children is None:
-            return tuple()
-        else:
-            return self._children
-
-    def add_child(self, node: ProcessNode):
-        if self._children is None:
-            self._children = (node,)
-        else:
-            self._children += (node,)
-
-
-@dataclass
-class ProcessTree(object):
-    _root: ProcessNode
-
-    def __init__(self):
-        self._root = ProcessNode(None, NodeType.CLOSURE, None, None)
-
-    # !!! bad design !!!
-    if __name__ == "__main__":
-        def __repr__(self):
-            return make_process_tree(self)
-
-    def get_root(self):
-        return self._root
 
 
 @dataclass
@@ -472,7 +356,8 @@ if __name__ == "__main__":
         )
 
     fh = FunctionHolder()
-
+    def hello_world() -> None:
+        print("Hello World!")
     fh.add(Function(hello_world), "hello")
     fh.add(Function(print, str))
     fh.add(Function(lambda: print("Failed to give up")), "exit")
