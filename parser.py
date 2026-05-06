@@ -52,7 +52,6 @@ KEYWORDS = (
 #     '<',
 #     '>',
 #     )
-operator_initial_characters = {op.value[0] for op in Operators}
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
     TokenType.INDENT:     TokenType.DEINDENT,
@@ -66,6 +65,8 @@ SINGLE_CHAR_TOKENS = {
     ";": TokenType.SEMICOLON,
     ",": TokenType.COMMA,
     }
+operator_map = {op.value[0]: op for op in Operators}                  # string -> operator lookup table
+operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
 
 
 class PyScriptSyntaxError(ValueError):
@@ -358,16 +359,16 @@ class Parser(object):
 
             elif char in operator_initial_characters and not skip_operators:
                 i = 0
-                while current_token + char in Operators:
+                while current_token + char in operator_map:
                     # get the rest of the token
                     current_token += char
                     i += 1
                     char = self.file[c + i]
-                if current_token not in Operators:
+                if current_token not in operator_map:
                     # prevent infinite loop
                     skip_operators = True
                     continue
-                add_token(TokenType.OPERATOR, current_token, i)
+                add_token(TokenType.OPERATOR, operator_map[current_token], i)
 
             elif char in SINGLE_CHAR_TOKENS.keys():
                 add_token(SINGLE_CHAR_TOKENS[char])
