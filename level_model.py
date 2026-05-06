@@ -15,6 +15,7 @@ from enums import Direction, TileAction, TileType
 import events
 from level import Level
 from matrix import Matrix
+from scheduler import Scheduler
 from tile_data import TileData
 from tile_model import TileModel
 
@@ -23,22 +24,38 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class LevelModel:
+    ATTACK_DURATION = 250
+
     level: Level
+    scheduler: Scheduler
     tile_model_matrix: Matrix[TileModel]
     history: list[Matrix[TileModel]] = field(default_factory=list)
 
     @classmethod
-    def from_path(cls, path: Path) -> LevelModel:
+    def from_path(cls, path: Path, scheduler: Scheduler) -> LevelModel:
         level = Level.from_path(path)
         tile_model_matrix = level.get_tile_data_matrix().map(TileModel)
 
-        return cls(level, tile_model_matrix)
+        return cls(level, scheduler, tile_model_matrix)
 
     def attack_tile(self, x: int, y: int) -> None:
-        if not self.tile_model_matrix.get(x, y).tile_data.tile_type.is_walkable:
+        try:
+            tile_model = self.tile_model_matrix.get(x, y)
+        except IndexError:
             return
 
-        # TODO Implement attacking.
+        if tile_model.tile_data.tile_type is TileType.ENEMY:
+            self.set_tile_model(x, y, TileModel(tile_model.floor_tile_data))
+
+        events.TileDataChanged(x, y, TileData(TileType.ATTACK))
+        self.scheduler.after(
+            self.ATTACK_DURATION,
+            lambda: events.TileDataChanged(
+                x,
+                y,
+                self.tile_model_matrix.get(x, y).tile_data
+            )
+        )
 
     def check_win_state(self) -> bool:
         return all(self.tile_model_matrix.map(
@@ -71,12 +88,17 @@ class LevelModel:
         ):
             self.set_tile_model(to_x, to_y, TileModel(TileData(TileType.WIN)))
         else:
-            self.set_tile_model(to_x, to_y, from_tile_model)
+            self.set_tile_model(to_x, to_y, TileModel(
+                from_tile_model.tile_data,
+                from_tile_model.processor,
+                to_tile_model.tile_data,
+            ))
 
         self.set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
 
     def process_tile_action(self, x: int, y: int, action: TileAction) -> None:
-        tile_data = self.tile_model_matrix.get(x, y).tile_data
+        tile_model = self.tile_model_matrix.get(x, y)
+        tile_data = tile_model.tile_data
 
         match action:
             case TileAction.MOVE_FORWARD:
@@ -86,10 +108,18 @@ class LevelModel:
                 self.move_tile(x, y, -tile_data.tile_direction)
 
             case TileAction.TURN_LEFT:
-                self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate())
+                self.set_tile_model(x, y, TileModel(
+                    TileData(tile_data.tile_type, tile_data.tile_direction.rotate()),
+                    tile_model.processor,
+                    tile_model.floor_tile_data,
+                ))
 
             case TileAction.TURN_RIGHT:
-                self.tile_config(x, y, tile_direction=tile_data.tile_direction.rotate(True))
+                self.set_tile_model(x, y, TileModel(
+                    TileData(tile_data.tile_type, tile_data.tile_direction.rotate(True)),
+                    tile_model.processor,
+                    tile_model.floor_tile_data,
+                ))
 
             case TileAction.ATTACK:
                 self.attack_tile(
@@ -128,7 +158,8 @@ class LevelModel:
 
     def step_forward(self) -> None:
         # TODO: Add events for base state and win state, to toggle editor and step buttons.
-        # Early check looks redundant but is necessary to avoid stepping when level is already complete.
+        # Early check looks redundant but is necessary
+        # to avoid stepping when level is already complete.
         if self.check_win_state():
             events.LevelComplete(self.level, len(self.history))
             return
@@ -139,31 +170,18 @@ class LevelModel:
             lambda tile_model: tile_model.tile_data
         )
         tile_actions = [
-            (x, y, action)
+            (x, y, tile_model, action)
             for x, y, tile_model in self.tile_model_matrix.iter_xy()
             if (action := tile_model.get_action(x, y, tile_data_matrix)) is not None
         ]
         tile_actions.sort(
-            key=lambda xyaction: tile_data_matrix.get(
-                xyaction[0],
-                xyaction[1],
-            ).tile_type.action_priority
+            key=lambda action_data: action_data[2].tile_data.tile_type.action_priority
         )
 
-        for x, y, action in tile_actions:
+        for x, y, tile_model, action in tile_actions:
+            if tile_model is not self.tile_model_matrix.get(x, y):
+                continue
             self.process_tile_action(x, y, action)
 
         if self.check_win_state():
             events.LevelComplete(self.level, len(self.history))
-
-    def tile_config(
-        self,
-        x: int,
-        y: int,
-        tile_type: TileType | str | None = None,
-        tile_direction: Direction | str  | None = None,
-    ) -> None:
-        tile_model = self.tile_model_matrix.get(x, y)
-        tile_model.config(tile_type, tile_direction)
-
-        events.TileDataChanged(x, y, tile_model.tile_data)

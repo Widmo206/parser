@@ -20,7 +20,7 @@ class GameController:
 
     def __init__(self, scheduler: Scheduler, path: Path) -> None:
         self.cycle_controller = CycleController(scheduler)
-        self.level_model = LevelModel.from_path(path)
+        self.level_model = LevelModel.from_path(path, scheduler)
 
         events.Cycled.connect(self._on_cycled)
         events.LevelComplete.connect(self._on_level_complete)

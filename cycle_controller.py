@@ -10,6 +10,8 @@ from scheduler import Scheduler
 
 
 class CycleController:
+    CYCLE_DELAY = 250
+
     scheduler: Scheduler
     is_running: bool
     after_id: str | None
@@ -35,4 +37,4 @@ class CycleController:
             return
 
         events.Cycled()
-        self.after_id = self.scheduler.after(250, self._cycle)
+        self.after_id = self.scheduler.after(self.CYCLE_DELAY, self._cycle)
