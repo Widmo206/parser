@@ -30,21 +30,26 @@ class ProcessNode(object):
     _children: tuple[ProcessNode, ...] | None=None
 
     def get_type(self) -> NodeType:
+        """Return the type of this node."""
         return self._type
 
     def get_parent(self) -> ProcessNode | None:
+        """Return the parent node of this node."""
         return self._parent
 
     def has_children(self):
+        """Check if this node has children."""
         return self._children is None
 
     def get_children(self) -> tuple[ProcessNode, ...]:
+        """List the children of this node."""
         if self._children is None:
             return tuple()
         else:
             return self._children
 
     def add_child(self, node: ProcessNode):
+        """Add a child to this node."""
         if self._children is None:
             self._children = (node,)
         else:
@@ -71,6 +76,15 @@ class ProcessTree(object):
         return result
 
     def visualize(self) -> str:
+        """Generate a depth-first visualization of this ProcessTree.
+        
+        Example visualization:\n
+        CLOSURE: None\n
+        |\<NodeType>: \<value>\n
+        ||<node child 1>\n
+        ||<node child 2>\n
+        |...
+        """
         return self._visualize_branch(self._root)
     
     def __repr__(self):
