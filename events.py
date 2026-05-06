@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable, ClassVar
 
 from level import Level
-from pyscript_token import Token
+from pyscript_dataclasses import Token
 from tile_data import TileData
 
 logger = logging.getLogger(__name__)

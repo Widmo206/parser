@@ -84,13 +84,14 @@ class Direction(Enum):
 
 class NodeType(Enum):
     """Used by Parser to organize a list of tokens into a ProcessTree."""
-    CLOSURE   = auto()
-    READ      = auto()
-    WRITE     = auto()
-    DEFINE    = auto()
-    LITERAL   = auto()
-    CALL      = auto()
-    OPERATION = auto()
+    CLOSURE    = auto()
+    EXPRESSION = auto()
+    READ       = auto()
+    WRITE      = auto()
+    DEFINE     = auto()
+    LITERAL    = auto()
+    CALL       = auto()
+    OPERATION  = auto()
 
 
 class TileAction(Enum):
