@@ -34,21 +34,6 @@ KEYWORDS = (
     "return",
     "exit",
     )
-# OPERATORS = (
-#     '**',
-#     '//',
-#     '==',
-#     '!=',
-#     '<=',
-#     '>=',
-#     '+',
-#     '-',
-#     '*',
-#     '/',
-#     '%',
-#     '<',
-#     '>',
-#     )
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
     TokenType.INDENT:     TokenType.DEINDENT,
@@ -266,15 +251,6 @@ class Parser(object):
 
     def parse(self, tokens: list[Token], is_root: bool=True) -> ProcessTree:
         """Make sense of the tokens."""
-#         linebreaks = (TokenType.SEMICOLON, TokenType.INDENT, TokenType.DEINDENT)
-#         lines = []
-#         line = []
-#         for token in tokens:
-#             line.append(token)
-#             if token.type in linebreaks:
-#                 lines.append(line)
-#                 line = []
-#         return lines
         process_tree = ProcessTree()
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0]
