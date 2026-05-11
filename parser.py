@@ -288,23 +288,31 @@ class Parser(object):
                             # looks like a function call
                             tokens.pop(0) # consume the OPEN_PAREN
                             current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
-                            # step into function arguments
-                            current_node = current_node.get_children()[-1]
-                            code_stack.append(current_node)
-                            # create and step into expression
-                            current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
-                            current_node = current_node.get_children()[-1]
-                            code_stack.append(current_node)
+                            if tokens[0].type == TokenType.CLOSE_PAREN:
+                                tokens.pop(0) # no arguments; consume the CLOSE_PAREN
+                            else:
+                                # step into function arguments
+                                current_node = current_node.get_children()[-1]
+                                code_stack.append(current_node)
+                                # create and step into expression for first arg
+                                current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
+                                current_node = current_node.get_children()[-1]
+                                code_stack.append(current_node)
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.")
                 
                 case TokenType.CLOSE_PAREN:
                     match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
-                        case NodeType.CALL:
-                            # exit function call
-                            code_stack.pop(-1)
-                            current_node = code_stack[-1]
+                        case NodeType.EXPRESSION:
+                            match code_stack[-2].get_type():
+                                case NodeType.CALL:
+                                    code_stack.pop(-1) # exit EXPRESSION
+                                    code_stack.pop(-1) # exit CALL
+                                    current_node = code_stack[-1]
+                                case _:
+                                    code_stack.pop(-1) # exit EXPRESSION
+                                    current_node = code_stack[-1]
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"Encountered incorrect parenthesis ({current_token}) while parsing {self.path}.")
