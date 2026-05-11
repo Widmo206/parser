@@ -197,7 +197,7 @@ class Parser(object):
                             i += 1
                             char = source[c + i]
                     else:
-                        raise SyntaxError(f"Invalid float literal in line {line}: '{current_token}'")
+                        raise PyScriptSyntaxError(f"{self.path} (line {line}): Invalid float literal: {current_token}")
 
                 if is_int:
                     add_token(TokenType.INT_LIT, int(current_token), i)
@@ -246,7 +246,7 @@ class Parser(object):
                 add_token(SINGLE_CHAR_TOKENS[char])
 
             else:
-                raise UnknownTokenError(f"There are no tokens that start with {repr(char)} (line {line} in '{self.path}')")
+                raise PyScriptSyntaxError(f"{self.path} (line {line}): invalid character {repr(char)}")
             skip_operators = False
         logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
         events.TokenizingFinished(tokens)
@@ -307,7 +307,7 @@ class Parser(object):
                                     current_node = code_stack[-1]
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
-                            raise PyScriptSyntaxError(f"Encountered unmatched parenthesis ({current_token}) while parsing {self.path}.")
+                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
 
                 case TokenType.SEMICOLON:
                     match code_stack[-1].get_type(): # TODO: update for other uses of semicolon
@@ -324,10 +324,10 @@ class Parser(object):
                                     current_node = code_stack[-1]
                                 case _:
                                     print(f"Current ProcessTree:\n{repr(process_tree)}")
-                                    raise PyScriptSyntaxError(f"{self.path} (line X): Unexpected ;")
+                                    raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
-                            raise PyScriptSyntaxError(f"Encountered SEMICOLON ({current_token}) inside an instruction while parsing {self.path}.")
+                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
                 
                 case TokenType.INT_LIT:
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
@@ -347,13 +347,13 @@ class Parser(object):
                             variable = tokens.pop(0) # declared variable name
                             if variable.type != TokenType.REFERENCE:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
-                                raise PyScriptSyntaxError(f"Line {'n'}: VAR must be followed by a valid variable name")
+                                raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var must be followed by a valid variable name")
                             current_node.add_child(ProcessNode(current_node, NodeType.DEFINE, variable))
                             current_node = current_node.get_children()[-1] # step into variable definition
                             code_stack.append(current_node)
                             if tokens[0].type != TokenType.ASSIGN:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
-                                raise PyScriptSyntaxError(f"Line {'n'}: VAR <variable name> must be followed by an assignment operator ('=')")
+                                raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var <name> must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
                             # create and step into expression
                             current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
@@ -363,7 +363,7 @@ class Parser(object):
 
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
-                    raise NotImplementedError(f"Encountered unimplemented token ({current_token}) while parsing {self.path}.")
+                    raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
         return process_tree
 
     def compile(self, tree: ProcessTree) -> ...:
