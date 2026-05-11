@@ -16,6 +16,7 @@ from enums import TokenType, NodeType
 class Token(object):
     type: TokenType
     value: Any
+    line: int
 
     def __repr__(self):
         if self.value is None:

@@ -122,7 +122,7 @@ class Parser(object):
             nonlocal line
             nonlocal c
             logger.debug(f"Line {line}: found {token_type._name_}")
-            tokens.append(Token(token_type, value))
+            tokens.append(Token(token_type, value, line))
             c += offset
         # if you have a token (like "=") that starts with the same char as an operator (like "=="),
         # one of them will claim that character, even if it's not the correct one
@@ -134,7 +134,6 @@ class Parser(object):
             char = source[c]
 
             if char == "\n":
-                # TODO: store line numbers in tokens
                 line += 1
                 c += 1
 
