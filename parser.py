@@ -298,9 +298,22 @@ class Parser(object):
                                 current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
                                 current_node = current_node.get_children()[-1]
                                 code_stack.append(current_node)
+                        case TokenType.ASSIGN:
+                            variable = current_token
+                            # TODO: check that parent is a CLOSURE
+                            # TODO: check if refrence exists and is a variable
+                            current_node.add_child(ProcessNode(current_node, NodeType.WRITE, variable))
+                            current_node = current_node.get_children()[-1] # step into variable assignment
+                            code_stack.append(current_node)
+                            tokens.pop(0) # consume the '='
+                            # create and step into expression
+                            current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
+                            current_node = current_node.get_children()[-1]
+                            code_stack.append(current_node)
                         case _:
-                            print(f"Current ProcessTree:\n{repr(process_tree)}")
-                            raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.")
+                            variable = current_token
+                            # TODO: check if reference exists and is a variable or constant
+                            current_node.add_child(ProcessNode(current_node, NodeType.READ, variable))
                 
                 case TokenType.CLOSE_PAREN:
                     match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
