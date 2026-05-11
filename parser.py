@@ -321,6 +321,18 @@ class Parser(object):
                     match code_stack[-1].get_type(): # TODO: update for other uses of semicolon
                         case NodeType.CLOSURE:
                             pass # end of an instruction
+                        case NodeType.EXPRESSION:
+                            code_stack.pop(-1) # exit EXPRESSION
+                            current_node = code_stack[-1]
+                            match current_node.get_type(): # handle the EXPRESSION's parent node
+                                case NodeType.CLOSURE:
+                                    pass # expression in script/loop/function body
+                                case NodeType.DEFINE:
+                                    code_stack.pop(-1) # exit DEFINE
+                                    current_node = code_stack[-1]
+                                case _:
+                                    print(f"Current ProcessTree:\n{repr(process_tree)}")
+                                    raise PyScriptSyntaxError(f"{self.path} (line X): Unexpected ;")
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"Encountered SEMICOLON ({current_token}) inside an instruction while parsing {self.path}.")
