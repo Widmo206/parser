@@ -5,6 +5,8 @@ Contributors:
     Widmo
 """
 
+
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Type
 from enums import TokenType, NodeType
