@@ -319,7 +319,7 @@ class Parser(object):
                 case TokenType.KEYWORD:
                     match current_token.value:
                         case "var":
-                            variable = tokens.pop(0)
+                            variable = tokens.pop(0) # declared variable name
                             if variable.type != TokenType.REFERENCE:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"Line {'n'}: VAR must be followed by a valid variable name")
@@ -329,8 +329,7 @@ class Parser(object):
                             if tokens[0].type != TokenType.ASSIGN:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"Line {'n'}: VAR <variable name> must be followed by an assignment operator ('=')")
-                            else:
-                                tokens.pop(0) # consume the '='
+                            tokens.pop(0) # consume the '='
                             
 
                 case _:
