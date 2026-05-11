@@ -315,7 +315,7 @@ class Parser(object):
                                     current_node = code_stack[-1]
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
-                            raise PyScriptSyntaxError(f"Encountered incorrect parenthesis ({current_token}) while parsing {self.path}.")
+                            raise PyScriptSyntaxError(f"Encountered unmatched parenthesis ({current_token}) while parsing {self.path}.")
 
                 case TokenType.SEMICOLON:
                     match code_stack[-1].get_type(): # TODO: update for other uses of semicolon
