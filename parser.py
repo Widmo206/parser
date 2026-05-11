@@ -291,6 +291,10 @@ class Parser(object):
                             # step into function arguments
                             current_node = current_node.get_children()[-1]
                             code_stack.append(current_node)
+                            # create and step into expression
+                            current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
+                            current_node = current_node.get_children()[-1]
+                            code_stack.append(current_node)
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.")
@@ -330,6 +334,10 @@ class Parser(object):
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"Line {'n'}: VAR <variable name> must be followed by an assignment operator ('=')")
                             tokens.pop(0) # consume the '='
+                            # create and step into expression
+                            current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
+                            current_node = current_node.get_children()[-1]
+                            code_stack.append(current_node)
                             
 
                 case _:
