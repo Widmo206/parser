@@ -283,32 +283,35 @@ class Parser(object):
             current_token = tokens.pop(0)
             match current_token.type:
                 case TokenType.REFERENCE:
-                    if tokens[0].type == TokenType.OPEN_PAREN:
-                        # looks like a function call
-                        tokens.pop(0) # consume the OPEN_PAREN
-                        current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
-                        # step into function arguments
-                        current_node = current_node.get_children()[-1]
-                        code_stack.append(current_node)
-                    else:
-                        print(f"Current ProcessTree:\n{repr(process_tree)}")
-                        raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.")
+                    match tokens[0].type:
+                        case TokenType.OPEN_PAREN:
+                            # looks like a function call
+                            tokens.pop(0) # consume the OPEN_PAREN
+                            current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
+                            # step into function arguments
+                            current_node = current_node.get_children()[-1]
+                            code_stack.append(current_node)
+                        case _:
+                            print(f"Current ProcessTree:\n{repr(process_tree)}")
+                            raise NotImplementedError(f"Encountered non-function REFERENCE ({current_token}) while parsing {self.path}.")
                 
                 case TokenType.CLOSE_PAREN:
-                    if code_stack[-1].get_type() == NodeType.CALL: # TODO: update for other uses of parentheses
-                        # exit function call
-                        code_stack.pop(-1)
-                        current_node = code_stack[-1]
-                    else:
-                        print(f"Current ProcessTree:\n{repr(process_tree)}")
-                        raise PyScriptSyntaxError(f"Encountered incorrect parenthesis ({current_token}) while parsing {self.path}.")
+                    match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
+                        case NodeType.CALL:
+                            # exit function call
+                            code_stack.pop(-1)
+                            current_node = code_stack[-1]
+                        case _:
+                            print(f"Current ProcessTree:\n{repr(process_tree)}")
+                            raise PyScriptSyntaxError(f"Encountered incorrect parenthesis ({current_token}) while parsing {self.path}.")
 
                 case TokenType.SEMICOLON:
-                    if code_stack[-1].get_type() == NodeType.CLOSURE: # TODO: update for other uses of semicolon
-                        pass # end of an instruction
-                    else:
-                        print(f"Current ProcessTree:\n{repr(process_tree)}")
-                        raise PyScriptSyntaxError(f"Encountered SEMICOLON ({current_token}) inside an instruction while parsing {self.path}.")
+                    match code_stack[-1].get_type(): # TODO: update for other uses of semicolon
+                        case NodeType.CLOSURE:
+                            pass # end of an instruction
+                        case _:
+                            print(f"Current ProcessTree:\n{repr(process_tree)}")
+                            raise PyScriptSyntaxError(f"Encountered SEMICOLON ({current_token}) inside an instruction while parsing {self.path}.")
                 
                 case TokenType.STRING_LIT:
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
