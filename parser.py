@@ -350,8 +350,17 @@ class Parser(object):
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"Encountered SEMICOLON ({current_token}) inside an instruction while parsing {self.path}.")
                 
+                case TokenType.INT_LIT:
+                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
+                
+                case TokenType.FLOAT_LIT:
+                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
+
                 case TokenType.STRING_LIT:
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
+
+                case TokenType.OPERATOR:
+                    current_node.add_child(ProcessNode(current_node, NodeType.OPERATION, current_token))
 
                 case TokenType.KEYWORD:
                     match current_token.value:
