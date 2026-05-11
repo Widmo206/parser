@@ -89,29 +89,33 @@ class Processor(object):
         # None (idle)
 
 
-@dataclass
+def read_file(path: Path) -> str:
+    """Read a file from disk and return the contents as plaintext."""
+    text = ""
+    with open(path, "rt") as file:
+        text = file.read()
+    return text
+
+
 class Parser(object):
-    # functions: FunctionHolder
-    # variables: dict
-    # constants: dict
-    file: str
+    """Handles parsing of PyScript files."""
     path: Path
 
     def __init__(
         self,
-        fh: FunctionHolder,
         path: Path = Path("pyscript/test.pyscript")
     ):
-        # self.functions = fh
-        with open(path, "rt") as file:
-            self.file = file.read()
         self.path = path
 
-    def tokenize(self) -> list[Token]:
+    def get_source(self) -> str:
+        return read_file(self.path)
+
+    def tokenize(self, source: str) -> list[Token]:
+        """Cut the source code into processable tokens."""
         tokens = []
         current_token = ""
         token_type = TokenType.NOP
-        logger.info(f"Start tokenizing '{self.path}'")
+        # logger.info(f"Start tokenizing '{self.path}'")
         line = 1
         c = 0
         def add_token(token_type: TokenType, value: Any=None, offset: int=1) -> None:
@@ -125,9 +129,9 @@ class Parser(object):
         # solution: put operators first and raise this flag if the check fails
         # flag is lowered immediately after the operator section
         skip_operators = False
-        while c < len(self.file):
+        while c < len(source):
             current_token = ""
-            char = self.file[c]
+            char = source[c]
 
             if char == "\n":
                 # TODO: store line numbers in tokens
@@ -142,7 +146,7 @@ class Parser(object):
                 i = 1
                 while char != "\n":
                     i += 1
-                    char = self.file[c+i]
+                    char = source[c+i]
                 c += i+1
 
             elif char in REFERENCE_START_CHARS:
@@ -151,7 +155,7 @@ class Parser(object):
                     # get the rest of the token
                     current_token += char
                     i += 1
-                    char = self.file[c + i]
+                    char = source[c + i]
                 if current_token in KEYWORDS:
                     token_type = TokenType.KEYWORD
                 else:
@@ -165,34 +169,34 @@ class Parser(object):
                     # get the rest of integer part
                     current_token += char
                     i += 1
-                    char = self.file[c + i]
+                    char = source[c + i]
                 if char == ".":
                     # it's a float, it seems
                     is_int = False
                     current_token += char
                     i+=1
-                    char = self.file[c + i]
+                    char = source[c + i]
                     while char in digits:
                         # get the decimal part
                         current_token += char
                         i += 1
-                        char = self.file[c + i]
+                        char = source[c + i]
                 if char == "e":
                     # exponent
                     is_int = False
                     current_token += char
                     i+=1
-                    char = self.file[c + i]
+                    char = source[c + i]
                     if char in "+-":
                         current_token += char
                         i += 1
-                        char = self.file[c + i]
+                        char = source[c + i]
                     if char in digits:
                         while char in digits:
                             # get the exponent
                             current_token += char
                             i += 1
-                            char = self.file[c + i]
+                            char = source[c + i]
                     else:
                         raise SyntaxError(f"Invalid float literal in line {line}: '{current_token}'")
 
@@ -203,14 +207,14 @@ class Parser(object):
 
             elif char in QUOTES:
                 start_quote = char
-                for i in range(c+1, len(self.file)-1):
-                    char = self.file[i]
+                for i in range(c+1, len(source)-1):
+                    char = source[i]
                     if char == start_quote:
                         # logger.debug("Found endquote")
                         # TODO: Rework handling of escape characters
                         escaped = False
                         for j in range(i-1, c+1, -1):
-                            if self.file[j] == ESCAPE_CHAR:
+                            if source[j] == ESCAPE_CHAR:
                                 escaped = not escaped
                             else:
                                 break
@@ -232,14 +236,14 @@ class Parser(object):
                     # get the rest of the token
                     current_token += char
                     i += 1
-                    char = self.file[c + i]
+                    char = source[c + i]
                 if current_token not in operator_map:
                     # prevent infinite loop
                     skip_operators = True
                     continue
                 add_token(TokenType.OPERATOR, operator_map[current_token], i)
 
-            elif char in SINGLE_CHAR_TOKENS.keys():
+            elif char in SINGLE_CHAR_TOKENS:
                 add_token(SINGLE_CHAR_TOKENS[char])
 
             else:
@@ -249,7 +253,7 @@ class Parser(object):
         events.TokenizingFinished(tokens)
         return tokens
 
-    def parse(self, tokens: list[Token], is_root: bool=True) -> ProcessTree:
+    def parse(self, tokens: list[Token]) -> ProcessTree:
         """Make sense of the tokens."""
         process_tree = ProcessTree()
         code_stack = [process_tree.get_root()]
@@ -363,14 +367,19 @@ class Parser(object):
                     raise NotImplementedError(f"Encountered unimplemented token ({current_token}) while parsing {self.path}.")
         return process_tree
 
-
-    def compile(self):
+    def compile(self, tree: ProcessTree) -> ...:
         """"Compile" the parsers result into a python-based pseudo-assembly format that can be executed
         by the Player's processor.
 
         see /pyscript/test.ass for prototype
         """
         raise NotImplementedError("NYI; get the parser done first")
+    
+    def compile_from_file(self) -> ...:
+        source = self.get_source()
+        tokens = self.tokenize(source)
+        tree   = self.parse(tokens)
+        return   self.compile(tree)
 
 
 if __name__ == "__main__":
@@ -384,17 +393,18 @@ if __name__ == "__main__":
         datefmt='%Y.%m.%d %H:%M:%S',
         )
 
-    fh = FunctionHolder()
-    def hello_world() -> None:
-        print("Hello World!")
-    fh.add(Function(hello_world), "hello")
-    fh.add(Function(print, str))
-    fh.add(Function(lambda: print("Failed to give up")), "exit")
+    # fh = FunctionHolder()
+    # def hello_world() -> None:
+    #     print("Hello World!")
+    # fh.add(Function(hello_world), "hello")
+    # fh.add(Function(print, str))
+    # fh.add(Function(lambda: print("Failed to give up")), "exit")
 
-    #fh.run("hello")
+    # #fh.run("hello")
 
-    parser = Parser(fh)
-    tokenized = parser.tokenize()
-    #print(tokenized)
-    parsed = parser.parse(tokenized)
-    print(parsed)
+    parser = Parser()
+    source = parser.get_source()
+    tokens = parser.tokenize(source)
+    #print(tokens)
+    tree   = parser.parse(tokens)
+    print(tree)
