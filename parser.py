@@ -264,7 +264,7 @@ class Parser(object):
         events.TokenizingFinished(tokens)
         return tokens
 
-    def parse(self, tokens: list[Token], is_root: bool=True):
+    def parse(self, tokens: list[Token], is_root: bool=True) -> ProcessTree:
         """Make sense of the tokens."""
 #         linebreaks = (TokenType.SEMICOLON, TokenType.INDENT, TokenType.DEINDENT)
 #         lines = []
@@ -385,6 +385,7 @@ class Parser(object):
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
                     raise NotImplementedError(f"Encountered unimplemented token ({current_token}) while parsing {self.path}.")
+        return process_tree
 
 
     def compile(self):
