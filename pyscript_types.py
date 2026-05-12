@@ -16,11 +16,8 @@ class Constant(object):
     type: Type
     _value: Any
 
-    def __init__(self, name: str, type: Type, value: Any):
-        assert isinstance(value, type)
-        self.name   = name
-        self.type   = type
-        self._value = value
+    def __post_init__(self):
+        assert isinstance(self._value, self.type)
 
     def get(self) -> Any:
         return self._value
@@ -30,13 +27,10 @@ class Constant(object):
 class Variable(object):
     name: str
     type: Type
-    _value: Any
+    _value: Any | None
 
-    def __init__(self, name: str, type: Type, initial_value: Any | None=None):
-        assert initial_value is None or isinstance(initial_value, type)
-        self.name   = name
-        self.type   = type
-        self._value = initial_value
+    def __post_init__(self):
+        assert self._value is None or isinstance(self._value, self.type)
 
     def get(self) -> Any:
         return self._value
