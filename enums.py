@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 from PIL import Image
 from PIL.Image import Image as PILImage
+from typing import NamedTuple
 
 from common import print_enum
 from errors import UnknownDirectionError, UnknownTileTypeError
@@ -188,8 +189,10 @@ class TokenType(Enum):
 #     SLASH       = auto() # /
 
 
-class Operators(Enum):
-    # NAME    = ('chars', priority)
+class Operator(NamedTuple):
+    chars: str
+    priority: int
+class Operators(Operator, Enum):
     EQUALS    = ('==', 4)
     NOTEQUALS = ('!=', 4)
     LESS_EQ   = ('<=', 4)
