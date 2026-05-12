@@ -53,3 +53,22 @@ class ExternalFunction(object):
 
 
 AnyReference: TypeAlias = Constant | Variable | ExternalFunction
+
+
+if __name__ == "__main__":
+    foo = Constant("foo", int, 42)
+    bar = Variable("bar", float, 9e9)
+    pip = ExternalFunction("pip", str, lambda n: n*".")
+
+    assert foo.get() == 42
+    assert bar.get() == 9e9
+    assert pip.call(5) == "....."
+    bar.set(3.14)
+    assert bar.get() < 5
+    try:
+        bar.set("poof")
+        assert False
+    except:
+        pass
+
+    print("Tests passed")
