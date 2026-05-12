@@ -258,6 +258,15 @@ class Parser(object):
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0]
 
+        def step_into(node_type: NodeType, value: Any) -> None:
+            """Create a new node of the specified type as a child of current_node and step into it."""
+            nonlocal code_stack
+            nonlocal current_node
+            new_node = ProcessNode(current_node, node_type, value)
+            current_node.add_child(new_node)
+            current_node = new_node
+            code_stack.append(current_node)
+
         while len(tokens) > 0:
             current_token = tokens.pop(0)
             match current_token.type:
@@ -273,22 +282,14 @@ class Parser(object):
                                 # step into function arguments
                                 current_node = current_node.get_children()[-1]
                                 code_stack.append(current_node)
-                                # create and step into expression for first arg
-                                current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
-                                current_node = current_node.get_children()[-1]
-                                code_stack.append(current_node)
+                                step_into(NodeType.EXPRESSION, None) # first arg
                         case TokenType.ASSIGN:
                             variable = current_token
                             # TODO: check that parent is a CLOSURE
                             # TODO: check if refrence exists and is a variable
-                            current_node.add_child(ProcessNode(current_node, NodeType.WRITE, variable))
-                            current_node = current_node.get_children()[-1] # step into variable assignment
-                            code_stack.append(current_node)
+                            step_into(NodeType.WRITE, variable)
                             tokens.pop(0) # consume the '='
-                            # create and step into expression
-                            current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
-                            current_node = current_node.get_children()[-1]
-                            code_stack.append(current_node)
+                            step_into(NodeType.EXPRESSION, None)
                         case _:
                             variable = current_token
                             # TODO: check if reference exists and is a variable or constant
@@ -348,18 +349,12 @@ class Parser(object):
                             if variable.type != TokenType.REFERENCE:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var must be followed by a valid variable name")
-                            current_node.add_child(ProcessNode(current_node, NodeType.DEFINE, variable))
-                            current_node = current_node.get_children()[-1] # step into variable definition
-                            code_stack.append(current_node)
+                            step_into(NodeType.DEFINE, variable)
                             if tokens[0].type != TokenType.ASSIGN:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var <name> must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
-                            # create and step into expression
-                            current_node.add_child(ProcessNode(current_node, NodeType.EXPRESSION, None))
-                            current_node = current_node.get_children()[-1]
-                            code_stack.append(current_node)
-                            
+                            step_into(NodeType.EXPRESSION, None)      
 
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
