@@ -315,13 +315,12 @@ class Parser(object):
                         case TokenType.OPEN_PAREN:
                             # looks like a function call
                             tokens.pop(0) # consume the OPEN_PAREN
-                            current_node.add_child(ProcessNode(current_node, NodeType.CALL, current_token))
+                            step_into(NodeType.CALL, current_token)
+                            # the rest of this case could probably be cut out
                             if tokens[0].type == TokenType.CLOSE_PAREN:
                                 tokens.pop(0) # no arguments; consume the CLOSE_PAREN
+                                step_out_of(NodeType.CALL)
                             else:
-                                # step into function arguments
-                                current_node = current_node.get_children()[-1]
-                                code_stack.append(current_node)
                                 step_into(NodeType.EXPRESSION, None) # first arg
                         case TokenType.ASSIGN:
                             variable = current_token
