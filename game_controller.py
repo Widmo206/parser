@@ -11,6 +11,7 @@ from cycle_controller import CycleController
 import events
 from level_model import LevelModel
 from parser import Parser
+from pyscript_types import Constant, ExternalFunction
 from scheduler import Scheduler
 
 
@@ -52,8 +53,11 @@ class GameController:
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
         else:
-            parser = Parser(event.path, None)
-            parser.tokenize()
+            parser = Parser(event.path, [
+                Constant('foo', int, 42), # example; replace with actual constants/functions
+                ExternalFunction('print', None, print),
+            ])
+            # parser.tokenize()
             # TODO: generate processors and pass them to level model tiles
             self.cycle_controller.start()
 
