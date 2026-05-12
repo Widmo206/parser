@@ -35,6 +35,10 @@ class ProcessNode(object):
     def get_type(self) -> NodeType:
         """Return the type of this node."""
         return self._type
+    
+    def get_value(self) -> Any:
+        """Return the data in the value of this node."""
+        return self._value
 
     def get_parent(self) -> ProcessNode | None:
         """Return the parent node of this node."""
