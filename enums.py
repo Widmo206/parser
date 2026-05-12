@@ -208,6 +208,9 @@ class Operators(Operator, Enum):
     DIV       = ('/',  2)
     MOD       = ('%',  2)
 
+    def __repr__(self):
+        return f"Operators.{self.name}"
+
 
 def _test() -> None:
     for enum in (
