@@ -117,13 +117,16 @@ class Parser(object):
         tokens = []
         current_token = ""
         token_type = TokenType.NOP
-        # logger.info(f"Start tokenizing '{self.path}'")
+        logger.info(f"Start tokenizing '{self.path}'")
         line = 1
         c = 0
         def add_token(token_type: TokenType, value: Any=None, length: int=1) -> None:
             nonlocal line
             nonlocal c
-            logger.debug(f"Line {line}: found {token_type._name_}")
+            if value is None:
+                logger.debug(f"Line {line}: found {token_type._name_}")
+            else:
+                logger.debug(f"Line {line}: found {token_type._name_} ({value})")
             tokens.append(Token(token_type, value, line))
             c += length
         # if you have a token (like "=") that starts with the same char as an operator (like "=="),
@@ -260,6 +263,7 @@ class Parser(object):
         
         Parsing handles some of the syntax checking.
         """
+        logger.info(f"Start parsing '{self.path}'")
         process_tree = ProcessTree()
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0]
@@ -268,6 +272,12 @@ class Parser(object):
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
+            if value is None:
+                logger.debug(f"Stepping into   {node_type}")
+            elif isinstance(value, Token):
+                logger.debug(f"Stepping into   {node_type} {value.value}")
+            else:
+                logger.debug(f"Stepping into   {node_type} ({value})")
             new_node = ProcessNode(current_node, node_type, value)
             current_node.add_child(new_node)
             current_node = new_node
@@ -375,6 +385,7 @@ class Parser(object):
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
                     raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
+        logger.info(f"Finished parsing '{self.path}'; program structure:\n{repr(process_tree)}")
         return process_tree
 
     def compile(self, tree: ProcessTree) -> ...:
