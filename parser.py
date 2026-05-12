@@ -283,6 +283,24 @@ class Parser(object):
             current_node = new_node
             code_stack.append(current_node)
 
+        def step_out_of(node_type: NodeType | Any) -> None:
+            """Step out of a node on the stack.
+            
+            Checks whether the node being popped is of the correct type.
+            """
+            nonlocal code_stack
+            nonlocal current_node
+            exited_node = code_stack.pop(-1)
+            if exited_node.get_value() is None:
+                logger.debug(f"Stepping out of {exited_node.get_type()}")
+            elif isinstance(exited_node.get_value(), Token):
+                logger.debug(f"Stepping out of {exited_node.get_type()} {exited_node.get_value().value}")
+            else:
+                logger.debug(f"Stepping out of {exited_node.get_type()} ({exited_node.get_value()})")
+            if node_type is not Any:
+                assert exited_node.get_type() == node_type
+            current_node = code_stack[-1]
+
         def ensure_expression() -> None:
             """Ensure the current node is within an expression. Create a new one if it isn't."""
             nonlocal code_stack
@@ -320,14 +338,12 @@ class Parser(object):
                 case TokenType.CLOSE_PAREN:
                     match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
                         case NodeType.EXPRESSION:
-                            match code_stack[-2].get_type():
+                            match code_stack[-2].get_type(): # could this be a simple if?
                                 case NodeType.CALL:
-                                    code_stack.pop(-1) # exit EXPRESSION
-                                    code_stack.pop(-1) # exit CALL
-                                    current_node = code_stack[-1]
+                                    step_out_of(NodeType.EXPRESSION)
+                                    step_out_of(NodeType.CALL)
                                 case _:
-                                    code_stack.pop(-1) # exit EXPRESSION
-                                    current_node = code_stack[-1]
+                                    step_out_of(NodeType.EXPRESSION)
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
@@ -337,14 +353,12 @@ class Parser(object):
                         case NodeType.CLOSURE:
                             pass # end of an instruction
                         case NodeType.EXPRESSION:
-                            code_stack.pop(-1) # exit EXPRESSION
-                            current_node = code_stack[-1]
+                            step_out_of(NodeType.EXPRESSION)
                             match current_node.get_type(): # handle the EXPRESSION's parent node
                                 case NodeType.CLOSURE:
                                     pass # expression in script/loop/function body
                                 case NodeType.DEFINE:
-                                    code_stack.pop(-1) # exit DEFINE
-                                    current_node = code_stack[-1]
+                                    step_out_of(NodeType.DEFINE)
                                 case _:
                                     print(f"Current ProcessTree:\n{repr(process_tree)}")
                                     raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
