@@ -267,6 +267,12 @@ class Parser(object):
             current_node = new_node
             code_stack.append(current_node)
 
+        def ensure_expression() -> None:
+            """Ensure the current node is within an expression. Create a new one if it isn't."""
+            nonlocal code_stack
+            if code_stack[-1].get_type() != NodeType.EXPRESSION:
+                step_into(NodeType.EXPRESSION, None)
+
         while len(tokens) > 0:
             current_token = tokens.pop(0)
             match current_token.type:
@@ -331,15 +337,19 @@ class Parser(object):
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
                 
                 case TokenType.INT_LIT:
+                    ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
                 
                 case TokenType.FLOAT_LIT:
+                    ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
 
                 case TokenType.STRING_LIT:
+                    ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
 
                 case TokenType.OPERATOR:
+                    ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.OPERATION, current_token))
 
                 case TokenType.KEYWORD:
