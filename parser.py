@@ -102,12 +102,12 @@ def read_file(path: Path) -> str:
 class Parser(object):
     """Handles parsing of PyScript files."""
     path: Path
-    external_references: Collection[AnyReference]
+    external_references: Collection[Constant | ExternalFunction]
 
     def __init__(
         self,
         path: Path = Path("pyscript/test.pyscript"),
-        external_references: Collection[AnyReference] | None=None
+        external_references: Collection[Constant | ExternalFunction] | None=None
     ):
         self.path = path
         if external_references is None:
@@ -130,11 +130,9 @@ class Parser(object):
         def add_token(token_type: TokenType, value: Any=None, length: int=1) -> None:
             nonlocal line
             nonlocal c
-            if value is None:
-                logger.debug(f"Line {line}: found {token_type._name_}")
-            else:
-                logger.debug(f"Line {line}: found {token_type._name_} ({value})")
-            tokens.append(Token(token_type, value, line))
+            token = Token(token_type, value, line)
+            tokens.append(token)
+            logger.debug(f"Line {line}: found {str(token)}")
             c += length
         # if you have a token (like "=") that starts with the same char as an operator (like "=="),
         # one of them will claim that character, even if it's not the correct one

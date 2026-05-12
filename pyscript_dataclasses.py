@@ -20,10 +20,13 @@ class Token(object):
     line: int
 
     def __repr__(self):
+        return f"Token(TokenType.{self.type.name}, {repr(self.value)}, {self.line})"
+
+    def __str__(self):
         if self.value is None:
-            return f"Token({self.type.name})"
+            return f"{self.type.name}"
         else:
-            return f"Token({self.type.name}, {repr(self.value)})"
+            return f"{self.type.name} ({repr(self.value)})"
         
 
 @dataclass
@@ -65,7 +68,7 @@ class ProcessNode(object):
 
     def format(self) -> str:
         """Create a pretty string for ProcessTree visualization."""
-        return f"{self._type.name}: {self._value}"
+        return f"{self._type.name}: {str(self._value)}"
 
 
 @dataclass
@@ -88,10 +91,12 @@ class ProcessTree(object):
         """Generate a depth-first visualization of this ProcessTree.
         
         Example visualization:\n
-        CLOSURE: None\n
-        |\<NodeType>: \<value>\n
-        ||<node child 1>\n
-        ||<node child 2>\n
+        CLOSURE: Global\n
+        |CALL: REFERENCE ('foo')\n
+        ||EXPRESSION: None\n
+        |||READ: REFERENCE ('bar')\n
+        ||EXPRESSION: None\n
+        |||LITERAL: INT_LIT (42)\n
         |...
         """
         return self._visualize_branch(self._root)
