@@ -21,11 +21,6 @@ class UnknownTileTypeError(ValueError):
     pass
 
 
-class UnknownTokenError(ValueError):
-    """Raised when the Parser finds a token that is broken or doesn't exist."""
-    pass
-
-
 class PyScriptSyntaxError(ValueError):
     """Raised when any step of the parser finds an issue with the user's code."""
     pass

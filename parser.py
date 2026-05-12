@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
 from enums import TileAction, TokenType, NodeType, Operators
-from errors import UnknownTokenError, PyScriptSyntaxError
+from errors import PyScriptSyntaxError
 import events
 from matrix import Matrix
 from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
