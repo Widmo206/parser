@@ -12,13 +12,14 @@ from dataclasses import dataclass
 import logging
 from string import ascii_letters, digits, whitespace
 from pathlib import Path
-from typing import Callable, Type, Any
+from typing import Callable, Type, Any, Collection
 
 from enums import TileAction, TokenType, NodeType, Operators
 from errors import UnknownTokenError
 import events
 from matrix import Matrix
-from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Function, FunctionHolder
+from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
+from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction
 from tile_data import TileData
 
 
@@ -101,12 +102,18 @@ def read_file(path: Path) -> str:
 class Parser(object):
     """Handles parsing of PyScript files."""
     path: Path
+    external_references: Collection[AnyReference]
 
     def __init__(
         self,
-        path: Path = Path("pyscript/test.pyscript")
+        path: Path = Path("pyscript/test.pyscript"),
+        external_references: Collection[AnyReference] | None=None
     ):
         self.path = path
+        if external_references is None:
+            self.external_references = []
+        else:
+            self.external_references = external_references
 
     def get_source(self) -> str:
         """Load a pyscript source file fromm disk."""
@@ -264,7 +271,7 @@ class Parser(object):
         Parsing handles some of the syntax checking.
         """
         logger.info(f"Start parsing '{self.path}'")
-        process_tree = ProcessTree()
+        process_tree = ProcessTree(self.external_references)
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0]
 

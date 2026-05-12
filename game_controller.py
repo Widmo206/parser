@@ -10,7 +10,7 @@ from pathlib import Path
 from cycle_controller import CycleController
 import events
 from level_model import LevelModel
-from parser import FunctionHolder, Parser
+from parser import Parser
 from scheduler import Scheduler
 
 
@@ -52,7 +52,7 @@ class GameController:
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
         else:
-            parser = Parser(FunctionHolder(), event.path)
+            parser = Parser(event.path, None)
             parser.tokenize()
             # TODO: generate processors and pass them to level model tiles
             self.cycle_controller.start()

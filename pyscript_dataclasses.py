@@ -8,8 +8,9 @@ Contributors:
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any, Callable, Type
+from typing import Any, Callable, Collection
 from enums import TokenType, NodeType
+from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
 
 
 @dataclass(frozen=True)
@@ -71,9 +72,10 @@ class ProcessNode(object):
 class ProcessTree(object):
     _root: ProcessNode
 
-    def __init__(self):
-        self._root = ProcessNode(None, NodeType.CLOSURE, None, None)
-
+    def __init__(self, external_references: Collection[Constant | ExternalFunction]):
+        _global = Closure("Global", None)
+        _global.add_many(external_references)
+        self._root = ProcessNode(None, NodeType.CLOSURE, _global, None)
 
     @staticmethod
     def _visualize_branch(node: ProcessNode, indent_level: int=0) -> str:
@@ -102,67 +104,47 @@ class ProcessTree(object):
 
 
 @dataclass
-class Function(object):
-    func: Callable
-    arg_types: tuple
+class Closure(object):
+    """Stores constants, variables, and functions."""
+    label: str
+    is_root: bool
+    parent: Closure | None
+    _references: dict[str, AnyReference]
 
-    def __init__(self, func: Callable, arg_types: tuple[Type]|Type|None=None):
-        self.func = func
-        if arg_types is None:
-            self.arg_types = tuple()
-        elif type(arg_types) == tuple:
-            self.arg_types = arg_types
+    def __init__(self, label: str, parent: Closure | None=None):
+        self.label = label
+        if parent is None:
+            self.is_root = True
         else:
-            self.arg_types = (arg_types,)
+            assert isinstance(parent, Closure)
+            self.is_root = False
+        self.parent = parent
+        self._references = {}
+    
+    def __str__(self):
+        return self.label
 
-    def __call__(self, *args, **kwargs) -> Any:
-        self.func(*args, **kwargs)
-
-    @property
-    def name(self) -> str:
-        """Return the name of this function"""
-        return self.func.__name__
-
-
-# do we even need this?
-@dataclass
-class FunctionHolder(object):
-    functions: dict[str, Function]
-
-    def __init__(self):
-        self.functions = {}
-
-    def add(self, function: Function, name_override: str="") -> None:
-        """Add a new function to this FunctionHolder.
-
-        The function can be referenced by its name.
-        """
-        if name_override == "":
-            self.functions[function.name] = function
+    def add(self, reference: AnyReference) -> None:
+        assert reference.name not in self._references
+        self._references[reference.name] = reference
+    
+    def add_many(self, references: Collection[AnyReference]) -> None:
+        for ref in references:
+            self.add(ref)
+    
+    def has(self, reference: str) -> bool:
+        return reference in self._references
+    
+    def find(self, reference: str) -> AnyReference | None:
+        if self.has(reference):
+            return self._references[reference]
+        elif self.is_root:
+            return None
         else:
-            self.functions[name_override] = function
-
-    def has(self, function_name: str) -> bool:
-        """Check whether a given function is contained in this FunctionHolder."""
-        return function_name in self.functions.keys()
-
-    def get(self, function_name: str) -> Function:
-        """Retrieve a function by its name."""
-        return self.functions[function_name]
-
-    def run(self, function_name: str, *args) -> Any:
-        """Run a stored function.
-
-        Return value is determined by the function itself.
-        """
-        func = self.get(function_name)
-        return func(*args)
+            return self.parent.find(reference)
 
 
 @dataclass
 class Instruction(object):
     function: Callable
     parameters: list
-
-
-
