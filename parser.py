@@ -52,6 +52,7 @@ operator_initial_characters = {key[0] for key in operator_map.keys()} # chars th
 
 
 class PyScriptSyntaxError(ValueError):
+    """Raised when any step of the parser finds an issue with the user's code."""
     pass
 
 
@@ -108,6 +109,7 @@ class Parser(object):
         self.path = path
 
     def get_source(self) -> str:
+        """Load a pyscript source file fromm disk."""
         return read_file(self.path)
 
     def tokenize(self, source: str) -> list[Token]:
@@ -132,7 +134,7 @@ class Parser(object):
         while c < len(source):
             current_token = ""
             char = source[c]
-
+            
             if char == "\n":
                 line += 1
                 c += 1
@@ -143,6 +145,7 @@ class Parser(object):
 
             elif char == SINGLE_COMMENT:
                 i = 1
+                # skip the rest of the line
                 while char != "\n":
                     i += 1
                     char = source[c+i]
@@ -253,7 +256,10 @@ class Parser(object):
         return tokens
 
     def parse(self, tokens: list[Token]) -> ProcessTree:
-        """Make sense of the tokens."""
+        """Turn a list of tokens created by Parser.tokenize into a ProcessTree.
+        
+        Parsing handles some of the syntax checking.
+        """
         process_tree = ProcessTree()
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0]
