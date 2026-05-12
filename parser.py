@@ -120,12 +120,12 @@ class Parser(object):
         # logger.info(f"Start tokenizing '{self.path}'")
         line = 1
         c = 0
-        def add_token(token_type: TokenType, value: Any=None, offset: int=1) -> None:
+        def add_token(token_type: TokenType, value: Any=None, length: int=1) -> None:
             nonlocal line
             nonlocal c
             logger.debug(f"Line {line}: found {token_type._name_}")
             tokens.append(Token(token_type, value, line))
-            c += offset
+            c += length
         # if you have a token (like "=") that starts with the same char as an operator (like "=="),
         # one of them will claim that character, even if it's not the correct one
         # solution: put operators first and raise this flag if the check fails
@@ -134,7 +134,7 @@ class Parser(object):
         while c < len(source):
             current_token = ""
             char = source[c]
-            
+
             if char == "\n":
                 line += 1
                 c += 1
