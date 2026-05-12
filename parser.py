@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
 from enums import TileAction, TokenType, NodeType, Operators
-from errors import UnknownTokenError
+from errors import UnknownTokenError, PyScriptSyntaxError
 import events
 from matrix import Matrix
 from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
@@ -50,11 +50,6 @@ SINGLE_CHAR_TOKENS = {
     }
 operator_map = {op.value[0]: op for op in Operators}                  # string -> operator lookup table
 operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
-
-
-class PyScriptSyntaxError(ValueError):
-    """Raised when any step of the parser finds an issue with the user's code."""
-    pass
 
 
 class Processor(object):
