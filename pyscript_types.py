@@ -52,6 +52,7 @@ class Constant(object):
             return f"const {self.name}: {format_type(self.type)} = {self._value}"
 
     def get(self) -> Any:
+        """Return the stored value."""
         return self._value
 
 
@@ -71,9 +72,14 @@ class Variable(object):
             return f"var {self.name}: {format_type(self.type)} = {self._value}"
 
     def get(self) -> Any:
+        """Return the stored value."""
         return self._value
     
     def set(self, value: Any) -> None:
+        """Set the stored value to the specified one.
+        
+        The type of the new value must match self.type.
+        """
         assert isinstance(self._value, self.type)
         self._value = value
 
@@ -88,6 +94,7 @@ class ExternalFunction(object):
         return f"func {self.name}() -> {format_type(self.return_type)}"
 
     def call(self, *args) -> Any:
+        """Calls the function with specified arguments."""
         result = self.function(*args)
         assert isinstance(result, self.return_type)
         return result

@@ -130,6 +130,10 @@ class Parser(object):
         line = 1
         c = 0
         def add_token(token_type: TokenType, value: Any=None, length: int=1) -> None:
+            """Create a specified Token and add it to the list.
+            
+            Helper function for Parser.tokenize
+            """
             nonlocal line
             nonlocal c
             token = Token(token_type, value, line)
@@ -274,7 +278,7 @@ class Parser(object):
         process_tree = ProcessTree(self.external_references)
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0] # -> ProcessNode of type CLOSURE
-        current_closure: Closure = process_tree.get_root().get_value() # ->  Closure (not Any, bc Pylance isn't smart enough)
+        current_closure: Closure = process_tree.get_root().get_value() # -> Closure (not Any, bc Pylance isn't smart enough)
 
         def step_into(node_type: NodeType, line: int, value: Any) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""

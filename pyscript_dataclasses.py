@@ -98,12 +98,12 @@ class ProcessTree(object):
         """Generate a depth-first visualization of this ProcessTree.
         
         Example visualization:\n
-        CLOSURE: Global\n
-        |CALL: REFERENCE ('foo')\n
-        ||EXPRESSION: None\n
-        |||READ: REFERENCE ('bar')\n
-        ||EXPRESSION: None\n
-        |||LITERAL: INT_LIT (42)\n
+        CLOSURE (Global)\n
+        |CALL (func foo -> str)\n
+        ||EXPRESSION\n
+        |||READ (var bar: int)\n
+        ||EXPRESSION\n
+        |||LITERAL (42)\n
         |...
         """
         return self._visualize_branch(self._root)
@@ -112,6 +112,7 @@ class ProcessTree(object):
         return self.visualize()
 
     def get_root(self):
+        """Return the root note of the tree."""
         return self._root
 
 
@@ -137,17 +138,25 @@ class Closure(object):
         return self.label.name
 
     def add(self, reference: AnyReference) -> None:
+        """Add a reference to this Closure."""
         assert reference.name not in self._references
         self._references[reference.name] = reference
     
     def add_many(self, references: Collection[AnyReference]) -> None:
+        """Add several references at once."""
         for ref in references:
             self.add(ref)
     
     def has(self, reference: str) -> bool:
+        """Check whether this Closure contains a given reference."""
         return reference in self._references
     
     def find(self, reference: str) -> AnyReference | None:
+        """Recursively search for a specific reference.
+        
+        If this Closure doesn't contain it, search the parent.
+        If no Closure has it, return None.
+        """
         if self.has(reference):
             return self._references[reference]
         elif self.is_root:
@@ -156,12 +165,18 @@ class Closure(object):
             return self._parent.find(reference)
         
     def get_parent(self) -> Closure:
+        """Return the next closure above this one."""
         return self._parent
     
     def list(self) -> tuple[AnyReference, ...]:
+        """Create a tuple of all references stored in this closure."""
         return tuple(self._references.values())
     
     def list_all(self) -> tuple[tuple[AnyReference, ...], ...]:
+        """Recursively list all references in this and enclosing Closures.
+        
+        This closure has index 0 in the outermost tuple, it's parent is 1, etc.
+        """
         return self.list(), *self.get_parent().list_all()
 
 
