@@ -113,7 +113,7 @@ class Closure(object):
     """Stores constants, variables, and functions."""
     label: ClosureLabel
     is_root: bool
-    parent: Closure | None
+    _parent: Closure | None
     _references: dict[str, AnyReference]
 
     def __init__(self, label: ClosureLabel, parent: Closure | None=None):
@@ -146,7 +146,10 @@ class Closure(object):
         elif self.is_root:
             return None
         else:
-            return self.parent.find(reference)
+            return self._parent.find(reference)
+        
+    def get_parent(self) -> Closure:
+        return self._parent
 
 
 @dataclass
