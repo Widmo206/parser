@@ -29,3 +29,11 @@ class PyScriptSyntaxError(ValueError):
 class PyScriptNameError(ValueError):
     """Raised when the code refers to an undefined reference or tries to redefine a reference in the same scope."""
     pass
+
+
+class PyScriptTypeError(ValueError):
+    """Raised when the code tries to perform an operation that isn't valid for a given type.
+    
+    e.g. trying to call a variable
+    """
+    pass
