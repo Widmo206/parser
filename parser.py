@@ -15,10 +15,10 @@ from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
 from enums import TileAction, TokenType, NodeType, Operators, ClosureLabel
-from errors import PyScriptSyntaxError, PyScriptNameError
+from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
 import events
 from matrix import Matrix
-from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
+from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
 from tile_data import TileData
 
@@ -267,9 +267,9 @@ class Parser(object):
         process_tree = ProcessTree(self.external_references)
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0] # -> ProcessNode of type CLOSURE
-        current_closure = current_node.get_value() # ->  Closure
+        current_closure: Closure = process_tree.get_root().get_value() # ->  Closure (not Any, bc Pylance isn't smart enough)
 
-        def step_into(node_type: NodeType, value: Any) -> None:
+        def step_into(node_type: NodeType, line: int, value: Any=None) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
@@ -279,7 +279,7 @@ class Parser(object):
                 logger.debug(f"Stepping into   {node_type} {value.value}")
             else:
                 logger.debug(f"Stepping into   {node_type} ({value})")
-            new_node = ProcessNode(current_node, node_type, value)
+            new_node = ProcessNode(current_node, node_type, line, value)
             current_node.add_child(new_node)
             current_node = new_node
             code_stack.append(current_node)
@@ -315,25 +315,35 @@ class Parser(object):
                     match tokens[0].type:
                         case TokenType.OPEN_PAREN:
                             # looks like a function call
-                            tokens.pop(0) # consume the OPEN_PAREN
-                            step_into(NodeType.CALL, current_token)
+                            function = current_closure.find(current_token.value)
+                            if function is None:
+                                raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
+                            elif not isinstance(function, AnyFunction):
+                                raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not callable")
+                            step_into(NodeType.CALL, current_token.line, function)
                             # the rest of this case could probably be cut out
-                            if tokens[0].type == TokenType.CLOSE_PAREN:
-                                tokens.pop(0) # no arguments; consume the CLOSE_PAREN
+                            if tokens[0].type == TokenType.CLOSE_PAREN: # no arguments
+                                tokens.pop(0) # consume the OPEN_PAREN
+                                tokens.pop(0) # consume the CLOSE_PAREN
                                 step_out_of(NodeType.CALL)
                             else:
-                                step_into(NodeType.EXPRESSION, None) # first arg
+                                step_into(NodeType.EXPRESSION, tokens.pop(0).line) # consumes the OPEN_PAREN + step into first arg
                         case TokenType.ASSIGN:
-                            variable = current_token
+                            variable = current_closure.find(current_token.value)
                             # TODO: check that parent is a CLOSURE
-                            # TODO: check if refrence exists and is a variable
-                            step_into(NodeType.WRITE, variable)
-                            tokens.pop(0) # consume the '='
-                            step_into(NodeType.EXPRESSION, None)
+                            if variable is None:
+                                raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
+                            elif not isinstance(variable, Variable):
+                                raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a variable")
+                            step_into(NodeType.WRITE, current_token.line, variable)
+                            step_into(NodeType.EXPRESSION, tokens.pop(0).line) # consumes the '='
                         case _:
-                            variable = current_token
-                            # TODO: check if reference exists and is a variable or constant
-                            current_node.add_child(ProcessNode(current_node, NodeType.READ, variable))
+                            value = current_closure.find(current_token.value)
+                            if value is None:
+                                raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
+                            elif not isinstance(value, AnyValue):
+                                raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a constant or variable")
+                            current_node.add_child(ProcessNode(current_node, NodeType.READ, current_token.line, value))
                 
                 case TokenType.CLOSE_PAREN:
                     match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
@@ -381,31 +391,36 @@ class Parser(object):
 
                 case TokenType.INT_LIT:
                     ensure_expression()
-                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
+                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
                 
                 case TokenType.FLOAT_LIT:
                     ensure_expression()
-                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
+                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
 
                 case TokenType.STRING_LIT:
                     ensure_expression()
-                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
+                    current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
 
                 case TokenType.OPERATOR:
                     ensure_expression()
-                    current_node.add_child(ProcessNode(current_node, NodeType.OPERATION, current_token))
+                    current_node.add_child(ProcessNode(current_node, NodeType.OPERATION, current_token.line, current_token.value))
 
                 case TokenType.KEYWORD:
                     match current_token.value:
                         case "var":
-                            variable = tokens.pop(0) # declared variable name
-                            if variable.type != TokenType.REFERENCE:
+                            var_token = tokens.pop(0) # declared variable name
+                            if var_token.type != TokenType.REFERENCE:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var must be followed by a valid variable name")
-                            step_into(NodeType.DEFINE, variable)
+                            var_name: str = var_token.value
+                            if current_closure.has(var_name):
+                                raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
+                            variable = Variable(var_name, None, None)
+                            current_closure.add(variable)
+                            step_into(NodeType.DEFINE, var_token.line, variable)
                             if tokens[0].type != TokenType.ASSIGN:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
-                                raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var <name> must be followed by assignment operator: =")
+                                raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
                             step_into(NodeType.EXPRESSION, None)      
 
@@ -441,16 +456,15 @@ if __name__ == "__main__":
         datefmt='%Y.%m.%d %H:%M:%S',
         )
 
-    # fh = FunctionHolder()
-    # def hello_world() -> None:
-    #     print("Hello World!")
-    # fh.add(Function(hello_world), "hello")
-    # fh.add(Function(print, str))
-    # fh.add(Function(lambda: print("Failed to give up")), "exit")
+    def hello_world() -> None:
+        print("Hello World!")
 
-    # #fh.run("hello")
+    external_functions = [
+        ExternalFunction('hello', None, hello_world),
+        ExternalFunction('print', None, print)
+    ]
 
-    parser = Parser()
+    parser = Parser(external_references=external_functions)
     source = parser.get_source()
     tokens = parser.tokenize(source)
     #print(tokens)
