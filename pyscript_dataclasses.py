@@ -9,7 +9,7 @@ Contributors:
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Collection
-from enums import TokenType, NodeType
+from enums import TokenType, NodeType, ClosureLabel
 from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
 
 
@@ -111,12 +111,12 @@ class ProcessTree(object):
 @dataclass
 class Closure(object):
     """Stores constants, variables, and functions."""
-    label: str
+    label: ClosureLabel
     is_root: bool
     parent: Closure | None
     _references: dict[str, AnyReference]
 
-    def __init__(self, label: str, parent: Closure | None=None):
+    def __init__(self, label: ClosureLabel, parent: Closure | None=None):
         self.label = label
         if parent is None:
             self.is_root = True

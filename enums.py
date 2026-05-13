@@ -212,6 +212,14 @@ class Operators(Operator, Enum):
         return f"Operators.{self.name}"
 
 
+class ClosureLabel(Enum):
+    GLOBAL      = auto()
+    FUNCTION    = auto()
+    LOOP        = auto()
+    CONDITIONAL = auto()
+    MISC        = auto()
+
+
 def _test() -> None:
     for enum in (
         Direction,
