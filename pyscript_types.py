@@ -52,7 +52,22 @@ class ExternalFunction(object):
         return result
 
 
-AnyReference: TypeAlias = Constant | Variable | ExternalFunction
+@dataclass()
+class Function(object):
+    """WIP don't use"""
+    name: str
+    return_type: Type
+    function: Callable
+
+    def call(self, *args) -> Any:
+        result = self.function(*args)
+        assert isinstance(result, self.return_type)
+        return result
+
+
+AnyValue:     TypeAlias = Constant | Variable
+AnyFunction:  TypeAlias = Function | ExternalFunction
+AnyReference: TypeAlias = AnyValue | AnyFunction
 
 
 if __name__ == "__main__":
