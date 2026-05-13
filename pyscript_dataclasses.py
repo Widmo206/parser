@@ -157,6 +157,12 @@ class Closure(object):
         
     def get_parent(self) -> Closure:
         return self._parent
+    
+    def list(self) -> tuple[AnyReference, ...]:
+        return tuple(self._references.values())
+    
+    def list_all(self) -> tuple[tuple[AnyReference, ...], ...]:
+        return self.list(), *self.get_parent().list_all()
 
 
 @dataclass
