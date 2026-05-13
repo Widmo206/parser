@@ -21,17 +21,21 @@ class UnknownTileTypeError(ValueError):
     pass
 
 
-class PyScriptSyntaxError(ValueError):
+class PyScriptError(ValueError):
+    """Base class for all PyScript errors."""
+
+
+class PyScriptSyntaxError(PyScriptError):
     """Raised when any step of the parser finds an issue with the user's code."""
     pass
 
 
-class PyScriptNameError(ValueError):
+class PyScriptNameError(PyScriptError):
     """Raised when the code refers to an undefined reference or tries to redefine a reference in the same scope."""
     pass
 
 
-class PyScriptTypeError(ValueError):
+class PyScriptTypeError(PyScriptError):
     """Raised when the code tries to perform an operation that isn't valid for a given type.
     
     e.g. trying to call a variable
