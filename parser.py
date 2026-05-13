@@ -324,7 +324,6 @@ class Parser(object):
                             elif not isinstance(function, AnyFunction):
                                 raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not callable")
                             step_into(NodeType.CALL, current_token.line, function)
-                            # the rest of this case could probably be cut out
                             if tokens[1].type == TokenType.CLOSE_PAREN: # no arguments
                                 tokens.pop(0) # consume the OPEN_PAREN
                                 tokens.pop(0) # consume the CLOSE_PAREN
@@ -411,7 +410,7 @@ class Parser(object):
                 case TokenType.KEYWORD:
                     match current_token.value:
                         case "var":
-                            # TODO add definition of variable type 
+                        # \begin{word soup}
                             var_type: Type = Any
                             var_token = tokens.pop(0) # declared variable name
                             if var_token.type != TokenType.REFERENCE:
@@ -420,6 +419,17 @@ class Parser(object):
                             var_name: str = var_token.value
                             if current_closure.has(var_name):
                                 raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
+                            if tokens[0].type == TokenType.COLON:
+                                tokens.pop(0) # consume the :
+                                type_token = tokens.pop(0)
+                                if type_token.type != TokenType.REFERENCE:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): incomplete type declaration of var {var_name}")
+                                type_ref = current_closure.find(type_token.value)
+                                if type_ref is None:
+                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown type {current_token.value}")
+                                elif not isinstance(type_ref, DataType):
+                                    raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {type_token.value} is not a data type")
+                                var_type = type_ref.type
                             variable = Variable(var_name, var_type, None)
                             current_closure.add(variable)
                             step_into(NodeType.DEFINE, var_token.line, variable)
@@ -428,6 +438,7 @@ class Parser(object):
                                 raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
                             step_into(NodeType.EXPRESSION, None)
+                        # \end{word soup}
                         
                         # TODO add other keywords
 
