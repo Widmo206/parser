@@ -22,6 +22,21 @@ def format_type(type: Type) -> str:
 
 
 @dataclass(frozen=True)
+class DataType(object):
+    name: str
+    type: Type
+
+    def __post_init__(self):
+        assert isinstance(self.type, Type)
+
+    def __repr__(self):
+        return f"type {format_type(self.type)}"
+
+    def __str__(self):
+        return format_type(self.type)
+
+
+@dataclass(frozen=True)
 class Constant(object):
     name: str
     type: Type
@@ -96,7 +111,7 @@ class Function(object):
 
 AnyValue:     TypeAlias = Constant | Variable
 AnyFunction:  TypeAlias = Function | ExternalFunction
-AnyReference: TypeAlias = AnyValue | AnyFunction
+AnyReference: TypeAlias = AnyValue | AnyFunction | DataType
 
 
 if __name__ == "__main__":
