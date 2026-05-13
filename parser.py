@@ -275,10 +275,8 @@ class Parser(object):
             nonlocal current_node
             if value is None:
                 logger.debug(f"Stepping into   {node_type}")
-            elif isinstance(value, Token):
-                logger.debug(f"Stepping into   {node_type} {value.value}")
             else:
-                logger.debug(f"Stepping into   {node_type} ({value})")
+                logger.debug(f"Stepping into   {node_type} ({repr(value)})")
             new_node = ProcessNode(current_node, node_type, line, value)
             current_node.add_child(new_node)
             current_node = new_node
@@ -294,10 +292,8 @@ class Parser(object):
             exited_node = code_stack.pop(-1)
             if exited_node.get_value() is None:
                 logger.debug(f"Stepping out of {exited_node.get_type()}")
-            elif isinstance(exited_node.get_value(), Token):
-                logger.debug(f"Stepping out of {exited_node.get_type()} {exited_node.get_value().value}")
             else:
-                logger.debug(f"Stepping out of {exited_node.get_type()} ({exited_node.get_value()})")
+                logger.debug(f"Stepping out of {exited_node.get_type()} ({repr(exited_node.get_value())})")
             if node_type is not Any:
                 assert exited_node.get_type() == node_type
             current_node = code_stack[-1]

@@ -72,7 +72,10 @@ class ProcessNode(object):
 
     def format(self) -> str:
         """Create a pretty string for ProcessTree visualization."""
-        return f"{self._type.name}: {str(self._value)}"
+        if self._value is None:
+            return f"{self._type.name}"
+        else:
+            return f"{self._type.name} ({repr(self._value)})"
 
 
 @dataclass
@@ -130,7 +133,7 @@ class Closure(object):
         self._parent = parent
         self._references = {}
     
-    def __str__(self):
+    def __repr__(self):
         return self.label
 
     def add(self, reference: AnyReference) -> None:
