@@ -276,7 +276,7 @@ class Parser(object):
         current_node = code_stack[0] # -> ProcessNode of type CLOSURE
         current_closure: Closure = process_tree.get_root().get_value() # ->  Closure (not Any, bc Pylance isn't smart enough)
 
-        def step_into(node_type: NodeType, line: int, value: Any=None) -> None:
+        def step_into(node_type: NodeType, line: int, value: Any) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
@@ -329,7 +329,7 @@ class Parser(object):
                                 tokens.pop(0) # consume the CLOSE_PAREN
                                 step_out_of(NodeType.CALL)
                             else:
-                                step_into(NodeType.EXPRESSION, tokens.pop(0).line) # consumes the OPEN_PAREN + step into first arg
+                                step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the OPEN_PAREN + step into first arg
                         case TokenType.ASSIGN:
                             variable = current_closure.find(current_token.value)
                             # TODO: check that parent is a CLOSURE
@@ -379,8 +379,9 @@ class Parser(object):
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
 
                 case TokenType.INDENT:
-                    step_into(NodeType.CLOSURE, Closure(ClosureLabel.MISC))
-                    current_closure = current_node.get_value()
+                    new_closure = Closure(ClosureLabel.MISC, current_closure)
+                    step_into(NodeType.CLOSURE, current_token.line, new_closure)
+                    current_closure = new_closure
                 
                 case TokenType.DEINDENT:
                     if current_closure.label == ClosureLabel.GLOBAL:
@@ -436,8 +437,7 @@ class Parser(object):
                             if tokens[0].type != TokenType.ASSIGN:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
-                            tokens.pop(0) # consume the '='
-                            step_into(NodeType.EXPRESSION, None)
+                            step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
                         # \end{word soup}
                         
                         # TODO add other keywords
