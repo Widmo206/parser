@@ -404,6 +404,7 @@ class Parser(object):
                 case TokenType.KEYWORD:
                     match current_token.value:
                         case "var":
+                            var_type: Type = Any
                             var_token = tokens.pop(0) # declared variable name
                             if var_token.type != TokenType.REFERENCE:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
@@ -411,7 +412,7 @@ class Parser(object):
                             var_name: str = var_token.value
                             if current_closure.has(var_name):
                                 raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
-                            variable = Variable(var_name, None, None)
+                            variable = Variable(var_name, var_type, None)
                             current_closure.add(variable)
                             step_into(NodeType.DEFINE, var_token.line, variable)
                             if tokens[0].type != TokenType.ASSIGN:
