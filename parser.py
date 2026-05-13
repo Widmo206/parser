@@ -18,7 +18,7 @@ from enums import TileAction, TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
 import events
 from matrix import Matrix
-from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference
+from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, DataType
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
 from tile_data import TileData
 
@@ -45,11 +45,18 @@ SINGLE_CHAR_TOKENS = {
     "=": TokenType.ASSIGN,
     "(": TokenType.OPEN_PAREN,
     ")": TokenType.CLOSE_PAREN,
+    ":": TokenType.COLON,
     ";": TokenType.SEMICOLON,
     ",": TokenType.COMMA,
     }
+DATATYPES = (
+    DataType("str", str),
+    DataType("int", int),
+    DataType("float", float),
+)
 operator_map = {op.value[0]: op for op in Operator}                   # string -> operator lookup table
 operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
+
 
 
 class Processor(object):
@@ -108,7 +115,7 @@ class Parser(object):
         if external_references is None:
             self.external_references = []
         else:
-            self.external_references = external_references
+            self.external_references = *DATATYPES, *external_references
 
     def get_source(self) -> str:
         """Load a pyscript source file fromm disk."""
