@@ -14,7 +14,7 @@ from string import ascii_letters, digits, whitespace
 from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
-from enums import TileAction, TokenType, NodeType, Operators, ClosureLabel
+from enums import TileAction, TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
 import events
 from matrix import Matrix
@@ -48,7 +48,7 @@ SINGLE_CHAR_TOKENS = {
     ";": TokenType.SEMICOLON,
     ",": TokenType.COMMA,
     }
-operator_map = {op.value[0]: op for op in Operators}                  # string -> operator lookup table
+operator_map = {op.value[0]: op for op in Operator}                   # string -> operator lookup table
 operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
 
 
@@ -260,7 +260,7 @@ class Parser(object):
 
     def parse(self, tokens: list[Token]) -> ProcessTree:
         """Turn a list of tokens created by Parser.tokenize into a ProcessTree.
-        
+
         Parsing handles some of the syntax checking.
         """
         logger.info(f"Start parsing '{self.path}'")
@@ -286,7 +286,7 @@ class Parser(object):
 
         def step_out_of(node_type: NodeType | Any) -> None:
             """Step out of a node on the stack.
-            
+
             Checks whether the node being popped is of the correct type.
             """
             nonlocal code_stack
@@ -375,7 +375,7 @@ class Parser(object):
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
-                
+
                 case TokenType.INDENT:
                     step_into(NodeType.CLOSURE, Closure(ClosureLabel.MISC))
                     current_closure = current_node.get_value()
@@ -422,7 +422,7 @@ class Parser(object):
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
-                            step_into(NodeType.EXPRESSION, None)      
+                            step_into(NodeType.EXPRESSION, None)
 
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
@@ -437,7 +437,7 @@ class Parser(object):
         see /pyscript/test.ass for prototype
         """
         raise NotImplementedError("NYI; get the parser done first")
-    
+
     def compile_from_file(self) -> ...:
         source = self.get_source()
         tokens = self.tokenize(source)
