@@ -14,12 +14,12 @@ from string import ascii_letters, digits, whitespace
 from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
-from enums import TileAction, TokenType, NodeType, Operators
+from enums import TileAction, TokenType, NodeType, Operators, ClosureLabel
 from errors import PyScriptSyntaxError
 import events
 from matrix import Matrix
 from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
-from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction
+from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
 from tile_data import TileData
 
 
@@ -266,7 +266,8 @@ class Parser(object):
         logger.info(f"Start parsing '{self.path}'")
         process_tree = ProcessTree(self.external_references)
         code_stack = [process_tree.get_root()]
-        current_node = code_stack[0]
+        current_node = code_stack[0] # -> ProcessNode of type CLOSURE
+        lowest_closure = current_node.get_value() # ->  Closure
 
         def step_into(node_type: NodeType, value: Any) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""
@@ -365,6 +366,19 @@ class Parser(object):
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
                 
+                case TokenType.INDENT:
+                    step_into(NodeType.CLOSURE, Closure(ClosureLabel.MISC))
+                    lowest_closure = current_node.get_value()
+                
+                case TokenType.DEINDENT:
+                    if lowest_closure.label == ClosureLabel.GLOBAL:
+                        raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") # why
+                    try:
+                        step_out_of(NodeType.CLOSURE)
+                    except AssertionError as e:
+                        raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
+                    lowest_closure = lowest_closure.get_parent()
+
                 case TokenType.INT_LIT:
                     ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
