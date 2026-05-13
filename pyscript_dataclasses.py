@@ -127,7 +127,7 @@ class Closure(object):
         else:
             assert isinstance(parent, Closure)
             self.is_root = False
-        self.parent = parent
+        self._parent = parent
         self._references = {}
     
     def __str__(self):
