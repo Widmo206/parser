@@ -267,7 +267,7 @@ class Parser(object):
         process_tree = ProcessTree(self.external_references)
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0] # -> ProcessNode of type CLOSURE
-        lowest_closure = current_node.get_value() # ->  Closure
+        current_closure = current_node.get_value() # ->  Closure
 
         def step_into(node_type: NodeType, value: Any) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""
@@ -368,16 +368,16 @@ class Parser(object):
                 
                 case TokenType.INDENT:
                     step_into(NodeType.CLOSURE, Closure(ClosureLabel.MISC))
-                    lowest_closure = current_node.get_value()
+                    current_closure = current_node.get_value()
                 
                 case TokenType.DEINDENT:
-                    if lowest_closure.label == ClosureLabel.GLOBAL:
+                    if current_closure.label == ClosureLabel.GLOBAL:
                         raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") # why
                     try:
                         step_out_of(NodeType.CLOSURE)
                     except AssertionError as e:
                         raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
-                    lowest_closure = lowest_closure.get_parent()
+                    current_closure = current_closure.get_parent()
 
                 case TokenType.INT_LIT:
                     ensure_expression()
