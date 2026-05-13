@@ -464,6 +464,5 @@ if __name__ == "__main__":
     parser = Parser(external_references=external_functions)
     source = parser.get_source()
     tokens = parser.tokenize(source)
-    #print(tokens)
     tree   = parser.parse(tokens)
-    print(tree)
+    print("finished")
