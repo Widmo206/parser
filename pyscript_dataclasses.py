@@ -83,7 +83,7 @@ class ProcessTree(object):
     _root: ProcessNode
 
     def __init__(self, external_references: Collection[Constant | ExternalFunction]):
-        _global = Closure("Global", None)
+        _global = Closure(ClosureLabel.GLOBAL, None)
         _global.add_many(external_references)
         self._root = ProcessNode(None, NodeType.CLOSURE, 0, _global, None)
 
@@ -134,7 +134,7 @@ class Closure(object):
         self._references = {}
     
     def __repr__(self):
-        return self.label
+        return self.label.name
 
     def add(self, reference: AnyReference) -> None:
         assert reference.name not in self._references
