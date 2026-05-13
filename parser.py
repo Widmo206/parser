@@ -318,7 +318,7 @@ class Parser(object):
                                 raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not callable")
                             step_into(NodeType.CALL, current_token.line, function)
                             # the rest of this case could probably be cut out
-                            if tokens[0].type == TokenType.CLOSE_PAREN: # no arguments
+                            if tokens[1].type == TokenType.CLOSE_PAREN: # no arguments
                                 tokens.pop(0) # consume the OPEN_PAREN
                                 tokens.pop(0) # consume the CLOSE_PAREN
                                 step_out_of(NodeType.CALL)
