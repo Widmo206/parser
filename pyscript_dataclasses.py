@@ -33,12 +33,16 @@ class Token(object):
 class ProcessNode(object):
     _parent: ProcessNode | None
     _type: NodeType
+    _source_line: int
     _value: Any=None
     _children: tuple[ProcessNode, ...] | None=None
 
     def get_type(self) -> NodeType:
         """Return the type of this node."""
         return self._type
+
+    def get_line(self) -> int:
+        """Return the line in the source code file that corresponds to this node."""
     
     def get_value(self) -> Any:
         """Return the data in the value of this node."""
@@ -78,7 +82,7 @@ class ProcessTree(object):
     def __init__(self, external_references: Collection[Constant | ExternalFunction]):
         _global = Closure("Global", None)
         _global.add_many(external_references)
-        self._root = ProcessNode(None, NodeType.CLOSURE, _global, None)
+        self._root = ProcessNode(None, NodeType.CLOSURE, 0, _global, None)
 
     @staticmethod
     def _visualize_branch(node: ProcessNode, indent_level: int=0) -> str:
