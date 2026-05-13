@@ -24,7 +24,7 @@ from tile_data import TileData
 
 
 logger = logging.getLogger(__name__)
-REFERENCE_CHARS = ascii_letters + digits + "_"
+REFERENCE_CHARS = ascii_letters + digits + "_" # should these be sets?
 REFERENCE_START_CHARS = ascii_letters + "_"
 SINGLE_COMMENT = "#"
 ESCAPE_CHAR = "\\"
@@ -404,6 +404,7 @@ class Parser(object):
                 case TokenType.KEYWORD:
                     match current_token.value:
                         case "var":
+                            # TODO add definition of variable type 
                             var_type: Type = Any
                             var_token = tokens.pop(0) # declared variable name
                             if var_token.type != TokenType.REFERENCE:
@@ -420,11 +421,14 @@ class Parser(object):
                                 raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
                             step_into(NodeType.EXPRESSION, None)
+                        
+                        # TODO add other keywords
 
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
                     raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
-        logger.info(f"Finished parsing '{self.path}'; program structure:\n{repr(process_tree)}")
+        logger.info(f"Finished parsing '{self.path}'")
+        logger.debug(f"Program structure:\n{repr(process_tree)}")
         return process_tree
 
     def compile(self, tree: ProcessTree) -> ...:
