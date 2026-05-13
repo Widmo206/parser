@@ -24,3 +24,8 @@ class UnknownTileTypeError(ValueError):
 class PyScriptSyntaxError(ValueError):
     """Raised when any step of the parser finds an issue with the user's code."""
     pass
+
+
+class PyScriptNameError(ValueError):
+    """Raised when the code refers to an undefined reference or tries to redefine a reference in the same scope."""
+    pass
