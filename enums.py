@@ -104,15 +104,16 @@ class TileAction(Enum):
 
 
 class TileType(Enum):
-    BLOCKED = ("X", None,                                None,                       False, 2)
-    EMPTY   = ("O", Path("sprites/tile_background.png"), None,                       True,  2)
-    PLAYER  = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"), False, 0)
-    ATTACK  = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"), True,  2)
-    FLAG    = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"),   True,  2)
-    KEY     = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"),    True,  2)
-    GATE    = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png"),   False, 2)
-    ENEMY   = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png"),  False, 1)
-    WIN     = ("W", Path("sprites/tile_background.png"), Path("sprites/win.png"),    False, 2)
+    BLOCKED    = ("X", None,                                None,                           False, 2)
+    EMPTY      = ("O", Path("sprites/tile_background.png"), None,                           True,  2)
+    PLAYER     = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"),     False, 0)
+    PLAYER_KEY = ("p", Path("sprites/tile_background.png"), Path("sprites/player_key.png"), False, 0)
+    ATTACK     = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"),     True,  2)
+    FLAG       = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"),       True,  2)
+    KEY        = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"),        True,  2)
+    GATE       = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png"),       False, 2)
+    ENEMY      = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png"),      False, 1)
+    WIN        = ("W", Path("sprites/tile_background.png"), Path("sprites/win.png"),        True,  2)
 
     character: str
     image: PILImage | None
@@ -192,6 +193,8 @@ class TokenType(Enum):
 class Operator(NamedTuple):
     chars: str
     priority: int
+
+
 class Operators(Operator, Enum):
     EQUALS    = ('==', 4)
     NOTEQUALS = ('!=', 4)
@@ -224,6 +227,7 @@ def _test() -> None:
     for enum in (
         Direction,
         NodeType,
+        Operators,
         TileAction,
         TileType,
         TokenType,

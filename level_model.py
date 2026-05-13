@@ -69,8 +69,20 @@ class LevelModel:
         try:
             from_tile_model = self.tile_model_matrix.get(x, y)
             to_tile_model = self.tile_model_matrix.get(to_x, to_y)
-            assert to_tile_model.tile_data.tile_type.is_walkable
         except (IndexError, AssertionError):
+            return
+
+        is_walkable = to_tile_model.tile_data.tile_type.is_walkable
+        is_enemy_to_player = (
+            to_tile_model.tile_data.tile_type is TileType.PLAYER
+            and from_tile_model.tile_data.tile_type is TileType.ENEMY
+        )
+        is_player_to_flag = (
+            from_tile_model.tile_data.tile_type is TileType.PLAYER
+            and to_tile_model.tile_data.tile_type is TileType.FLAG
+        )
+
+        if not is_walkable and not is_enemy_to_player:
             return
 
         logger.debug(
@@ -82,11 +94,10 @@ class LevelModel:
             to_tile_model.tile_data.tile_type,
         )
 
-        if (
-            from_tile_model.tile_data.tile_type is TileType.PLAYER
-            and to_tile_model.tile_data.tile_type is TileType.FLAG
-        ):
+        if is_player_to_flag:
             self.set_tile_model(to_x, to_y, TileModel(TileData(TileType.WIN)))
+        elif is_enemy_to_player:
+            self.set_tile_model(to_x, to_y, TileModel(from_tile_model.tile_data))
         else:
             self.set_tile_model(to_x, to_y, TileModel(
                 from_tile_model.tile_data,
