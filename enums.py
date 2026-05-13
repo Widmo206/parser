@@ -7,6 +7,8 @@ Contributors:
 """
 
 from __future__ import annotations
+
+from ctypes.macholib.dyld import dyld_override_search
 from enum import auto, Enum
 import logging
 from pathlib import Path
@@ -108,11 +110,12 @@ class TileType(Enum):
     EMPTY      = ("O", Path("sprites/tile_background.png"), None,                           True,  2)
     PLAYER     = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"),     False, 0)
     PLAYER_KEY = ("p", Path("sprites/tile_background.png"), Path("sprites/player_key.png"), False, 0)
-    ATTACK     = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"),     True,  2)
+    ENEMY      = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png"),      False, 1)
+    ENEMY_KEY  = ("e", Path("sprites/tile_background.png"), Path("sprites/enemy_key.png"),  False, 1)
     FLAG       = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"),       True,  2)
     KEY        = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"),        True,  2)
-    GATE       = ("G", Path("sprites/tile_background.png"), Path("sprites/gate.png"),       False, 2)
-    ENEMY      = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png"),      False, 1)
+    DOOR       = ("D", Path("sprites/tile_background.png"), Path("sprites/door.png"),       False, 2)
+    ATTACK     = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"),     True,  2)
     WIN        = ("W", Path("sprites/tile_background.png"), Path("sprites/win.png"),        True,  2)
 
     character: str
@@ -165,6 +168,19 @@ class TileType(Enum):
         raise UnknownTileTypeError(f"No tile type matching value '{value}'")
 
 
+class MoveMixin(NamedTuple):
+    from_type: TileType
+    to_type: TileType
+
+class SpecialMove(MoveMixin, Enum):
+    PLAYER_WIN        = (TileType.PLAYER,     TileType.WIN)
+    ENEMY_KILL_PLAYER = (TileType.ENEMY,      TileType.PLAYER)
+    PLAYER_OPEN_DOOR  = (TileType.PLAYER_KEY, TileType.DOOR)
+    ENEMY_OPEN_DOOR   = (TileType.ENEMY_KEY,  TileType.DOOR)
+    PLAYER_PICKUP_KEY = (TileType.PLAYER,     TileType.KEY)
+    ENEMY_PICKUP_KEY  = (TileType.ENEMY,      TileType.KEY)
+
+
 class TokenType(Enum):
     NOP         = auto() # pass
     KEYWORD     = auto()
@@ -190,12 +206,12 @@ class TokenType(Enum):
 #     SLASH       = auto() # /
 
 
-class Operator(NamedTuple):
+class OperatorMixin(NamedTuple):
     chars: str
     priority: int
 
 
-class Operators(Operator, Enum):
+class Operator(OperatorMixin, Enum):
     EQUALS    = ('==', 4)
     NOTEQUALS = ('!=', 4)
     LESS_EQ   = ('<=', 4)
@@ -212,7 +228,7 @@ class Operators(Operator, Enum):
     MOD       = ('%',  2)
 
     def __repr__(self):
-        return f"Operators.{self.name}"
+        return f"Operator.{self.name}"
 
 
 class ClosureLabel(Enum):
@@ -225,9 +241,11 @@ class ClosureLabel(Enum):
 
 def _test() -> None:
     for enum in (
+        ClosureLabel,
         Direction,
         NodeType,
-        Operators,
+        Operator,
+        SpecialMove,
         TileAction,
         TileType,
         TokenType,

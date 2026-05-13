@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 
-from enums import Direction, TileAction, TileType
+from enums import Direction, MoveMixin, SpecialMove, TileAction, TileType
 import events
 from level import Level
 from matrix import Matrix
@@ -72,74 +72,35 @@ class LevelModel:
         except (IndexError, AssertionError):
             return
 
-        is_walkable = to_tile_model.tile_data.tile_type.is_walkable
-        is_enemy_to_player = (
-            to_tile_model.tile_data.tile_type is TileType.PLAYER
-            and from_tile_model.tile_data.tile_type is TileType.ENEMY
-        )
-        is_player_to_flag = (
-            from_tile_model.tile_data.tile_type is TileType.PLAYER
-            and to_tile_model.tile_data.tile_type is TileType.FLAG
-        )
+        try:
+            self.handle_special_move(
+                SpecialMove(MoveMixin(
+                    from_tile_model.tile_data.tile_type,
+                    to_tile_model.tile_data.tile_type
+                )),
+                x,
+                y,
+                direction,
+            )
+        except ValueError:
+            if not to_tile_model.tile_data.tile_type.is_walkable:
+                return
 
-        if not is_walkable and not is_enemy_to_player:
-            return
+            logger.debug(
+                "Moving tile %s from (%i, %i) in direction %s (%s)",
+                from_tile_model.tile_data.tile_type,
+                x,
+                y,
+                direction,
+                to_tile_model.tile_data.tile_type,
+            )
 
-        logger.debug(
-            "Moving tile %s from (%i, %i) in direction %s (%s)",
-            from_tile_model.tile_data.tile_type,
-            x,
-            y,
-            direction,
-            to_tile_model.tile_data.tile_type,
-        )
-
-        if is_player_to_flag:
-            self.set_tile_model(to_x, to_y, TileModel(TileData(TileType.WIN)))
-        elif is_enemy_to_player:
-            self.set_tile_model(to_x, to_y, TileModel(from_tile_model.tile_data))
-        else:
+            self.set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
             self.set_tile_model(to_x, to_y, TileModel(
                 from_tile_model.tile_data,
                 from_tile_model.processor,
                 to_tile_model.tile_data,
             ))
-
-        self.set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
-
-    def process_tile_action(self, x: int, y: int, action: TileAction) -> None:
-        tile_model = self.tile_model_matrix.get(x, y)
-        tile_data = tile_model.tile_data
-
-        match action:
-            case TileAction.MOVE_FORWARD:
-                self.move_tile(x, y, tile_data.tile_direction)
-
-            case TileAction.MOVE_BACK:
-                self.move_tile(x, y, -tile_data.tile_direction)
-
-            case TileAction.TURN_LEFT:
-                self.set_tile_model(x, y, TileModel(
-                    TileData(tile_data.tile_type, tile_data.tile_direction.rotate()),
-                    tile_model.processor,
-                    tile_model.floor_tile_data,
-                ))
-
-            case TileAction.TURN_RIGHT:
-                self.set_tile_model(x, y, TileModel(
-                    TileData(tile_data.tile_type, tile_data.tile_direction.rotate(True)),
-                    tile_model.processor,
-                    tile_model.floor_tile_data,
-                ))
-
-            case TileAction.ATTACK:
-                self.attack_tile(
-                    x + tile_data.tile_direction.x,
-                    y + tile_data.tile_direction.y,
-                )
-
-            case _:
-                logger.error("Unknown tile action %s", action)
 
     def restart(self) -> None:
         if len(self.history) == 0:
@@ -192,7 +153,99 @@ class LevelModel:
         for x, y, tile_model, action in tile_actions:
             if tile_model is not self.tile_model_matrix.get(x, y):
                 continue
-            self.process_tile_action(x, y, action)
+            self.handle_tile_action(x, y, action)
 
         if self.check_win_state():
             events.LevelComplete(self.level, len(self.history))
+
+    def handle_special_move(
+        self,
+        move: SpecialMove,
+        x: int,
+        y: int,
+        direction: Direction,
+    ) -> None:
+        logger.debug(
+            "Executing special move %s from tile %s (%i, %i) to %s",
+            move,
+            from_tile_model.tile_data.tile_type,
+            from_x,
+            from_y,
+            to_tile_model.tile_data.tile_type,
+        )
+
+        match move:
+            case SpecialMove.PLAYER_WIN:
+                self.set_tile_model(to_x, to_y, TileModel(TileData(TileType.WIN)))
+
+            case SpecialMove.ENEMY_KILL_PLAYER:
+                self.set_tile_model(to_x, to_y, TileModel(
+                    from_tile_model.tile_data,
+                    from_tile_model.processor,
+                ))
+
+            case SpecialMove.PLAYER_OPEN_DOOR | SpecialMove.ENEMY_OPEN_DOOR:
+                self.set_tile_model(to_x, to_y, TileModel(
+                    TileData(
+                        (
+                            TileType.PLAYER
+                            if move is SpecialMove.PLAYER_OPEN_DOOR
+                            else TileType.ENEMY
+                        ),
+                        from_tile_model.tile_data.tile_direction,
+                    ),
+                    from_tile_model.processor,
+                ))
+
+            case SpecialMove.PLAYER_PICKUP_KEY | SpecialMove.ENEMY_PICKUP_KEY:
+                self.set_tile_model(to_x, to_y, TileModel(
+                    TileData(
+                        (
+                            TileType.PLAYER_KEY
+                            if move is SpecialMove.PLAYER_PICKUP_KEY
+                            else TileType.ENEMY_KEY
+                        ),
+                        from_tile_model.tile_data.tile_direction,
+                    ),
+                    from_tile_model.processor,
+                ))
+
+        self.set_tile_model(
+            from_x,
+            from_y,
+            TileModel(from_tile_model.floor_tile_data),
+        )
+
+    def handle_tile_action(self, x: int, y: int, action: TileAction) -> None:
+        tile_model = self.tile_model_matrix.get(x, y)
+        tile_data = tile_model.tile_data
+
+        match action:
+            case TileAction.MOVE_FORWARD:
+                self.move_tile(x, y, tile_data.tile_direction)
+
+            case TileAction.MOVE_BACK:
+                self.move_tile(x, y, -tile_data.tile_direction)
+
+            case TileAction.TURN_LEFT:
+                self.set_tile_model(x, y, TileModel(
+                    TileData(tile_data.tile_type, tile_data.tile_direction.rotate()),
+                    tile_model.processor,
+                    tile_model.floor_tile_data,
+                ))
+
+            case TileAction.TURN_RIGHT:
+                self.set_tile_model(x, y, TileModel(
+                    TileData(tile_data.tile_type, tile_data.tile_direction.rotate(True)),
+                    tile_model.processor,
+                    tile_model.floor_tile_data,
+                ))
+
+            case TileAction.ATTACK:
+                self.attack_tile(
+                    x + tile_data.tile_direction.x,
+                    y + tile_data.tile_direction.y,
+                    )
+
+            case _:
+                logger.error("Unknown tile action %s", action)

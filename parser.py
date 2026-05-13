@@ -14,7 +14,7 @@ from string import ascii_letters, digits, whitespace
 from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
-from enums import TileAction, TokenType, NodeType, Operators, ClosureLabel
+from enums import TileAction, TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError
 import events
 from matrix import Matrix
@@ -260,7 +260,7 @@ class Parser(object):
 
     def parse(self, tokens: list[Token]) -> ProcessTree:
         """Turn a list of tokens created by Parser.tokenize into a ProcessTree.
-        
+
         Parsing handles some of the syntax checking.
         """
         logger.info(f"Start parsing '{self.path}'")
@@ -286,7 +286,7 @@ class Parser(object):
 
         def step_out_of(node_type: NodeType | Any) -> None:
             """Step out of a node on the stack.
-            
+
             Checks whether the node being popped is of the correct type.
             """
             nonlocal code_stack
@@ -334,7 +334,7 @@ class Parser(object):
                             variable = current_token
                             # TODO: check if reference exists and is a variable or constant
                             current_node.add_child(ProcessNode(current_node, NodeType.READ, variable))
-                
+
                 case TokenType.CLOSE_PAREN:
                     match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
                         case NodeType.EXPRESSION:
@@ -365,11 +365,11 @@ class Parser(object):
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
-                
+
                 case TokenType.INDENT:
                     step_into(NodeType.CLOSURE, Closure(ClosureLabel.MISC))
                     lowest_closure = current_node.get_value()
-                
+
                 case TokenType.DEINDENT:
                     if lowest_closure.label == ClosureLabel.GLOBAL:
                         raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") # why
@@ -382,7 +382,7 @@ class Parser(object):
                 case TokenType.INT_LIT:
                     ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
-                
+
                 case TokenType.FLOAT_LIT:
                     ensure_expression()
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token))
@@ -407,7 +407,7 @@ class Parser(object):
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var <name> must be followed by assignment operator: =")
                             tokens.pop(0) # consume the '='
-                            step_into(NodeType.EXPRESSION, None)      
+                            step_into(NodeType.EXPRESSION, None)
 
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
@@ -422,7 +422,7 @@ class Parser(object):
         see /pyscript/test.ass for prototype
         """
         raise NotImplementedError("NYI; get the parser done first")
-    
+
     def compile_from_file(self) -> ...:
         source = self.get_source()
         tokens = self.tokenize(source)
