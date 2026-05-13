@@ -194,6 +194,7 @@ class TokenType(Enum):
     OPEN_PAREN  = auto() # (
     CLOSE_PAREN = auto() # )
     COMMA       = auto() # ,
+    COLON       = auto() # :
     OPERATOR    = auto() # math operators like + * % ==
     # data types
     STRING_LIT  = auto() # "abcd"
