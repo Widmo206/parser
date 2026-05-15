@@ -13,6 +13,7 @@ from enums import TileAction
 from tile_data import TileData
 from matrix import Matrix
 from pyscript_types import ExternalFunction
+from pyscript_dataclasses import Instruction
 from dataclasses import dataclass
 
 
@@ -25,12 +26,6 @@ Actions = (
     TileAction.ATTACK,
 )
 NoneType = type(None)
-
-
-@dataclass(frozen=True)
-class Instruction(object):
-    instruction: str # creative name!
-    parameter: Any
 
 
 # @dataclass

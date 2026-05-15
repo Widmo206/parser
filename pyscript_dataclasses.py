@@ -9,7 +9,7 @@ Contributors:
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Collection
-from enums import TokenType, NodeType, ClosureLabel
+from enums import TokenType, NodeType, ClosureLabel, PPUInstruction
 from pyscript_types import AnyReference, AnyFrozenRef
 
 
@@ -184,7 +184,7 @@ class Closure(object):
             return self.list(), *self.get_parent().list_all() # same as above
 
 
-@dataclass
+@dataclass(frozen=True)
 class Instruction(object):
-    function: Callable
-    parameters: list
+    instruction: PPUInstruction # creative name!
+    parameter: Any
