@@ -208,25 +208,28 @@ class TokenType(Enum):
 
 
 class OperatorMixin(NamedTuple):
-    chars: str
-    priority: int
+    chars:            str
+    priority:         int
+    is_right_to_left: bool=False # when chaining, whether the rightmost instance should be evaluated first
+    is_unary:         bool=False # whether it only acts on the value immediately after, instead of before and after
 
 
 class Operator(OperatorMixin, Enum):
-    EQUALS    = ('==', 4)
-    NOTEQUALS = ('!=', 4)
-    LESS_EQ   = ('<=', 4)
-    MORE_EQ   = ('>=', 4)
-    LESS_THAN = ('<',  4)
-    MORE_THAN = ('>',  4)
+    EQUALS    = ('==', 5)
+    NOTEQUALS = ('!=', 5)
+    LESS_EQ   = ('<=', 5)
+    MORE_EQ   = ('>=', 5)
+    LESS_THAN = ('<',  5)
+    MORE_THAN = ('>',  5)
 
-    POW       = ('**', 1)
-    FLOOR_DIV = ('//', 2)
-    ADD       = ('+',  3)
-    SUB       = ('-',  3)
-    MULT      = ('*',  2)
-    DIV       = ('/',  2)
-    MOD       = ('%',  2)
+    POW       = ('**', 1, True)
+    NEGATIVE  = ('-',  2, False, True) # N.B.: has to be above SUB, as it uses the same string
+    FLOOR_DIV = ('//', 3)
+    ADD       = ('+',  4)
+    SUB       = ('-',  4)
+    MULT      = ('*',  3)
+    DIV       = ('/',  3)
+    MOD       = ('%',  3)
 
     def __repr__(self):
         return f"Operator.{self.name}"
