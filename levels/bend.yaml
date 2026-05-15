@@ -1,5 +1,5 @@
 name: "Bend"
-pyscript_path: "pyscript/tutorial.pyscript"
+pyscript_path: "pyscript/bend.pyscript"
 layout: |-
   OOF
   OXX
