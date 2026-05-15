@@ -238,6 +238,7 @@ class Parser(object):
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0] # -> ProcessNode of type CLOSURE
         current_closure: Closure = process_tree.get_root().get_value() # -> Closure (not Any, bc Pylance isn't smart enough)
+        expressions = []
 
         def step_into(node_type: NodeType, line: int, value: Any) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""
@@ -251,6 +252,8 @@ class Parser(object):
             current_node.add_child(new_node)
             current_node = new_node
             code_stack.append(current_node)
+            if node_type == NodeType.EXPRESSION:
+                expressions.append(current_node)
 
         def step_out_of(node_type: NodeType | Any) -> None:
             """Step out of a node on the stack.
