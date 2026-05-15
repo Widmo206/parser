@@ -30,6 +30,7 @@ UNTITLED_TAB_NAME = "<untitled>"
 
 class Editor(ttk.Notebook):
     style: ttk.Style
+    is_level_active: bool
 
     def __init__(
         self,
@@ -41,6 +42,7 @@ class Editor(ttk.Notebook):
         super().__init__(master, **kwargs)
 
         self.style = style
+        self.is_level_active = False
 
         events.ActivePyscriptRequested.connect(self._on_active_pyscript_requested)
         events.FileNewRequested.connect(self._on_file_new_requested)
@@ -59,11 +61,12 @@ class Editor(ttk.Notebook):
         events.FileSaveAsRequested.disconnect(self._on_file_save_as_requested)
         events.LevelOpened.disconnect(self._on_level_opened)
         events.LevelSelectOpened.disconnect(self._on_level_select_opened)
+        events.LevelStateChanged.disconnect(self._on_level_state_changed)
         super().destroy()
 
     def get_active_tab(self) -> EditorTab | None:
         tab_id = self.select()
-        if tab_id is None:
+        if tab_id == "":
             return None
 
         return self.nametowidget(tab_id)
@@ -138,7 +141,43 @@ class Editor(ttk.Notebook):
             message_error("Failed to create tab '%s'", name)
             return
 
-        self.select(self.tabs()[-1])
+        tab_id = self.tabs()[-1]
+        tab = self.nametowidget(tab_id)
+        tab_state = tk.DISABLED if self.is_level_active else tk.NORMAL
+        self.tab(tab_id, state=tab_state)
+        tab.text.config(state=tab_state)
+        self.select(tab_id)
+
+    def _update_tab_visuals(self) -> None:
+        tab_state = tk.DISABLED if self.is_level_active else tk.NORMAL
+        active_tab_id = self.select()
+        # Tkinter is just great you have to do all that just to darken some text.
+        self.style.map(
+            "TNotebook.Tab",
+            foreground=[
+                (
+                    "disabled",
+                    (
+                        self.style.colors.selectbg
+                        if self.is_level_active
+                        else self.style.colors.fg
+                    ),
+                ),
+                ("selected", self.style.colors.fg),
+                ("!selected", self.style.colors.fg),
+            ],
+        )
+        for tab_id in self.tabs():
+            is_active_tab = tab_id == active_tab_id
+            self.tab(tab_id, state=tk.NORMAL if is_active_tab else tab_state)
+            self.nametowidget(tab_id).text.config(
+                state=tab_state,
+                fg=(
+                    self.style.colors.selectbg
+                    if is_active_tab and self.is_level_active
+                    else self.style.colors.fg
+                ),
+            )
 
     def _on_file_open_requested(self, _event: events.FileOpenRequested) -> None:
         path = ask_open_pyscript()
@@ -161,7 +200,8 @@ class Editor(ttk.Notebook):
         self.open_tab(LEVEL_SELECT_PYSCRIPT_PATH)
 
     def _on_level_state_changed(self, event: events.LevelStateChanged) -> None:
-        self.config(state=tk.DISABLED if event.is_active else tk.NORMAL)
+        self.is_level_active = event.is_active
+        self._update_tab_visuals()
 
     def _on_active_pyscript_requested(self, _event: events.ActivePyscriptRequested) -> None:
         self.save()

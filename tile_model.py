@@ -15,7 +15,7 @@ import events
 from astar import astar
 from enums import TileAction, TileType
 from matrix import Matrix
-from parser import Processor
+from processor import Processor
 from tile_data import TileData
 
 logger = logging.getLogger(__name__)
