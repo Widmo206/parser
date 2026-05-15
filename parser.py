@@ -5,22 +5,19 @@ Contributors:
     Widmo
 """
 
-# TODO: Please refactor into one file per class.
 
 from __future__ import annotations
-from dataclasses import dataclass
 import logging
 from string import ascii_letters, digits, whitespace
 from pathlib import Path
 from typing import Callable, Type, Any, Collection
 
-from enums import TileAction, TokenType, NodeType, Operator, ClosureLabel
+from enums import TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
 import events
 from matrix import Matrix
 from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
-from tile_data import TileData
 
 
 logger = logging.getLogger(__name__)
@@ -56,41 +53,6 @@ DATATYPES = (
 )
 operator_map = {op.value[0]: op for op in Operator}                   # string -> operator lookup table
 operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
-
-
-
-class Processor(object):
-    program: list
-    stack: list
-
-    def __init__(self, program: list):
-        self.program = program
-        self.stack = []
-
-    def advance(
-        self,
-        self_x: int,
-        self_y: int,
-        tile_data_matrix: Matrix[TileData],
-    ) -> TileAction | None:
-        # Keeping possibility for multiple player tiles,
-        # that should all succeed with the same code to force versatility.
-        # One processor per player tile, to keep variables separate.
-        logger.debug(
-            "Advancing processor for tile %s at (%s, %s)",
-            tile_data_matrix.get(self_x, self_y).tile_type,
-            self_x,
-            self_y,
-        )
-
-        # TODO: Advance program based on level state, block at next player action and return it.
-
-        return TileAction.MOVE_FORWARD
-        # TileAction.MOVE_BACK
-        # TileAction.TURN_LEFT
-        # TileAction.TURN_RIGHT
-        # TileAction.ATTACK
-        # None (idle)
 
 
 def read_file(path: Path) -> str:
