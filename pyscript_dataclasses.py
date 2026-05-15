@@ -55,7 +55,7 @@ class ProcessNode(object):
 
     def has_children(self):
         """Check if this node has children."""
-        return self._children is None
+        return self._children is not None
 
     def get_children(self) -> tuple[ProcessNode, ...]:
         """List the children of this node."""
