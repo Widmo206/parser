@@ -3,6 +3,20 @@
 Created on 2026.01.14
 Contributors:
     Widmo
+
+    
+TODO list:
+    figure out instruction format
+    implement compiler
+    implement processor
+    (properly) add parentheses
+    add function definition
+    add booleans
+    add if statements
+    add while loop
+    add things I forgot to add
+    fix bugs
+    add lists?
 """
 
 
