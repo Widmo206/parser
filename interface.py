@@ -104,13 +104,11 @@ class Interface(ttk.Window):
     def _on_close_level_requested(self, _event: events.CloseLevelRequested) -> None:
         self.close_popup()
 
-
     def _on_close_popup_requested(self, _event: events.ClosePopupRequested) -> None:
         self.close_popup()
 
     def _on_level_complete(self, event: events.LevelComplete) -> None:
         self.close_popup()
-
         self.level_complete_popup = LevelCompletePopup(self)
 
     def _on_restart_requested(self, _event: events.RestartRequested) -> None:

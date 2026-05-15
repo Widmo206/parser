@@ -38,6 +38,48 @@ class LevelModel:
 
         return cls(level, scheduler, tile_model_matrix)
 
+    @staticmethod
+    def get_special_move_result(
+        move: SpecialMove,
+        from_tile_model: TileModel,
+        _to_tile_model: TileModel,
+    ) -> TileModel:
+        match move:
+            case SpecialMove.PLAYER_WIN:
+                return TileModel(TileData(TileType.WIN))
+
+            case SpecialMove.ENEMY_KILL_PLAYER:
+                return TileModel(
+                    from_tile_model.tile_data,
+                    from_tile_model.processor,
+                )
+
+            case SpecialMove.PLAYER_OPEN_DOOR | SpecialMove.ENEMY_OPEN_DOOR:
+                return TileModel(
+                    TileData(
+                        (
+                            TileType.PLAYER
+                            if move is SpecialMove.PLAYER_OPEN_DOOR
+                            else TileType.ENEMY
+                        ),
+                        from_tile_model.tile_data.tile_direction,
+                    ),
+                    from_tile_model.processor,
+                )
+
+            case SpecialMove.PLAYER_PICKUP_KEY | SpecialMove.ENEMY_PICKUP_KEY:
+                return TileModel(
+                    TileData(
+                        (
+                            TileType.PLAYER_KEY
+                            if move is SpecialMove.PLAYER_PICKUP_KEY
+                            else TileType.ENEMY_KEY
+                        ),
+                        from_tile_model.tile_data.tile_direction,
+                    ),
+                    from_tile_model.processor,
+                )
+
     def attack_tile(self, x: int, y: int) -> None:
         try:
             tile_model = self.tile_model_matrix.get(x, y)
@@ -73,14 +115,25 @@ class LevelModel:
             return
 
         try:
-            self.handle_special_move(
-                SpecialMove(MoveMixin(
-                    from_tile_model.tile_data.tile_type,
-                    to_tile_model.tile_data.tile_type
-                )),
+            move = SpecialMove(MoveMixin(
+                from_tile_model.tile_data.tile_type,
+                to_tile_model.tile_data.tile_type
+            ))
+
+            logger.debug(
+                "Executing special move %s from tile %s (%i, %i) in direction %s (%s)",
+                move,
+                from_tile_model.tile_data.tile_type,
                 x,
                 y,
                 direction,
+                to_tile_model.tile_data.tile_type,
+            )
+
+            new_tile_model = self.get_special_move_result(
+                move,
+                from_tile_model,
+                to_tile_model
             )
         except ValueError:
             if not to_tile_model.tile_data.tile_type.is_walkable:
@@ -95,12 +148,14 @@ class LevelModel:
                 to_tile_model.tile_data.tile_type,
             )
 
-            self.set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
-            self.set_tile_model(to_x, to_y, TileModel(
+            new_tile_model = TileModel(
                 from_tile_model.tile_data,
                 from_tile_model.processor,
                 to_tile_model.tile_data,
-            ))
+            )
+
+        self.set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
+        self.set_tile_model(to_x, to_y, new_tile_model)
 
     def restart(self) -> None:
         if len(self.history) == 0:
@@ -157,64 +212,6 @@ class LevelModel:
 
         if self.check_win_state():
             events.LevelComplete(self.level, len(self.history))
-
-    def handle_special_move(
-        self,
-        move: SpecialMove,
-        x: int,
-        y: int,
-        direction: Direction,
-    ) -> None:
-        logger.debug(
-            "Executing special move %s from tile %s (%i, %i) to %s",
-            move,
-            from_tile_model.tile_data.tile_type,
-            from_x,
-            from_y,
-            to_tile_model.tile_data.tile_type,
-        )
-
-        match move:
-            case SpecialMove.PLAYER_WIN:
-                self.set_tile_model(to_x, to_y, TileModel(TileData(TileType.WIN)))
-
-            case SpecialMove.ENEMY_KILL_PLAYER:
-                self.set_tile_model(to_x, to_y, TileModel(
-                    from_tile_model.tile_data,
-                    from_tile_model.processor,
-                ))
-
-            case SpecialMove.PLAYER_OPEN_DOOR | SpecialMove.ENEMY_OPEN_DOOR:
-                self.set_tile_model(to_x, to_y, TileModel(
-                    TileData(
-                        (
-                            TileType.PLAYER
-                            if move is SpecialMove.PLAYER_OPEN_DOOR
-                            else TileType.ENEMY
-                        ),
-                        from_tile_model.tile_data.tile_direction,
-                    ),
-                    from_tile_model.processor,
-                ))
-
-            case SpecialMove.PLAYER_PICKUP_KEY | SpecialMove.ENEMY_PICKUP_KEY:
-                self.set_tile_model(to_x, to_y, TileModel(
-                    TileData(
-                        (
-                            TileType.PLAYER_KEY
-                            if move is SpecialMove.PLAYER_PICKUP_KEY
-                            else TileType.ENEMY_KEY
-                        ),
-                        from_tile_model.tile_data.tile_direction,
-                    ),
-                    from_tile_model.processor,
-                ))
-
-        self.set_tile_model(
-            from_x,
-            from_y,
-            TileModel(from_tile_model.floor_tile_data),
-        )
 
     def handle_tile_action(self, x: int, y: int, action: TileAction) -> None:
         tile_model = self.tile_model_matrix.get(x, y)
