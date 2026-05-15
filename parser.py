@@ -558,8 +558,10 @@ if __name__ == "__main__":
         ExternalFunction('print', NoneType, print, False)
     ]
 
-    parser = Parser(external_references=external_functions)
-    source = parser.get_source()
-    tokens = parser.tokenize(source)
-    tree   = parser.parse(tokens)
+    parser  = Parser(external_references=external_functions)
+    source  = parser.get_source()
+    tokens  = parser.tokenize(source)
+    tree    = parser.parse(tokens)
+    program = parser.compile(tree)
+    print(program)
     print("finished")
