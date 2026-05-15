@@ -18,7 +18,7 @@ from enums import TileAction, TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
 import events
 from matrix import Matrix
-from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, DataType
+from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
 from tile_data import TileData
 
@@ -104,12 +104,12 @@ def read_file(path: Path) -> str:
 class Parser(object):
     """Handles parsing of PyScript files."""
     path: Path
-    external_references: Collection[Constant | ExternalFunction]
+    external_references: Collection[AnyFrozenRef]
 
     def __init__(
         self,
         path: Path = Path("pyscript/test.pyscript"),
-        external_references: Collection[Constant | ExternalFunction] | None=None
+        external_references: Collection[AnyFrozenRef] | None=None
     ):
         self.path = path
         if external_references is None:
@@ -309,11 +309,11 @@ class Parser(object):
                 assert exited_node.get_type() == node_type
             current_node = code_stack[-1]
 
-        def ensure_expression() -> None:
+        def ensure_expression(current_line: int) -> None:
             """Ensure the current node is within an expression. Create a new one if it isn't."""
             nonlocal code_stack
             if code_stack[-1].get_type() != NodeType.EXPRESSION:
-                step_into(NodeType.EXPRESSION, None)
+                step_into(NodeType.EXPRESSION, current_line, None)
 
         while len(tokens) > 0:
             current_token = tokens.pop(0)
@@ -342,7 +342,7 @@ class Parser(object):
                             elif not isinstance(variable, Variable):
                                 raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a variable")
                             step_into(NodeType.WRITE, current_token.line, variable)
-                            step_into(NodeType.EXPRESSION, tokens.pop(0).line) # consumes the '='
+                            step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
                         case _:
                             value = current_closure.find(current_token.value)
                             if value is None:
@@ -394,29 +394,29 @@ class Parser(object):
                         step_out_of(NodeType.CLOSURE)
                     except AssertionError as e:
                         raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
-                    current_closure = current_closure.get_parent()
+                    current_closure = current_closure.get_parent() # This only returns None for the Global Closure, which is already covered
 
                 case TokenType.INT_LIT:
-                    ensure_expression()
+                    ensure_expression(current_token.line)
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
                 
                 case TokenType.FLOAT_LIT:
-                    ensure_expression()
+                    ensure_expression(current_token.line)
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
 
                 case TokenType.STRING_LIT:
-                    ensure_expression()
+                    ensure_expression(current_token.line)
                     current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
 
                 case TokenType.OPERATOR:
-                    ensure_expression()
+                    ensure_expression(current_token.line)
                     current_node.add_child(ProcessNode(current_node, NodeType.OPERATION, current_token.line, current_token.value))
 
                 case TokenType.KEYWORD:
                     match current_token.value:
                         case "var":
                         # \begin{word soup}
-                            var_type: Type = Any
+                            var_type: Type = Any # idek what Pylance is complaining about here
                             var_token = tokens.pop(0) # declared variable name
                             if var_token.type != TokenType.REFERENCE:
                                 print(f"Current ProcessTree:\n{repr(process_tree)}")
@@ -482,9 +482,10 @@ if __name__ == "__main__":
     def hello_world() -> None:
         print("Hello World!")
 
+    NoneType = type(None)
     external_functions = [
-        ExternalFunction('hello', None, hello_world),
-        ExternalFunction('print', None, print)
+        ExternalFunction('hello', NoneType, hello_world),
+        ExternalFunction('print', NoneType, print)
     ]
 
     parser = Parser(external_references=external_functions)

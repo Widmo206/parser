@@ -118,6 +118,7 @@ class Function(object):
 
 AnyValue:     TypeAlias = Constant | Variable
 AnyFunction:  TypeAlias = Function | ExternalFunction
+AnyFrozenRef: TypeAlias = Constant | ExternalFunction | DataType
 AnyReference: TypeAlias = AnyValue | AnyFunction | DataType
 
 

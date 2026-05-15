@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Collection
 from enums import TokenType, NodeType, ClosureLabel
-from pyscript_types import Constant, Variable, ExternalFunction, AnyReference
+from pyscript_types import Constant, Variable, ExternalFunction, AnyReference, AnyFrozenRef
 
 
 @dataclass(frozen=True)
@@ -43,6 +43,7 @@ class ProcessNode(object):
 
     def get_line(self) -> int:
         """Return the line in the source code file that corresponds to this node."""
+        return self._source_line
     
     def get_value(self) -> Any:
         """Return the data in the value of this node."""
@@ -82,7 +83,7 @@ class ProcessNode(object):
 class ProcessTree(object):
     _root: ProcessNode
 
-    def __init__(self, external_references: Collection[Constant | ExternalFunction]):
+    def __init__(self, external_references: Collection[AnyFrozenRef]):
         _global = Closure(ClosureLabel.GLOBAL, None)
         _global.add_many(external_references)
         self._root = ProcessNode(None, NodeType.CLOSURE, 0, _global, None)
@@ -162,9 +163,9 @@ class Closure(object):
         elif self.is_root:
             return None
         else:
-            return self._parent.find(reference)
+            return self._parent.find(reference) # Shutup pylance, if self._parent is None, this line will never run
         
-    def get_parent(self) -> Closure:
+    def get_parent(self) -> Closure | None:
         """Return the next closure above this one."""
         return self._parent
     
@@ -177,7 +178,10 @@ class Closure(object):
         
         This closure has index 0 in the outermost tuple, it's parent is 1, etc.
         """
-        return self.list(), *self.get_parent().list_all()
+        if self.is_root:
+            return self.list(),
+        else:
+            return self.list(), *self.get_parent().list_all() # same as above
 
 
 @dataclass
