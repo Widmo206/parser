@@ -244,6 +244,8 @@ class Parser(object):
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
+            if node_type == NodeType.EXPRESSION and value == None:
+                value = len(expressions) # expression counter
             if value is None:
                 logger.debug(f"Stepping into   {node_type}")
             else:
