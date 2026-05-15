@@ -8,13 +8,12 @@ Contributors:
 
 from __future__ import annotations
 import logging
-from string import ascii_letters, digits, whitespace
 from pathlib import Path
-from typing import Callable, Type, Any, Collection
+from string import ascii_letters, digits, whitespace
+from typing import Type, Any, Collection
 
 from enums import TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
-import events
 from matrix import Matrix
 from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
@@ -228,7 +227,6 @@ class Parser(object):
                 raise PyScriptSyntaxError(f"{self.path} (line {line}): invalid character {repr(char)}")
             skip_operators = False
         logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
-        events.TokenizingFinished(tokens)
         return tokens
 
     def parse(self, tokens: list[Token]) -> ProcessTree:

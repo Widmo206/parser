@@ -1,4 +1,4 @@
-"""PyscriptManager class that links Editor and Output
+"""PyscriptInterface class that links Editor and Output
 
 Created on 2026.02.08
 Contributors:
@@ -16,7 +16,7 @@ from output import Output
 logger = logging.getLogger(__name__)
 
 
-class PyscriptManager(tk.PanedWindow):
+class PyscriptInterface(tk.PanedWindow):
     editor: Editor
     output: Output
 

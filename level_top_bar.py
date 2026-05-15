@@ -32,21 +32,21 @@ class LevelTopBar(ttk.Frame):
         self.name_label = ttk.Label(
             self,
             text=name,
-            anchor=ttkc.CENTER,
+            anchor=tk.CENTER,
             font=("Segoe UI", 16),
             padding=16,
             bootstyle=(ttkc.PRIMARY, ttkc.INVERSE),
         )
-        self.name_label.grid(column=1, row=0, sticky=ttkc.NSEW)
+        self.name_label.grid(column=1, row=0, sticky=tk.NSEW)
 
         best_score_text = "N/A" if token_count is None else str(token_count)
         self.token_count_label = ttk.Label(
             self,
             text=f"Best token count: {best_score_text}",
-            anchor=ttkc.CENTER,
+            anchor=tk.CENTER,
             font=("Segoe UI", 16),
             padding=16,
             bootstyle=(ttkc.PRIMARY, ttkc.INVERSE),
         )
-        self.token_count_label.grid(column=3, row=0, sticky=ttkc.NSEW)
+        self.token_count_label.grid(column=3, row=0, sticky=tk.NSEW)
 

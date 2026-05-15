@@ -13,9 +13,9 @@ import ttkbootstrap.constants as ttkc
 
 import events
 from level_complete_popup import LevelCompletePopup
-from level_manager import LevelManager
+from level_interface import LevelInterface
 from menu_bar import MenuBar
-from pyscript_manager import PyscriptManager
+from pyscript_interface import PyscriptInterface
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ class Interface(ttk.Window):
     menu_bar: MenuBar
     margin_frame: ttk.Frame
     paned_window: tk.PanedWindow
-    pyscript_manager: PyscriptManager
-    level_manager: LevelManager
+    pyscript_interface: PyscriptInterface
+    level_interface: LevelInterface
     level_complete_popup: LevelCompletePopup | None
 
     def __init__(self, **kwargs) -> None:
@@ -45,10 +45,10 @@ class Interface(ttk.Window):
         self.main_frame = ttk.Frame(self)
         self.main_frame.columnconfigure(0, weight=1)
         self.main_frame.rowconfigure(1, weight=1)
-        self.main_frame.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
+        self.main_frame.pack(anchor=tk.CENTER, fill=tk.BOTH, expand=True)
 
         self.menu_bar = MenuBar(self.main_frame)
-        self.menu_bar.grid(column=0, row=0, sticky=ttkc.NSEW)
+        self.menu_bar.grid(column=0, row=0, sticky=tk.NSEW)
 
         self.margin_frame = ttk.Frame(self.main_frame, bootstyle=ttkc.DARK)
         self.margin_frame.columnconfigure(0, minsize=8)
@@ -56,29 +56,29 @@ class Interface(ttk.Window):
         self.margin_frame.columnconfigure(2, minsize=8)
         self.margin_frame.rowconfigure(0, weight=1)
         self.margin_frame.rowconfigure(2, minsize=8)
-        self.margin_frame.grid(column=0, row=1, sticky=ttkc.NSEW)
+        self.margin_frame.grid(column=0, row=1, sticky=tk.NSEW)
 
         self.paned_window = tk.PanedWindow(
             self.margin_frame,
-            orient=ttkc.HORIZONTAL,
+            orient=tk.HORIZONTAL,
             sashwidth=8,
             borderwidth=0,
             bg=self.style.colors.dark,
         )
-        self.paned_window.grid(column=1, row=0, sticky=ttkc.NSEW)
+        self.paned_window.grid(column=1, row=0, sticky=tk.NSEW)
 
-        self.pyscript_manager = PyscriptManager(self.paned_window, self.style)
-        self.paned_window.add(self.pyscript_manager)
+        self.pyscript_interface = PyscriptInterface(self.paned_window, self.style)
+        self.paned_window.add(self.pyscript_interface)
 
-        self.level_manager = LevelManager(self.paned_window)
-        self.paned_window.add(self.level_manager)
+        self.level_interface = LevelInterface(self.paned_window)
+        self.paned_window.add(self.level_interface)
         self.level_complete_popup = None
 
-        self.paned_window.paneconfig(self.level_manager, minsize=self.MIN_RIGHT_PANEL_SIZE)
+        self.paned_window.paneconfig(self.level_interface, minsize=self.MIN_RIGHT_PANEL_SIZE)
 
         self.update_idletasks()
         self.paned_window.sash_place(0, int(self.paned_window.winfo_width() * 0.5), 0)
-        self.pyscript_manager.sash_place(0, 0, int(self.pyscript_manager.winfo_height() * 0.75))
+        self.pyscript_interface.sash_place(0, 0, int(self.pyscript_interface.winfo_height() * 0.75))
 
         events.ClosePopupRequested.connect(self._on_close_popup_requested)
         events.CloseLevelRequested.connect(self._on_close_level_requested)

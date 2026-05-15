@@ -64,7 +64,7 @@ class LevelBottomBar(ttk.Frame):
         self.pause_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/pause.png")))
         self.run_button = ttk.Button(
             self,
-            command=events.RunButtonPressed,
+            command=events.RunPauseRequested,
             compound=tk.TOP,
             text="Run",
             image=self.run_image_tk,

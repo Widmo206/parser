@@ -1,4 +1,4 @@
-"""LevelManager class that links LevelPlayer and LevelSelect
+"""LevelInterface class that links LevelPlayer and LevelSelect
 
 Created on 2026.02.06
 Contributors:
@@ -9,7 +9,6 @@ import logging
 import tkinter as tk
 
 import ttkbootstrap as ttk
-import ttkbootstrap.constants as ttkc
 
 import events
 from level import Level
@@ -19,7 +18,7 @@ from level_select import LevelSelect
 logger = logging.getLogger(__name__)
 
 
-class LevelManager(ttk.Frame):
+class LevelInterface(ttk.Frame):
     level_player: LevelPlayer | None
     level_select: LevelSelect | None
 
@@ -43,7 +42,7 @@ class LevelManager(ttk.Frame):
             self.level_select = None
 
         self.level_player = LevelPlayer(self, level)
-        self.level_player.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
+        self.level_player.pack(anchor=tk.CENTER, fill=tk.BOTH, expand=True)
 
     def open_level_select(self) -> None:
         logger.debug(f"Opening level select")
@@ -54,7 +53,7 @@ class LevelManager(ttk.Frame):
             self.level_player = None
 
         self.level_select = LevelSelect(self)
-        self.level_select.pack(anchor=ttkc.CENTER, fill=ttkc.BOTH, expand=True)
+        self.level_select.pack(anchor=tk.CENTER, fill=tk.BOTH, expand=True)
 
         events.LevelSelectOpened()
 

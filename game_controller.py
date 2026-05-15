@@ -10,10 +10,7 @@ from pathlib import Path
 from cycle_controller import CycleController
 import events
 from level_model import LevelModel
-from parser import Parser
-from pyscript_types import Constant, ExternalFunction
 from scheduler import Scheduler
-
 
 class GameController:
     cycle_controller: CycleController
@@ -25,15 +22,18 @@ class GameController:
 
         events.Cycled.connect(self._on_cycled)
         events.LevelComplete.connect(self._on_level_complete)
+        events.ParseRequested.disconnect(self._on_parse_requested)
         events.RestartRequested.connect(self._on_restart_requested)
-        events.RunRequested.connect(self._on_run_requested)
+        events.RunPauseRequested.connect(self._on_run_pause_requested)
         events.StepBackRequested.connect(self._on_step_back_requested)
         events.StepForwardRequested.connect(self._on_step_forward_requested)
 
     def destroy(self) -> None:
         events.Cycled.disconnect(self._on_cycled)
+        events.LevelComplete.disconnect(self._on_level_complete)
+        events.ParseRequested.disconnect(self._on_parse_requested)
         events.RestartRequested.disconnect(self._on_restart_requested)
-        events.RunRequested.disconnect(self._on_run_requested)
+        events.RunPauseRequested.disconnect(self._on_run_pause_requested)
         events.StepBackRequested.disconnect(self._on_step_back_requested)
         events.StepForwardRequested.disconnect(self._on_step_forward_requested)
 
@@ -44,29 +44,46 @@ class GameController:
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
 
+    def _on_parse_requested(self, event: events.ParseRequested) -> None:
+        self.level_model.create_processors(event.path)
+        if event.queue_cycle_start:
+            self.cycle_controller.start()
+        else:
+            self.level_model.step_forward()
+
     def _on_restart_requested(self, _event: events.RestartRequested) -> None:
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
         self.level_model.restart()
+        events.LevelStateChanged(False)
 
-    def _on_run_requested(self, event: events.RunRequested) -> None:
+    def _on_run_pause_requested(self, _event: events.RunPauseRequested) -> None:
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
-        else:
-            parser = Parser(event.path, [
-                Constant('foo', int, 42), # example; replace with actual constants/functions
-                ExternalFunction('print', type(None), print, False),
-            ])
-            # parser.tokenize()
-            # TODO: generate processors and pass them to level model tiles
-            self.cycle_controller.start()
+            return
+
+        if len(self.level_model.history) == 0:
+            events.LevelStateChanged(True)
+            events.ActivePyscriptRequested()
+            return
+
+        # TODO: generate processors and pass them to level model tiles
+        self.cycle_controller.start()
 
     def _on_step_back_requested(self, _event: events.StepBackRequested) -> None:
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
         self.level_model.step_back()
 
+        if len(self.level_model.history) == 0:
+            events.LevelStateChanged(False)
+
     def _on_step_forward_requested(self, _event: events.StepForwardRequested) -> None:
+        if len(self.level_model.history) == 0:
+            events.LevelStateChanged(True)
+            events.ActivePyscriptRequested()
+            return
+
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
         self.level_model.step_forward()
