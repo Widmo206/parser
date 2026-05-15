@@ -91,7 +91,10 @@ class ExternalFunction(object):
     function: Callable
     
     def __repr__(self):
-        return f"func {self.name}() -> {format_type(self.return_type)}"
+        if self.return_type == type(None):
+            return f"func {self.name}()"
+        else:
+            return f"func {self.name}() -> {format_type(self.return_type)}"
 
     def call(self, *args) -> Any:
         """Calls the function with specified arguments."""

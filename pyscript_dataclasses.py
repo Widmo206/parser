@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Collection
 from enums import TokenType, NodeType, ClosureLabel
-from pyscript_types import Constant, Variable, ExternalFunction, AnyReference, AnyFrozenRef
+from pyscript_types import AnyReference, AnyFrozenRef
 
 
 @dataclass(frozen=True)

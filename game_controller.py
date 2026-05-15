@@ -55,7 +55,7 @@ class GameController:
         else:
             parser = Parser(event.path, [
                 Constant('foo', int, 42), # example; replace with actual constants/functions
-                ExternalFunction('print', None, print),
+                ExternalFunction('print', type(None), print),
             ])
             # parser.tokenize()
             # TODO: generate processors and pass them to level model tiles
