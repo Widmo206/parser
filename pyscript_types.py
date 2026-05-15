@@ -89,9 +89,13 @@ class ExternalFunction(object):
     name: str
     return_type: Type
     function: Callable
+    pauses_execution: bool
     
     def __repr__(self):
-        return f"func {self.name}() -> {format_type(self.return_type)}"
+        if self.return_type == type(None):
+            return f"func {self.name}()"
+        else:
+            return f"func {self.name}() -> {format_type(self.return_type)}"
 
     def call(self, *args) -> Any:
         """Calls the function with specified arguments."""
@@ -118,13 +122,14 @@ class Function(object):
 
 AnyValue:     TypeAlias = Constant | Variable
 AnyFunction:  TypeAlias = Function | ExternalFunction
+AnyFrozenRef: TypeAlias = Constant | ExternalFunction | DataType
 AnyReference: TypeAlias = AnyValue | AnyFunction | DataType
 
 
 if __name__ == "__main__":
     foo = Constant("foo", int, 42)
     bar = Variable("bar", float, 9e9)
-    pip = ExternalFunction("pip", str, lambda n: n*".")
+    pip = ExternalFunction("pip", str, lambda n: n*".", False)
 
     assert foo.get() == 42
     assert bar.get() == 9e9
