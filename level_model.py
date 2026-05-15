@@ -187,6 +187,7 @@ class LevelModel:
                 from_tile_model,
                 to_tile_model
             )
+
         except ValueError:
             if not to_tile_model.tile_data.tile_type.is_walkable:
                 return

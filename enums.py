@@ -8,13 +8,12 @@ Contributors:
 
 from __future__ import annotations
 
-from ctypes.macholib.dyld import dyld_override_search
 from enum import auto, Enum
 import logging
 from pathlib import Path
 from PIL import Image
 from PIL.Image import Image as PILImage
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from common import print_enum
 from errors import UnknownDirectionError, UnknownTileTypeError
@@ -62,7 +61,7 @@ class Direction(Enum):
             return cls.RIGHT
 
     @classmethod
-    def _missing_(cls, value: object) -> Direction:
+    def _missing_(cls, value: Any) -> Direction:
         raise UnknownDirectionError(f"No direction matching value '{value}'")
 
     def __neg__(self) -> Direction:
@@ -164,7 +163,7 @@ class TileType(Enum):
             return cls.EMPTY
 
     @classmethod
-    def _missing_(cls, value: object) -> TileType:
+    def _missing_(cls, value: Any) -> TileType:
         raise UnknownTileTypeError(f"No tile type matching value '{value}'")
 
 

@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 LEVEL_SELECT_PYSCRIPT_PATH = Path("pyscript/level_select.pyscript")
 UNTITLED_TAB_NAME = "<untitled>"
+UNSAVED_TAB_SUFFIX = "*"
 
 
 class Editor(ttk.Notebook):
@@ -64,17 +65,46 @@ class Editor(ttk.Notebook):
         events.LevelStateChanged.disconnect(self._on_level_state_changed)
         super().destroy()
 
-    def get_active_tab(self) -> EditorTab | None:
+    def _add_tab(
+        self,
+        path: Path | None = None,
+        default_content_path: Path | None = None,
+    ) -> None:
+        name = path.name if path is not None else UNTITLED_TAB_NAME
+        logger.debug("Creating new tab '%s'", name)
+
+        try:
+            tab = EditorTab(
+                self,
+                self.style,
+                path,
+                default_content_path,
+                on_dirty_changed=self._on_tab_dirty_changed,
+            )
+            self.add(tab, text=name)
+        except EditorTabCreationError:
+            message_error("Failed to create tab '%s'", name)
+            return
+
+        tab_id = self.tabs()[-1]
+        tab = self.nametowidget(tab_id)
+        tab_state = tk.DISABLED if self.is_level_active else tk.NORMAL
+        self.tab(tab_id, state=tab_state)
+        tab.text.config(state=tab_state)
+        self._update_tab_title(tab)
+        self.select(tab_id)
+
+    def _get_active_tab(self) -> EditorTab | None:
         tab_id = self.select()
         if tab_id == "":
             return None
 
         return self.nametowidget(tab_id)
 
-    def new_tab(self) -> None:
+    def _new_tab(self) -> None:
         self._add_tab()
 
-    def open_tab(
+    def _open_tab(
         self,
         path: Path,
         default_content_path: Path | None = None,
@@ -87,16 +117,16 @@ class Editor(ttk.Notebook):
 
         self._add_tab(path, default_content_path)
 
-    def open_tab_solution(self, path: Path) -> None:
-        self.open_tab(get_solution_path(path), path)
+    def _open_tab_solution(self, path: Path) -> None:
+        self._open_tab(get_solution_path(path), path)
 
-    def save(self) -> None:
-        active_tab = self.get_active_tab()
+    def _save(self) -> None:
+        active_tab = self._get_active_tab()
         if active_tab is None:
             message_error("No active tab to save")
             return
         if active_tab.path is None:
-            self.save_as()
+            self._save_as()
             return
         absolute_path = active_tab.path.absolute()
         if absolute_path.is_relative_to(PROJECT_DIR):
@@ -104,49 +134,28 @@ class Editor(ttk.Notebook):
             return
 
         logger.debug(f"Saving tab to file '{active_tab.path}'")
-        active_tab.path.write_text(active_tab.text.get("1.0", "end-1c"))
+        active_tab.path.write_text(active_tab.get_content())
+        active_tab.mark_saved()
+        self._update_tab_title(active_tab)
 
-    def save_as(self) -> None:
-        active_tab = self.get_active_tab()
+    def _save_as(self) -> None:
+        active_tab = self._get_active_tab()
         if active_tab is None:
             message_error("No active tab to save")
             return
         path = ask_save_as_pyscript()
         if path is None:
             return
-        absolute_path = active_tab.path.absolute()
+        absolute_path = path.absolute()
         if absolute_path.is_relative_to(PROJECT_DIR):
             message_error("Cannot overwrite built-in file '%s'", absolute_path)
             return
 
-        logger.debug("Saving tab to file '%s'", active_tab.path)
-        path.write_text(active_tab.text.get("1.0", "end-1c"))
+        logger.debug("Saving tab to file '%s'", path)
+        path.write_text(active_tab.get_content())
         active_tab.path = path
-        self.tab(active_tab, text=path.name)
-
-    def _add_tab(
-        self,
-        path: Path | None = None,
-        default_content_path: Path | None = None,
-    ) -> None:
-        name = path.name if path is not None else UNTITLED_TAB_NAME
-        logger.debug("Creating new tab '%s'", name)
-
-        try:
-            self.add(
-                EditorTab(self, self.style, path, default_content_path),
-                text=name,
-            )
-        except EditorTabCreationError:
-            message_error("Failed to create tab '%s'", name)
-            return
-
-        tab_id = self.tabs()[-1]
-        tab = self.nametowidget(tab_id)
-        tab_state = tk.DISABLED if self.is_level_active else tk.NORMAL
-        self.tab(tab_id, state=tab_state)
-        tab.text.config(state=tab_state)
-        self.select(tab_id)
+        active_tab.mark_saved()
+        self._update_tab_title(active_tab)
 
     def _update_tab_visuals(self) -> None:
         tab_state = tk.DISABLED if self.is_level_active else tk.NORMAL
@@ -179,34 +188,42 @@ class Editor(ttk.Notebook):
                 ),
             )
 
+    def _update_tab_title(self, tab: EditorTab) -> None:
+        raw = tab.path.name if tab.path is not None else UNTITLED_TAB_NAME
+        formatted = f"{raw}{UNSAVED_TAB_SUFFIX}" if tab.is_dirty else raw
+        self.tab(tab, text=formatted)
+
+    def _on_tab_dirty_changed(self, tab: EditorTab) -> None:
+        self._update_tab_title(tab)
+
     def _on_file_open_requested(self, _event: events.FileOpenRequested) -> None:
         path = ask_open_pyscript()
         if path is not None:
-            self.open_tab(path)
+            self._open_tab(path)
 
     def _on_file_new_requested(self, _event: events.FileNewRequested) -> None:
-        self.new_tab()
+        self._new_tab()
 
     def _on_file_save_requested(self, _event: events.FileSaveRequested) -> None:
-        self.save()
+        self._save()
 
     def _on_file_save_as_requested(self, _event: events.FileSaveAsRequested) -> None:
-        self.save_as()
+        self._save_as()
 
     def _on_level_opened(self, event: events.LevelOpened) -> None:
-        self.open_tab_solution(event.level.pyscript_path)
+        self._open_tab_solution(event.level.pyscript_path)
 
     def _on_level_select_opened(self, _event: events.LevelSelectOpened) -> None:
-        self.open_tab(LEVEL_SELECT_PYSCRIPT_PATH)
+        self._open_tab(LEVEL_SELECT_PYSCRIPT_PATH)
 
     def _on_level_state_changed(self, event: events.LevelStateChanged) -> None:
         self.is_level_active = event.is_active
         self._update_tab_visuals()
 
     def _on_active_pyscript_requested(self, _event: events.ActivePyscriptRequested) -> None:
-        self.save()
+        self._save()
 
-        active_tab = self.get_active_tab()
+        active_tab = self._get_active_tab()
         if active_tab is None:
             message_error("No active tab to run")
             return
