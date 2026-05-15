@@ -14,7 +14,6 @@ from typing import Type, Any, Collection
 
 from enums import TokenType, NodeType, Operator, ClosureLabel
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
-from matrix import Matrix
 from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
 
