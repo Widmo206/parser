@@ -2,8 +2,8 @@
 
 Created on 2026.05.15
 Contributors:
-    Romcode
     Widmo
+    Romcode
 """
 
 
@@ -36,7 +36,7 @@ class Instruction(object):
 @dataclass
 class Program(object):
     instructions: list[Instruction]
-    index: int=0
+    index: int = 0
 
     def next(self):
         instruction = self.instructions[self.index]
@@ -58,7 +58,7 @@ class Processor(object):
         self_x: int,
         self_y: int,
         tile_data_matrix: Matrix[TileData],
-    ) -> Generator[TileAction | None]:
+    ) -> Generator[TileAction | None, None, None]:
         # Keeping possibility for multiple player tiles,
         # that should all succeed with the same code to force versatility.
         # One processor per player tile, to keep variables separate.
@@ -72,15 +72,14 @@ class Processor(object):
             yield None
 
         # TODO: Advance program based on level state, block at next player action and return it.
-    
+
     def set_next_action(self, action: TileAction | None) -> None:
         self.next_action = action
-    
-    def generate_action_choices(self) -> list[ExternalFunction]:
+
+    def generate_action_functions(self) -> list[ExternalFunction]:
         result = [
             ExternalFunction("wait", NoneType, lambda: self.set_next_action(None), True)
         ]
         for action in Actions:
             result.append(ExternalFunction(action.name.lower(), NoneType, lambda: self.set_next_action(action), True))
         return result
-        

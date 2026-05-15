@@ -10,13 +10,13 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 import logging
 from pathlib import Path
-from platform import processor
 
 from enums import Direction, MoveMixin, SpecialMove, TileAction, TileType
 import events
 from level import Level
 from matrix import Matrix
-from parser import Parser, Processor
+from parser import Parser
+from processor import Processor, NoneType
 from pyscript_types import ExternalFunction
 from scheduler import Scheduler
 from tile_data import TileData
@@ -47,13 +47,23 @@ class LevelModel:
             if tile_model.tile_data.tile_type not in (TileType.PLAYER, TileType.PLAYER_KEY):
                 continue
 
-            parser = Parser(
-                path,
-                [
-                    ExternalFunction("print", None, events.PyscriptOutputRequested),
-                ],
-            )
             processor = Processor(processor_id, ...)
+            external_references = processor.generate_action_functions()
+            external_references.append(ExternalFunction(
+                "print",
+                NoneType,
+                lambda text: events.PyscriptOutputRequested(
+                    processor_id,
+                    text
+                ),
+                False,
+            ))
+
+            parser = Parser(path, external_references)
+            source = parser.get_source()
+            tokens = parser.tokenize(source)
+            processor.process_tree = parser.parse(tokens)
+
             new_tile_model = TileModel(
                 tile_model.tile_data,
                 processor,

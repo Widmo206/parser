@@ -22,13 +22,14 @@ class GameController:
 
         events.Cycled.connect(self._on_cycled)
         events.LevelComplete.connect(self._on_level_complete)
-        events.ParseRequested.disconnect(self._on_parse_requested)
+        events.ParseRequested.connect(self._on_parse_requested)
         events.RestartRequested.connect(self._on_restart_requested)
         events.RunPauseRequested.connect(self._on_run_pause_requested)
         events.StepBackRequested.connect(self._on_step_back_requested)
         events.StepForwardRequested.connect(self._on_step_forward_requested)
 
     def destroy(self) -> None:
+        events.LevelStateChanged(False)
         events.Cycled.disconnect(self._on_cycled)
         events.LevelComplete.disconnect(self._on_level_complete)
         events.ParseRequested.disconnect(self._on_parse_requested)
