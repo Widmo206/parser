@@ -26,9 +26,9 @@ from pathlib import Path
 from string import ascii_letters, digits, whitespace
 from typing import Type, Any, Collection
 
-from enums import TokenType, NodeType, Operator, ClosureLabel
+from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
-from pyscript_types import Constant, Variable, ExternalFunction, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
+from pyscript_types import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
 from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
 
 
@@ -135,10 +135,6 @@ class Parser(object):
             result.append(operation_stack.pop(-1))
         expression._children = tuple(result) # modifying a private attribute *again*
         logger.debug(f"Finish parsing EXPRESSION ({expression.get_value()})")
-
-
-
-
 
     def get_source(self) -> str:
         """Load a pyscript source file fromm disk."""
@@ -482,13 +478,53 @@ class Parser(object):
         logger.debug(f"Program structure:\n{repr(process_tree)}")
         return process_tree
 
-    def compile(self, tree: ProcessTree) -> ...:
-        """"Compile" the parsers result into a python-based pseudo-assembly format that can be executed
-        by the Player's processor.
+    
 
-        see /pyscript/test.ass for prototype
-        """
-        raise NotImplementedError("NYI; get the parser done first")
+    def compile(self, tree: ProcessTree) -> ...:
+        """"Compile" the parsers result into a list of Instructions that can be executed by the Player's processor."""
+
+
+        def _r_compile(node: ProcessNode) -> list[Instruction]:
+            instructions: list[Instruction] = []
+            match node.get_type():
+                case NodeType.CLOSURE:
+                    raise NotImplementedError
+                case NodeType.EXPRESSION:
+                    for child in node.get_children():
+                        instructions += _r_compile(child)
+                case NodeType.READ:
+                    instructions.append(Instruction(PPUInstruction.READ, node.get_value(), node.get_line()))
+                case NodeType.WRITE:
+                    instructions += _r_compile(node.get_children()[0])
+                    instructions.append(Instruction(PPUInstruction.WRITE, node.get_value(), node.get_line()))
+                case NodeType.DEFINE:
+                    match node.get_value():
+                        case Constant():
+                            instructions += _r_compile(node.get_children()[0])
+                            instructions.append(Instruction(PPUInstruction.DEF, node.get_value(), node.get_line()))
+                        case Variable():
+                            instructions += _r_compile(node.get_children()[0])
+                            instructions.append(Instruction(PPUInstruction.DEF, node.get_value(), node.get_line()))
+                        case Function():
+                            raise NotImplementedError
+                        case _:
+                            raise NotImplementedError
+                case NodeType.LITERAL:
+                    instructions.append(Instruction(PPUInstruction.PUSH, node.get_value(), node.get_line()))
+                case NodeType.CALL:
+                    match node.get_value():
+                        case ExternalFunction():
+                            for child in node.get_children():
+                                instructions += _r_compile(child)
+                            instructions.append(Instruction(PPUInstruction.CALL, node.get_value(), node.get_line()))
+                        case Function():
+                            raise NotImplementedError
+                        case _:
+                            raise NotImplementedError
+                case NodeType.OPERATION:
+                    instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
+            return instructions
+
 
     def compile_from_file(self) -> ...:
         source = self.get_source()
