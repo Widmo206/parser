@@ -24,9 +24,10 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class Level:
     PATHS = (
+        Path("levels/tutorial.yaml"),
+        Path("levels/bend.yaml"),
         Path("levels/test.yaml"),
         Path("levels/astar_test.yaml"),
-        Path("levels/tutorial.yaml"),
     )
     YAML_FIELDS = (
         "name",
@@ -89,7 +90,10 @@ class Level:
         object.__setattr__(self, "height", len(rows))
 
         if any(len(row) != self.width for row in rows):
-            raise message_error("Mismatched row length in layout\n%s", self.layout)
+            message_error("Mismatched row length in layout\n%s", self.layout)
+            object.__setattr__(self, "layout", "")
+            object.__setattr__(self, "direction_layout", "")
+            return
 
         if self.direction_layout == "":
             raise_dimension_mismatch()

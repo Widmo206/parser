@@ -1,0 +1,10 @@
+name: "Bend"
+pyscript_path: "pyscript/tutorial.pyscript"
+layout: |-
+  OOF
+  OXX
+  PXX
+direction_layout: |-
+  RRR
+  RRR
+  URR
