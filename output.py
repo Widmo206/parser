@@ -11,7 +11,6 @@ from typing import Any
 
 import ttkbootstrap as ttk
 from ttkbootstrap.widgets.scrolled import ScrolledText
-from ttkbootstrap import constants as ttkc
 
 import events
 
@@ -44,30 +43,28 @@ class Output(ScrolledText):
         self.padx_ratio = padx_ratio
 
         self.text.configure(
-            state=ttkc.DISABLED,
+            state=tk.DISABLED,
             font=(self.font, self.font_size),
             padx=self.font_size * self.padx_ratio,
             highlightthickness=0,
             bg=style.colors.bg,
         )
 
-        events.RunRequested.connect(self._on_run_requested)
-        events.TokenizingFinished.connect(self._on_tokenizing_finished)
+        events.PyscriptOutputRequested.connect(self._on_processor_output_requested)
+
+    def destroy(self) -> None:
+        events.PyscriptOutputRequested.disconnect(self._on_processor_output_requested)
+        super().destroy()
 
     def clear(self) -> None:
-        self.text.configure(state=ttkc.NORMAL)
-        self.text.delete("1.0", ttkc.END)
-        self.text.configure(state=ttkc.DISABLED)
+        self.text.configure(state=tk.NORMAL)
+        self.text.delete("1.0", tk.END)
+        self.text.configure(state=tk.DISABLED)
 
     def print(self, text: Any = "") -> None:
-        self.text.configure(state=ttkc.NORMAL)
-        self.text.insert(ttkc.END, str(text) + "\n")
-        self.text.configure(state=ttkc.DISABLED)
+        self.text.configure(state=tk.NORMAL)
+        self.text.insert(tk.END, repr(text) + "\n")
+        self.text.configure(state=tk.DISABLED)
 
-    def _on_run_requested(self, event: events.RunRequested) -> None:
-        self.clear()
-        self.print(str(event.path))
-
-    def _on_tokenizing_finished(self, event: events.TokenizingFinished) -> None:
-        self.print()
-        self.print(event.tokens)
+    def _on_processor_output_requested(self, event: events.PyscriptOutputRequested) -> None:
+        self.print(event.text)

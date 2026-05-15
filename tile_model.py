@@ -34,7 +34,7 @@ class TileModel:
 
     tile_data: TileData = field(default_factory=TileData)
     processor: Processor | None = None
-    floor_tile_data: TileData = field(default_factory=TileData) # Hm yes the floor here is made out of floor
+    floor_tile_data: TileData = field(default_factory=TileData) # Hm yes the floor here is made out of floor.
 
     def __post_init__(self) -> None:
         if self.processor is None and self.tile_data.tile_type is TileType.PLAYER:
@@ -55,7 +55,7 @@ class TileModel:
                     "Player action (wasdx): ",
                 )]
             except KeyError:
-                events.RunButtonPressed()
+                events.RunPauseRequested()
                 return None
 
         # If no pyscript processor, match behavior to tile type.
@@ -64,7 +64,7 @@ class TileModel:
                 logger.error("Player tile model at (%d, %d) has no processor")
                 return None
 
-            case TileType.ENEMY:
+            case TileType.ENEMY | TileType.ENEMY_KEY:
                 return self._get_astar_action(self_x, self_y, tile_data_matrix)
 
             case _:
@@ -88,8 +88,9 @@ class TileModel:
             return None
 
         # Compute shortest path with A* pathfinding.
-        walkable_matrix = tile_data_matrix.map_xy(
-            lambda x, y, tile_data: (x, y) in player_positions or tile_data.tile_type.is_walkable
+        # Allow non-walkable tiles that may move or change such as other enemies or doors.
+        walkable_matrix = tile_data_matrix.map(
+            lambda tile_data: tile_data.tile_type is not TileType.BLOCKED
         )
         sequences = (
             astar(
@@ -108,6 +109,7 @@ class TileModel:
             key=lambda sequence: inf if sequence is None else len(sequence),
         )
 
+        # Return appropriate tile action based on best path found.
         if shortest_sequence is None or len(shortest_sequence) == 0:
             return None
 

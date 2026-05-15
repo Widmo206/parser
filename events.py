@@ -12,10 +12,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Callable, ClassVar
+from typing import Any, Callable, ClassVar
 
 from level import Level
-from pyscript_dataclasses import Token
+from pyscript_dataclasses import ProcessTree
 from tile_data import TileData
 
 logger = logging.getLogger(__name__)
@@ -63,6 +63,11 @@ class Event:
         )
         for callback in cls._listeners:
             callback(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ActivePyscriptRequested(Event):
+    queue_cycle_start: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,8 +137,25 @@ class LevelSelected(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class LevelStateChanged(Event):
+    is_active: bool
+
+
+@dataclass(frozen=True, slots=True)
 class LevelSelectOpened(Event):
     pass
+
+
+@dataclass(frozen=True, slots=True)
+class ParseRequested(Event):
+    path: Path
+    queue_cycle_start: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class PyscriptOutputRequested(Event):
+    processor_id: int = 0
+    text: Any = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -147,13 +169,8 @@ class RestartRequested(Event):
 
 
 @dataclass(frozen=True, slots=True)
-class RunButtonPressed(Event):
+class RunPauseRequested(Event):
     pass
-
-
-@dataclass(frozen=True, slots=True)
-class RunRequested(Event):
-    path: Path
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,11 +193,6 @@ class TileDataChanged(Event):
 @dataclass(frozen=True, slots=True)
 class ToggleFullscreenRequested(Event):
     pass
-
-
-@dataclass(frozen=True, slots=True)
-class TokenizingFinished(Event):
-    tokens: list[Token]
 
 
 @dataclass(frozen=True, slots=True)

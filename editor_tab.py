@@ -11,10 +11,9 @@ from pathlib import Path
 import tkinter as tk
 
 import ttkbootstrap as ttk
-import ttkbootstrap.constants as ttkc
 from ttkbootstrap.widgets.scrolled import ScrolledText
 
-from common import PYSCRIPT_EXTENSION
+from common import PYSCRIPT_EXTENSION, message_error
 from errors import EditorTabCreationError
 
 logger = logging.getLogger(__name__)
@@ -74,12 +73,12 @@ class EditorTab(ttk.Frame):
             padx=self.font_size * self.padx_ratio,
             highlightthickness=0,
             takefocus=0,
-            state=ttkc.DISABLED,
+            state=tk.DISABLED,
             bg=style.colors.primary,
             fg=style.colors.secondary,
         )
         self.line_text.tag_config("active_line", foreground=style.colors.info)
-        self.line_text.pack(side=ttkc.LEFT, fill=ttkc.Y)
+        self.line_text.pack(side=tk.LEFT, fill=tk.Y)
 
         self.scrolled_text = ScrolledText(
             self,
@@ -88,7 +87,7 @@ class EditorTab(ttk.Frame):
             padding=0,
         )
         self.scrolled_text.vbar.config(command=self._on_scrollbar)
-        self.scrolled_text.pack(side=ttkc.LEFT, fill=ttkc.BOTH, expand=True)
+        self.scrolled_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.text = self.scrolled_text.text
         self.text.configure(
@@ -138,7 +137,7 @@ class EditorTab(ttk.Frame):
         try:
             self.text.insert("1.0", path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError) as error:
-            logger.error(f"Failed to load text from '{path}'")
+            message_error(f"Failed to load text from '{path}'")
             raise EditorTabCreationError from error
 
     def zoom(self, zoom_delta: int) -> None:
@@ -185,8 +184,8 @@ class EditorTab(ttk.Frame):
 
     def _update_line_numbers(self) -> None:
         first, _ = self.line_text.yview()
-        self.line_text.config(state=ttkc.NORMAL)
-        self.line_text.delete("1.0", ttkc.END)
+        self.line_text.config(state=tk.NORMAL)
+        self.line_text.delete("1.0", tk.END)
 
         line_count = int(self.text.index("end-1c").split(".")[0])
         numbers = "\n".join(
@@ -197,12 +196,12 @@ class EditorTab(ttk.Frame):
         self.line_text.insert("1.0", numbers)
 
         if self.text.focus_get() == self.text:
-            current_line = int(self.text.index(ttkc.INSERT).split(".")[0])
+            current_line = int(self.text.index(tk.INSERT).split(".")[0])
             self.line_text.tag_add(
                 "active_line",
                 f"{current_line}.0",
                 f"{current_line}.end",
             )
 
-        self.line_text.config(state=ttkc.DISABLED)
+        self.line_text.config(state=tk.DISABLED)
         self.line_text.yview_moveto(first)

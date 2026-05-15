@@ -34,22 +34,22 @@ class LevelCompletePopup(ttk.Toplevel):
         self.geometry(f"{width}x{height}+{x}+{y}")
 
         main_frame = ttk.Frame(self, padding=20)
-        main_frame.pack(fill=ttkc.BOTH, expand=True)
+        main_frame.pack(fill=tk.BOTH, expand=True)
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(1, weight=1)
 
         header = ttk.Label(
             main_frame,
             text="Level complete!",
-            anchor=ttkc.CENTER,
+            anchor=tk.CENTER,
             font=("Segoe UI", 18),
             bootstyle=(ttkc.SUCCESS, ttkc.INVERSE),
             padding=(0, 10),
         )
-        header.grid(column=0, row=0, sticky=ttkc.EW)
+        header.grid(column=0, row=0, sticky=tk.EW)
 
         stats_frame = ttk.Frame(main_frame, padding=(0, 12))
-        stats_frame.grid(column=0, row=1, sticky=ttkc.NSEW)
+        stats_frame.grid(column=0, row=1, sticky=tk.NSEW)
         stats_frame.columnconfigure(1, weight=1)
 
         # TODO: Pass completion stats correctly.
@@ -64,18 +64,18 @@ class LevelCompletePopup(ttk.Toplevel):
             ttk.Label(
                 stats_frame,
                 text=f"{name}:",
-                anchor=ttkc.W,
+                anchor=tk.W,
                 font=("Segoe UI", 11, "bold"),
-            ).grid(column=0, row=row, sticky=ttkc.W, pady=4, padx=(0, 12))
+            ).grid(column=0, row=row, sticky=tk.W, pady=4, padx=(0, 12))
             ttk.Label(
                 stats_frame,
                 text=value,
-                anchor=ttkc.W,
+                anchor=tk.W,
                 font=("Segoe UI", 11),
-            ).grid(column=1, row=row, sticky=ttkc.W, pady=4)
+            ).grid(column=1, row=row, sticky=tk.W, pady=4)
 
         buttons = ttk.Frame(main_frame)
-        buttons.grid(column=0, row=2, sticky=ttkc.E)
+        buttons.grid(column=0, row=2, sticky=tk.E)
         ttk.Button(
             buttons,
             text="Close",
