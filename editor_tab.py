@@ -5,10 +5,12 @@ Contributors:
     Romcode
 """
 
+from __future__ import annotations
 import logging
 from math import ceil, floor
 from pathlib import Path
 import tkinter as tk
+from typing import Callable
 
 import ttkbootstrap as ttk
 from ttkbootstrap.widgets.scrolled import ScrolledText
@@ -23,6 +25,7 @@ class EditorTab(ttk.Frame):
     DELTA_PER_ZOOM = 120
 
     path: Path | None
+    is_dirty: bool
     font: str
     font_size: int
     min_font_size: int
@@ -41,6 +44,7 @@ class EditorTab(ttk.Frame):
         style: ttk.Style,
         path: Path | None = None,
         default_content_path: Path | None = None,
+        on_dirty_changed: Callable[[EditorTab], None] | None = None,
         font: str = "Consolas",
         font_size: int = 11,
         min_font_size: int = 1,
@@ -58,6 +62,9 @@ class EditorTab(ttk.Frame):
         super().__init__(master, **kwargs)
 
         self.path = path
+        self.is_dirty = False
+        self._saved_content = ""
+        self._on_dirty_changed = on_dirty_changed
         self.font = font
         self.font_size = font_size
         self.min_font_size = min_font_size
@@ -107,6 +114,7 @@ class EditorTab(ttk.Frame):
         self.text.bind('<Control-MouseWheel>', self._on_zoom)
         self.line_text.bind('<Control-MouseWheel>', self._on_zoom)
 
+        # Unbind text selection for line numbers.
         for seqence in (
             "<Button-1>",
             "<B1-Motion>",
@@ -116,6 +124,7 @@ class EditorTab(ttk.Frame):
             self.line_text.bind(seqence, lambda _: "break")
 
         if self.path is None:
+            self.mark_saved()
             return
 
         if self.path.is_file():
@@ -132,15 +141,58 @@ class EditorTab(ttk.Frame):
                     logger.debug(f"No default content file found at '{default_content_path}'")
                 logger.debug("Keeping empty tab")
 
+        self.mark_saved()
+
+    def get_content(self) -> str:
+        return self.text.get("1.0", "end-1c")
+
+    def mark_saved(self) -> None:
+        self._saved_content = self.get_content()
+        self._set_dirty(False)
+
+    def _refresh_dirty_state(self) -> None:
+        self._set_dirty(self.get_content() != self._saved_content)
+
+    def _set_dirty(self, is_dirty: bool) -> None:
+        if self.is_dirty == is_dirty:
+            return
+        self.is_dirty = is_dirty
+        if self._on_dirty_changed is not None:
+            self._on_dirty_changed(self)
+
     def _try_load(self, path: Path) -> None:
         logger.debug(f"Loading text from '{path}'")
         try:
             self.text.insert("1.0", path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError) as error:
-            message_error(f"Failed to load text from '{path}'")
+            logger.error(f"Failed to load text from '{path}'")
             raise EditorTabCreationError from error
 
-    def zoom(self, zoom_delta: int) -> None:
+    def _update_line_numbers(self) -> None:
+        first, _ = self.line_text.yview()
+        self.line_text.config(state=tk.NORMAL)
+        self.line_text.delete("1.0", tk.END)
+
+        line_count = int(self.text.index("end-1c").split(".")[0])
+        numbers = "\n".join(
+            str(i).rjust(
+                self.line_text_width
+            ) for i in range(1, line_count + 1)
+        )
+        self.line_text.insert("1.0", numbers)
+
+        if self.text.focus_get() == self.text:
+            current_line = int(self.text.index(tk.INSERT).split(".")[0])
+            self.line_text.tag_add(
+                "active_line",
+                f"{current_line}.0",
+                f"{current_line}.end",
+            )
+
+        self.line_text.config(state=tk.DISABLED)
+        self.line_text.yview_moveto(first)
+
+    def _zoom(self, zoom_delta: int) -> None:
         if zoom_delta == 0:
             return
 
@@ -174,34 +226,11 @@ class EditorTab(ttk.Frame):
     def _on_change(self, _event: tk.Event) -> None:
         self.text.edit_modified(False)
         self._update_line_numbers()
+        self._refresh_dirty_state()
 
     def _on_focus_change(self, _event: tk.Event) -> None:
         self._update_line_numbers()
 
     def _on_zoom(self, event: tk.Event) -> str:
-        self.zoom(round(event.delta / self.DELTA_PER_ZOOM))
+        self._zoom(round(event.delta / self.DELTA_PER_ZOOM))
         return "break"
-
-    def _update_line_numbers(self) -> None:
-        first, _ = self.line_text.yview()
-        self.line_text.config(state=tk.NORMAL)
-        self.line_text.delete("1.0", tk.END)
-
-        line_count = int(self.text.index("end-1c").split(".")[0])
-        numbers = "\n".join(
-            str(i).rjust(
-                self.line_text_width
-            ) for i in range(1, line_count + 1)
-        )
-        self.line_text.insert("1.0", numbers)
-
-        if self.text.focus_get() == self.text:
-            current_line = int(self.text.index(tk.INSERT).split(".")[0])
-            self.line_text.tag_add(
-                "active_line",
-                f"{current_line}.0",
-                f"{current_line}.end",
-            )
-
-        self.line_text.config(state=tk.DISABLED)
-        self.line_text.yview_moveto(first)

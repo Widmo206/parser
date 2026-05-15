@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Callable, ClassVar
 
 from level import Level
-from pyscript_dataclasses import ProcessTree
 from tile_data import TileData
 
 logger = logging.getLogger(__name__)

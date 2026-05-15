@@ -86,13 +86,6 @@ class Interface(ttk.Window):
         events.RestartRequested.connect(self._on_restart_requested)
         events.ToggleFullscreenRequested.connect(self._on_toggle_fullscreen_requested)
 
-    def close_popup(self) -> None:
-        if self.level_complete_popup is None:
-            return
-
-        self.level_complete_popup.destroy()
-        self.level_complete_popup = None
-
     def destroy(self) -> None:
         events.ClosePopupRequested.disconnect(self._on_close_popup_requested)
         events.CloseLevelRequested.disconnect(self._on_close_level_requested)
@@ -101,18 +94,25 @@ class Interface(ttk.Window):
         events.ToggleFullscreenRequested.disconnect(self._on_toggle_fullscreen_requested)
         super().destroy()
 
+    def _close_popup(self) -> None:
+        if self.level_complete_popup is None:
+            return
+
+        self.level_complete_popup.destroy()
+        self.level_complete_popup = None
+
     def _on_close_level_requested(self, _event: events.CloseLevelRequested) -> None:
-        self.close_popup()
+        self._close_popup()
 
     def _on_close_popup_requested(self, _event: events.ClosePopupRequested) -> None:
-        self.close_popup()
+        self._close_popup()
 
     def _on_level_complete(self, event: events.LevelComplete) -> None:
-        self.close_popup()
+        self._close_popup()
         self.level_complete_popup = LevelCompletePopup(self)
 
     def _on_restart_requested(self, _event: events.RestartRequested) -> None:
-        self.close_popup()
+        self._close_popup()
 
     def _on_toggle_fullscreen_requested(self, _event: events.ToggleFullscreenRequested) -> None:
         new_mode = not self.attributes("-fullscreen")

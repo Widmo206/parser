@@ -45,7 +45,7 @@ class LevelView(ttk.Frame):
         for x, y, tile_label in self.tile_label_matrix.iter_xy():
             tile_label.grid(column=x, row=y)
 
-        self.bind("<Configure>", lambda _: self.update_tile_size())
+        self.bind("<Configure>", lambda _: self._update_tile_size())
 
         events.TileDataChanged.connect(self._on_tile_data_changed)
 
@@ -53,7 +53,7 @@ class LevelView(ttk.Frame):
         events.TileDataChanged.disconnect(self._on_tile_data_changed)
         ttk.Frame.destroy(self)
 
-    def update_tile_size(self) -> None:
+    def _update_tile_size(self) -> None:
         padding = int(str(self.cget("padding")[0])) # TODO: clean up this weird conversion issue
         tile_size = floor(min(
             (self.winfo_width() - padding * 2) / self.tile_label_matrix.width,
