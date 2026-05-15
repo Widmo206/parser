@@ -83,15 +83,43 @@ class Parser(object):
         assert expression.get_type() == NodeType.EXPRESSION
         # Step 1: find any unary minus
         previous_node: ProcessNode | None = None
-        for node in expression.get_children():
+        nodes = list(expression.get_children())
+        for node in nodes:
             if (node.get_type() == NodeType.OPERATION
                 and node.get_value() == Operator.SUB
                 and (previous_node is None
                      or previous_node.get_type() == NodeType.OPERATION)
                 ):
                 node._value = Operator.NEGATIVE # yes I'm modifying a private attribute
-        
-        ...
+        # Step 2: Rearrange expression into postfix notation; thanks to:
+        # https://www.geeksforgeeks.org/dsa/convert-infix-expression-to-postfix-expression/
+        operation_stack = []
+        result = []
+        while nodes != []:
+            node = nodes[0] # not popped here because sometimes the same node is evaluated >once
+            # logger.debug(node.format())
+            if node.get_type() == NodeType.OPERATION:
+                if operation_stack == []:
+                    # logger.debug("Stack empty! -> in it goes")
+                    operation_stack.append(nodes.pop(0))
+                else:
+                    current_op: Operator = node.get_value()
+                    stack_op:   Operator = operation_stack[-1].get_value()
+                    if (stack_op.priority < current_op.priority
+                        or stack_op.priority == current_op.priority
+                        and not current_op.is_right_to_left
+                    ):
+                        # logger.debug("Lower priority! -> pop the stack")
+                        result.append(operation_stack.pop(-1))
+                    else:
+                        # logger.debug("Higher priority! -> in it goes")
+                        operation_stack.append(nodes.pop(0))
+            else:
+                # logger.debug("Operand! -> out it goes")
+                result.append(nodes.pop(0))
+        while operation_stack != []: # pop remaining operators
+            result.append(operation_stack.pop(-1))
+        expression._children = tuple(result) # modifying a private attribute *again*
         logger.debug(f"Finish parsing EXPRESSION ({expression.get_value()})")
 
 
