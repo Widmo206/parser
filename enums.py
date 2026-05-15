@@ -18,6 +18,7 @@ from typing import Any, NamedTuple
 from common import print_enum
 from errors import UnknownDirectionError, UnknownTileTypeError
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -171,6 +172,7 @@ class MoveMixin(NamedTuple):
     from_type: TileType
     to_type: TileType
 
+
 class SpecialMove(MoveMixin, Enum):
     PLAYER_WIN        = (TileType.PLAYER,     TileType.WIN)
     ENEMY_KILL_PLAYER = (TileType.ENEMY,      TileType.PLAYER)
@@ -242,12 +244,25 @@ class ClosureLabel(Enum):
     MISC        = auto()
 
 
+class PPUInstruction(Enum):
+    # PyScript Processing Unit
+    DEF    = auto() # define a const or var
+    RUN    = auto() # run a subprogram (anything in a closure)
+    PUSH   = auto() # push a value onto the stack
+    PULL   = auto() # pull a value from the stack
+    READ   = auto() # read a const or var
+    WRITE  = auto() # write to a var
+    CALL   = auto() # call an ExternalFunction
+    EVAL   = auto() # evaluate a math operation
+
+
 def _test() -> None:
     for enum in (
         ClosureLabel,
         Direction,
         NodeType,
         Operator,
+        PPUInstruction,
         SpecialMove,
         TileAction,
         TileType,
