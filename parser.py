@@ -77,6 +77,27 @@ class Parser(object):
         else:
             self.external_references = *DATATYPES, *external_references
 
+    @staticmethod
+    def parse_expression(expression: ProcessNode):
+        logger.debug(f"Start parsing EXPRESSION ({expression.get_value()})")
+        assert expression.get_type() == NodeType.EXPRESSION
+        # Step 1: find any unary minus
+        previous_node: ProcessNode | None = None
+        for node in expression.get_children():
+            if (node.get_type() == NodeType.OPERATION
+                and node.get_value() == Operator.SUB
+                and (previous_node is None
+                     or previous_node.get_type() == NodeType.OPERATION)
+                ):
+                node._value = Operator.NEGATIVE # yes I'm modifying a private attribute
+        
+        ...
+        logger.debug(f"Finish parsing EXPRESSION ({expression.get_value()})")
+
+
+
+
+
     def get_source(self) -> str:
         """Load a pyscript source file fromm disk."""
         return read_file(self.path)
@@ -238,11 +259,14 @@ class Parser(object):
         code_stack = [process_tree.get_root()]
         current_node = code_stack[0] # -> ProcessNode of type CLOSURE
         current_closure: Closure = process_tree.get_root().get_value() # -> Closure (not Any, bc Pylance isn't smart enough)
+        expressions = []
 
         def step_into(node_type: NodeType, line: int, value: Any) -> None:
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
+            if node_type == NodeType.EXPRESSION and value == None:
+                value = len(expressions) # expression counter
             if value is None:
                 logger.debug(f"Stepping into   {node_type}")
             else:
@@ -251,6 +275,8 @@ class Parser(object):
             current_node.add_child(new_node)
             current_node = new_node
             code_stack.append(current_node)
+            if node_type == NodeType.EXPRESSION:
+                expressions.append(current_node)
 
         def step_out_of(node_type: NodeType | Any) -> None:
             """Step out of a node on the stack.
@@ -408,6 +434,8 @@ class Parser(object):
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
                     raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
+        for expression in expressions:
+            Parser.parse_expression(expression)
         logger.info(f"Finished parsing '{self.path}'")
         logger.debug(f"Program structure:\n{repr(process_tree)}")
         return process_tree

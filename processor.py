@@ -8,7 +8,7 @@ Contributors:
 
 
 import logging
-from typing import Generator, Any
+from typing import Generator, Any, TypeAlias
 from enums import TileAction
 from tile_data import TileData
 from matrix import Matrix
@@ -33,15 +33,17 @@ class Instruction(object):
     parameter: Any
 
 
-@dataclass
-class Program(object):
-    instructions: list[Instruction]
-    index: int = 0
+# @dataclass
+# class Program(object):
+#     instructions: list[Instruction]
+#     index: int=0
 
-    def next(self):
-        instruction = self.instructions[self.index]
-        self.index += 1
-        return instruction
+#     def next(self):
+#         instruction = self.instructions[self.index]
+#         self.index += 1
+#         return instruction
+
+Program: TypeAlias = list[Instruction]
 
 
 class Processor(object):
@@ -68,10 +70,12 @@ class Processor(object):
             self_x,
             self_y,
         )
+        for instruction in self.program:
+            ...
+
+
         while True:
             yield None
-
-        # TODO: Advance program based on level state, block at next player action and return it.
 
     def set_next_action(self, action: TileAction | None) -> None:
         self.next_action = action
