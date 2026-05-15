@@ -482,6 +482,7 @@ class Parser(object):
 
     def compile(self, tree: ProcessTree) -> ...:
         """"Compile" the parsers result into a list of Instructions that can be executed by the Player's processor."""
+        logger.info(f"Start compiling '{self.path}'")
 
 
         def _r_compile(node: ProcessNode) -> list[Instruction]:
@@ -524,6 +525,10 @@ class Parser(object):
                 case NodeType.OPERATION:
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
             return instructions
+        
+        lst = _r_compile(tree.get_root())
+        logger.info(f"Finish compiling '{self.path}'")
+        return lst
 
 
     def compile_from_file(self) -> ...:
