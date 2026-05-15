@@ -77,6 +77,27 @@ class Parser(object):
         else:
             self.external_references = *DATATYPES, *external_references
 
+    @staticmethod
+    def parse_expression(expression: ProcessNode):
+        logger.debug(f"Start parsing EXPRESSION ({expression.get_value()})")
+        assert expression.get_type() == NodeType.EXPRESSION
+        # Step 1: find any unary minus
+        previous_node: ProcessNode | None = None
+        for node in expression.get_children():
+            if (node.get_type() == NodeType.OPERATION
+                and node.get_value() == Operator.SUB
+                and (previous_node is None
+                     or previous_node.get_type() == NodeType.OPERATION)
+                ):
+                node._value = Operator.NEGATIVE # yes I'm modifying a private attribute
+        
+        ...
+        logger.debug(f"Finish parsing EXPRESSION ({expression.get_value()})")
+
+
+
+
+
     def get_source(self) -> str:
         """Load a pyscript source file fromm disk."""
         return read_file(self.path)
@@ -413,6 +434,8 @@ class Parser(object):
                 case _:
                     print(f"Current ProcessTree:\n{repr(process_tree)}")
                     raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
+        for expression in expressions:
+            Parser.parse_expression(expression)
         logger.info(f"Finished parsing '{self.path}'")
         logger.debug(f"Program structure:\n{repr(process_tree)}")
         return process_tree
