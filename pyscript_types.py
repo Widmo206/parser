@@ -89,6 +89,7 @@ class ExternalFunction(object):
     name: str
     return_type: Type
     function: Callable
+    pauses_execution: bool
     
     def __repr__(self):
         if self.return_type == type(None):
@@ -128,7 +129,7 @@ AnyReference: TypeAlias = AnyValue | AnyFunction | DataType
 if __name__ == "__main__":
     foo = Constant("foo", int, 42)
     bar = Variable("bar", float, 9e9)
-    pip = ExternalFunction("pip", str, lambda n: n*".")
+    pip = ExternalFunction("pip", str, lambda n: n*".", False)
 
     assert foo.get() == 42
     assert bar.get() == 9e9

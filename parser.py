@@ -484,8 +484,8 @@ if __name__ == "__main__":
 
     NoneType = type(None)
     external_functions = [
-        ExternalFunction('hello', NoneType, hello_world),
-        ExternalFunction('print', NoneType, print)
+        ExternalFunction('hello', NoneType, hello_world, False),
+        ExternalFunction('print', NoneType, print, False)
     ]
 
     parser = Parser(external_references=external_functions)
