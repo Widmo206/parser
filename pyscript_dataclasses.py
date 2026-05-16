@@ -198,7 +198,27 @@ class Program(object):
     closure: Closure
     index: int=0
 
-    def next(self):
-        instruction = self.instructions[self.index]
-        self.index += 1
-        return instruction
+    def next(self) -> tuple[Instruction, Closure]:
+        """Grab the next instruction in the program, with the coresponding closure.
+        
+        If the instruction is a RUN, get the next instruction from it instead.
+        Raises an EndOfProgram exception when it runs out of instructions.
+        """
+        while True:
+            if self.index < len(self.instructions):
+                instruction = self.instructions[self.index]
+                closure = self.closure
+            else:
+                raise EndOfProgram
+            match instruction.instruction:
+                case PPUInstruction.RUN:
+                    try:
+                        instruction, closure = instruction.value.next()
+                    except EndOfProgram:
+                        self.index += 1
+                        continue # I wish Python had jumps
+                case _:
+                    ...
+            self.index += 1
+            break
+        return instruction, closure
