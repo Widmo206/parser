@@ -533,6 +533,8 @@ class Parser(object):
                             raise NotImplementedError
                 case NodeType.OPERATION:
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
+                case _:
+                    raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions
         
         root = tree.get_root()
