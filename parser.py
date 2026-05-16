@@ -6,11 +6,11 @@ Contributors:
 
     
 TODO list:
-    figure out instruction format
     implement compiler
     implement processor
     (properly) add parentheses
     add function definition
+    add arg type/count checking to all functions
     add booleans
     add if statements
     add while loop
