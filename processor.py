@@ -138,7 +138,7 @@ class Processor(object):
     def _print(self, text: Any = "") -> None:
         events.PyscriptOutputRequested(self.processor_id, text)
 
-    def _scan(self) -> int:
+    def _scan(self) -> str:
         self_tile_data = self.level_data.tile_data_matrix.get(
             self.level_data.x,
             self.level_data.y,
@@ -146,7 +146,7 @@ class Processor(object):
         scan_x = self.level_data.x + self_tile_data.tile_direction.x
         scan_y = self.level_data.y + self_tile_data.tile_direction.y
         scan_tile_data = self.level_data.tile_data_matrix.get(scan_x, scan_y)
-        return int(scan_tile_data.tile_type)
+        return scan_tile_data.tile_type.name.lower()
 
     def _set_next_action(self, action: TileAction | None) -> None:
         self.next_action = action
