@@ -191,12 +191,18 @@ class Instruction(object):
     parameter: Any
     source_line: int
 
+    def __str__(self):
+        return f"{self.instruction.name}: {self.parameter}"
+
 
 @dataclass
 class Program(object):
     instructions: list[Instruction]
     closure: Closure
     index: int=0
+
+    def __str__(self):
+        return f"Program\nClosure: {self.closure}\nInstructions:\n|" + "\n|".join([str(i) for i in self.instructions])
 
     def next(self) -> tuple[Instruction, Closure]:
         """Grab the next instruction in the program, with the coresponding closure.
