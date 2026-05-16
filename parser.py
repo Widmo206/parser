@@ -579,5 +579,6 @@ if __name__ == "__main__":
     program = parser.compile(tree)
     print(str(program))
     PPU.load(program)
-    next(PPU.advance(0, 0))
+    gen = PPU.make_action_generator()
+    next(gen)
     print("finished")

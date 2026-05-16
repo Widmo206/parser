@@ -47,22 +47,11 @@ class LevelModel:
             if tile_model.tile_data.tile_type not in (TileType.PLAYER, TileType.PLAYER_KEY):
                 continue
 
-            processor = Processor(processor_id, ...)
+            processor = Processor(processor_id)
             external_references = processor.generate_action_functions()
-            external_references.append(ExternalFunction(
-                "print",
-                NoneType,
-                lambda text: events.PyscriptOutputRequested(
-                    processor_id,
-                    text
-                ),
-                False,
-            ))
 
             parser = Parser(path, external_references)
-            source = parser.get_source()
-            tokens = parser.tokenize(source)
-            processor.process_tree = parser.parse(tokens)
+            processor.load(parser.compile_from_file())
 
             new_tile_model = TileModel(
                 tile_model.tile_data,
