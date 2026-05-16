@@ -86,18 +86,6 @@ class Direction(Enum):
         raise ValueError("Invalid direction rotation")
 
 
-class NodeType(Enum):
-    """Used by Parser to organize a list of tokens into a ProcessTree."""
-    CLOSURE    = auto()
-    EXPRESSION = auto()
-    READ       = auto()
-    WRITE      = auto()
-    DEFINE     = auto()
-    LITERAL    = auto()
-    CALL       = auto()
-    OPERATION  = auto()
-
-
 class TileAction(Enum):
     MOVE_FORWARD = auto()
     MOVE_BACK    = auto()
@@ -207,6 +195,18 @@ class TokenType(Enum):
 #     MINUS       = auto() # -
 #     STAR        = auto() # *
 #     SLASH       = auto() # /
+
+
+class NodeType(Enum):
+    """Used by Parser to organize a list of tokens into a ProcessTree."""
+    CLOSURE    = auto()
+    EXPRESSION = auto()
+    READ       = auto()
+    WRITE      = auto()
+    DEFINE     = auto()
+    LITERAL    = auto()
+    CALL       = auto()
+    OPERATION  = auto()
 
 
 class OperatorMixin(NamedTuple):
