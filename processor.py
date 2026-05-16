@@ -30,14 +30,21 @@ NoneType = type(None)
 
 
 class Processor(object):
-    program: Program
+    program: Program | None
     call_stack: list
     value_stack: list
     next_action: TileAction | None
 
-    def __init__(self, program: Program):
+    def __init__(self, program: Program=None):
         self.program = program
         self.stack = []
+    
+    def load(self, program: Program):
+        """Load a compiled program into the processor.
+        
+        Remember to use generate_action_functions and load them in the Parser, if you want to use them.
+        """
+        self.program = program
 
     def advance(
         self,
@@ -48,6 +55,7 @@ class Processor(object):
         # Keeping possibility for multiple player tiles,
         # that should all succeed with the same code to force versatility.
         # One processor per player tile, to keep variables separate.
+        assert self.program is not None
         logger.debug(
             "Advancing processor for tile %s at (%s, %s)",
             tile_data_matrix.get(self_x, self_y).tile_type,
