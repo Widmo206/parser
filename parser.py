@@ -489,7 +489,11 @@ class Parser(object):
             instructions: list[Instruction] = []
             match node.get_type():
                 case NodeType.CLOSURE:
-                    return [NotImplemented]
+                    program = []
+                    for child in node.get_children():
+                        program += _r_compile(child)
+                    closure: Closure = node.get_value()
+                    instructions.append(Instruction(PPUInstruction.EXEC, Program(program, closure), node.get_line()))
                 case NodeType.EXPRESSION:
                     for child in node.get_children():
                         instructions += _r_compile(child)
