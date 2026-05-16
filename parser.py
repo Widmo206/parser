@@ -6,7 +6,6 @@ Contributors:
 
     
 TODO list:
-    implement processor
     (properly) add parentheses
     add function definition
     add arg type/count checking to all functions
@@ -577,8 +576,7 @@ if __name__ == "__main__":
     tokens  = parser.tokenize(source)
     tree    = parser.parse(tokens)
     program = parser.compile(tree)
-    print(str(program))
     PPU.load(program)
     gen = PPU.make_action_generator()
     next(gen)
-    print("finished")
+    print("\n<Parser test finished>")
