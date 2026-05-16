@@ -217,14 +217,13 @@ class Program(object):
             else:
                 raise EndOfProgram
             match instruction.instruction:
-                case PPUInstruction.RUN:
+                case PPUInstruction.EXEC:
                     try:
-                        instruction, closure = instruction.value.next()
+                        instruction, closure = instruction.parameter.next()
                     except EndOfProgram:
                         self.index += 1
                         continue # I wish Python had jumps
                 case _:
-                    ...
-            self.index += 1
+                    self.index += 1
             break
         return instruction, closure
