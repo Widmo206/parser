@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Collection
 from enums import TokenType, NodeType, ClosureLabel, PPUInstruction
 from pyscript_types import AnyReference, AnyFrozenRef
+from errors import EndOfProgram
 
 
 @dataclass(frozen=True)

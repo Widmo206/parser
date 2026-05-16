@@ -41,3 +41,10 @@ class PyScriptTypeError(PyScriptError):
     e.g. trying to call a variable
     """
     pass
+
+
+class EndOfProgram(PyScriptError):
+    """Raised when a PyScript Program runs out of instructions.
+    
+    This includes subprograms.
+    """
