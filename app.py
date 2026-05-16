@@ -25,10 +25,10 @@ class App:
     def __init__(self) -> None:
         SOLUTIONS_DIR.mkdir(parents=True, exist_ok=True)
 
-        self.interface = Interface()
+        self.save = Save.from_path(SAVE_PATH) if SAVE_PATH.exists() else Save()
+        self.interface = Interface(self.save)
         self.scheduler = Scheduler(self.interface)
         self.game_controller = None
-        self.save = Save.from_path(SAVE_PATH) if SAVE_PATH.exists() else Save()
 
         events.ExitRequested.connect(self._on_exit_requested)
         events.CloseLevelRequested.connect(self._on_close_level_requested)

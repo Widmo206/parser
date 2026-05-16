@@ -16,6 +16,7 @@ from level_complete_popup import LevelCompletePopup
 from level_interface import LevelInterface
 from menu_bar import MenuBar
 from pyscript_interface import PyscriptInterface
+from save import Save
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class Interface(ttk.Window):
     level_interface: LevelInterface
     level_complete_popup: LevelCompletePopup | None
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, save: Save, **kwargs) -> None:
         kwargs.setdefault("title", "PyScript")
         kwargs.setdefault("themename", "darkly")
         super().__init__(**kwargs)
@@ -70,7 +71,7 @@ class Interface(ttk.Window):
         self.pyscript_interface = PyscriptInterface(self.paned_window, self.style)
         self.paned_window.add(self.pyscript_interface)
 
-        self.level_interface = LevelInterface(self.paned_window)
+        self.level_interface = LevelInterface(self.paned_window, save)
         self.paned_window.add(self.level_interface)
         self.level_complete_popup = None
 

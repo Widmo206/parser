@@ -10,6 +10,8 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
+from save import LevelScore
+
 class LevelTopBar(ttk.Frame):
     name_label: ttk.Label
     token_count_label: ttk.Label
@@ -18,7 +20,7 @@ class LevelTopBar(ttk.Frame):
         self,
         master: tk.Misc,
         name: str,
-        token_count: int | None = None,
+        level_score: LevelScore | None = None,
         separation: int = 4,
         **kwargs,
     ) -> None:
@@ -27,7 +29,8 @@ class LevelTopBar(ttk.Frame):
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(2, minsize=separation)
-        self.columnconfigure(4, weight=1)
+        self.columnconfigure(4, minsize=separation)
+        self.columnconfigure(6, weight=1)
 
         self.name_label = ttk.Label(
             self,
@@ -39,10 +42,10 @@ class LevelTopBar(ttk.Frame):
         )
         self.name_label.grid(column=1, row=0, sticky=tk.NSEW)
 
-        best_score_text = "N/A" if token_count is None else str(token_count)
+        step_text = "N/A" if level_score is None else str(level_score.step_count)
         self.token_count_label = ttk.Label(
             self,
-            text=f"Best token count: {best_score_text}",
+            text=f"Best step count: {step_text}",
             anchor=tk.CENTER,
             font=("Segoe UI", 16),
             padding=16,
@@ -50,3 +53,15 @@ class LevelTopBar(ttk.Frame):
         )
         self.token_count_label.grid(column=3, row=0, sticky=tk.NSEW)
 
+        token_text = "N/A" if level_score is None else str(level_score.token_count)
+        self.token_count_label = ttk.Label(
+            self,
+            text=f"Best token count: {token_text}",
+            anchor=tk.CENTER,
+            font=("Segoe UI", 16),
+            padding=16,
+            bootstyle=(ttkc.PRIMARY, ttkc.INVERSE),
+        )
+        self.token_count_label.grid(column=5, row=0, sticky=tk.NSEW)
+
+    # TODO: Add an event handler that updates best score on labels.

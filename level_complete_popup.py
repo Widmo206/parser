@@ -55,9 +55,9 @@ class LevelCompletePopup(ttk.Toplevel):
         # TODO: Pass completion stats correctly.
         stats = (
             ("Level", "level_name"),
+            ("Script", "script_name"),
             ("Steps", "step_count"),
             ("Tokens", "token_count"),
-            ("Script", "script_name"),
         )
 
         for row, (name, value) in enumerate(stats):
