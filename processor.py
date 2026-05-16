@@ -58,15 +58,15 @@ class Processor(object):
         """
         result = [
             ExternalFunction(
-                "print",
-                NoneType,
-                self._print,
+                "check_forward",
+                int,
+                self._check_forward,
                 False,
             ),
             ExternalFunction(
-                "scan",
-                int,
-                self._scan,
+                "print",
+                NoneType,
+                self._print,
                 False,
             ),
             ExternalFunction(
@@ -138,7 +138,7 @@ class Processor(object):
     def _print(self, text: Any = "") -> None:
         events.PyscriptOutputRequested(self.processor_id, text)
 
-    def _scan(self) -> str:
+    def _check_forward(self) -> str:
         self_tile_data = self.level_data.tile_data_matrix.get(
             self.level_data.x,
             self.level_data.y,
