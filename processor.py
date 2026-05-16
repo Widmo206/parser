@@ -13,8 +13,9 @@ from enums import TileAction
 from tile_data import TileData
 from matrix import Matrix
 from pyscript_types import ExternalFunction
-from pyscript_dataclasses import Instruction
+from pyscript_dataclasses import Instruction, Program
 from dataclasses import dataclass
+from errors import EndOfProgram
 
 
 logger = logging.getLogger(__name__)
@@ -26,9 +27,6 @@ Actions = (
     TileAction.ATTACK,
 )
 NoneType = type(None)
-
-
-Program: TypeAlias = list[Instruction]
 
 
 class Processor(object):
@@ -56,9 +54,16 @@ class Processor(object):
             self_x,
             self_y,
         )
-        for instruction in self.program:
-            ...
+        while True:
+            self.next_action = None
+            try:
+                instruction = self.program.next()
+            except EndOfProgram:
+                break
 
+            ... # do stuff
+            logger.debug(instruction)
+            # yield self.next_action
 
         while True:
             yield None
