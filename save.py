@@ -32,7 +32,7 @@ class Save:
         strict=True,
     )
 
-    level_scores: dict[Path, LevelScore] = field(default_factory=dict)
+    level_scores: dict[str, LevelScore] = field(default_factory=dict)
 
     @classmethod
     def from_path(cls, path: Path) -> Save:

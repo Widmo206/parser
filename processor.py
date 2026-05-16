@@ -103,7 +103,7 @@ class Processor(object):
 
     def make_action_generator(self) -> Generator[
         TileAction | None,
-        tuple[int, int, Matrix[TileData]],
+        ProcessorLevelData,
         None,
     ]:
         """Run the Processor until it runs into a function that makes it pass the turn, then yield a chosen TileAction.

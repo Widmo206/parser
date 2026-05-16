@@ -14,6 +14,7 @@ from level import Level
 from level_bottom_bar import LevelBottomBar
 from level_top_bar import LevelTopBar
 from level_view import LevelView
+from save import Save
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class LevelPlayer(ttk.Frame):
         self,
         master: tk.Misc,
         level: Level,
+        save: Save,
         **kwargs,
     ) -> None:
         super().__init__(master, **kwargs)
@@ -45,7 +47,8 @@ class LevelPlayer(ttk.Frame):
         for line in self.level.direction_layout.splitlines():
             logger.debug("'%s'", line)
 
-        self.level_top_bar = LevelTopBar(self, level.name, None)  # TODO: Get save token count.
+        level_score = save.level_scores.get(level.name)
+        self.level_top_bar = LevelTopBar(self, level.name, level_score)
         self.level_top_bar.grid(column=0, row=0, sticky=tk.NSEW)
 
         self.level_view = LevelView(self, level.get_tile_data_matrix())
