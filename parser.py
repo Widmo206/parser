@@ -15,6 +15,7 @@ TODO list:
     add if statements
     add while loop
     add things I forgot to add
+    validate expressions while parsing
     fix bugs
     add lists?
 """
@@ -29,7 +30,7 @@ from typing import Type, Any, Collection
 from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError
 from pyscript_types import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
-from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure
+from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure, Program
 
 
 logger = logging.getLogger(__name__)
@@ -484,12 +485,11 @@ class Parser(object):
         """"Compile" the parsers result into a list of Instructions that can be executed by the Player's processor."""
         logger.info(f"Start compiling '{self.path}'")
 
-
         def _r_compile(node: ProcessNode) -> list[Instruction]:
             instructions: list[Instruction] = []
             match node.get_type():
                 case NodeType.CLOSURE:
-                    raise NotImplementedError
+                    return [NotImplemented]
                 case NodeType.EXPRESSION:
                     for child in node.get_children():
                         instructions += _r_compile(child)
@@ -526,9 +526,15 @@ class Parser(object):
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
             return instructions
         
-        lst = _r_compile(tree.get_root())
+        root = tree.get_root()
+        lst = []
+        for branch in root.get_children():
+            lst += _r_compile(branch)
+        
         logger.info(f"Finish compiling '{self.path}'")
-        return lst
+        return Program(lst, root.get_value())
+    
+    
 
 
     def compile_from_file(self) -> ...:
@@ -563,5 +569,5 @@ if __name__ == "__main__":
     tokens  = parser.tokenize(source)
     tree    = parser.parse(tokens)
     program = parser.compile(tree)
-    print(program)
+    print(str(program))
     print("finished")
