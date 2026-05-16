@@ -19,7 +19,7 @@ from errors import EndOfProgram
 
 
 logger = logging.getLogger(__name__)
-Actions = (
+ACTIONS = (
     TileAction.MOVE_FORWARD,
     TileAction.MOVE_BACK,
     TileAction.TURN_LEFT,
@@ -68,13 +68,14 @@ class Processor(object):
         while True:
             yield None
 
-    def set_next_action(self, action: TileAction | None) -> None:
+    def _set_next_action(self, action: TileAction | None) -> None:
         self.next_action = action
 
     def generate_action_functions(self) -> list[ExternalFunction]:
         result = [
-            ExternalFunction("wait", NoneType, lambda: self.set_next_action(None), True)
+            # None is the default choice, so having it set to None may be unnecessary
+            ExternalFunction("wait", NoneType, lambda: self._set_next_action(None), True)
         ]
-        for action in Actions:
-            result.append(ExternalFunction(action.name.lower(), NoneType, lambda: self.set_next_action(action), True))
+        for action in ACTIONS:
+            result.append(ExternalFunction(action.name.lower(), NoneType, lambda: self._set_next_action(action), True))
         return result
