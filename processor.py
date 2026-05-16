@@ -52,6 +52,10 @@ class Processor(object):
         self_y: int,
         tile_data_matrix: Matrix[TileData],
     ) -> Generator[TileAction | None, None, None]:
+        """Run the Processor until it runs into a function that makes it pass the turn, then yield a chosen TileAction.
+        
+        If the program terminates, the Processor will continue to yield None
+        """
         # Keeping possibility for multiple player tiles,
         # that should all succeed with the same code to force versatility.
         # One processor per player tile, to keep variables separate.
@@ -80,6 +84,10 @@ class Processor(object):
         self.next_action = action
 
     def generate_action_functions(self) -> list[ExternalFunction]:
+        """Generate a list of functions corresponding to TileActions.
+        
+        N.B.: the functions are specific to a given Processor instance and should be inputted as external_references when setting up the Parser.
+        """
         result = [
             # None is the default choice, so having it set to None may be unnecessary
             ExternalFunction("wait", NoneType, lambda: self._set_next_action(None), True)
