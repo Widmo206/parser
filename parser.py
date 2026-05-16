@@ -533,6 +533,8 @@ class Parser(object):
                             raise NotImplementedError
                 case NodeType.OPERATION:
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
+                case NodeType.PARENTHESIS: # tuples aren't planned; parser should ensure there's only one child
+                    instructions += _r_compile(node.get_children()[0], current_closure)
                 case _:
                     raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions
