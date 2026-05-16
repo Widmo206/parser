@@ -2,7 +2,7 @@ hello();
 # we support comments now!
 
 print("I'm a string!");
-var x: float = 1.0e-6 * 5e7 + 1.1 / -5.;
+var x: float = 1.0e-6 * 5e7 + 1.1 / (-5. % 3);
 { # this shouldn't affect the original x
     var x: int = 42;
     print(x);
