@@ -6,7 +6,6 @@ Contributors:
 
     
 TODO list:
-    implement compiler
     implement processor
     (properly) add parentheses
     add function definition
@@ -481,7 +480,7 @@ class Parser(object):
 
     
 
-    def compile(self, tree: ProcessTree) -> ...:
+    def compile(self, tree: ProcessTree) -> Program:
         """"Compile" the parsers result into a list of Instructions that can be executed by the Player's processor."""
         logger.info(f"Start compiling '{self.path}'")
 
@@ -489,6 +488,8 @@ class Parser(object):
             instructions: list[Instruction] = []
             match node.get_type():
                 case NodeType.CLOSURE:
+                    # Adding a subprogram was the simplest way to keep closure levels, that I could think of
+                    # There's probably a better way to do it though
                     program = []
                     for child in node.get_children():
                         program += _r_compile(child)
@@ -540,10 +541,7 @@ class Parser(object):
         logger.info(f"Finish compiling '{self.path}'")
         return Program(lst, root.get_value())
     
-    
-
-
-    def compile_from_file(self) -> ...:
+    def compile_from_file(self) -> Program:
         source = self.get_source()
         tokens = self.tokenize(source)
         tree   = self.parse(tokens)

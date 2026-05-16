@@ -8,4 +8,3 @@ var x: float = 1.0e-6 * 5e7 + 1.1 / -5.;
     print(x);
 }
 print(x);
-
