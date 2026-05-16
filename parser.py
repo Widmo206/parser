@@ -515,9 +515,11 @@ class Parser(object):
                 case NodeType.CALL:
                     match node.get_value():
                         case ExternalFunction():
+                            arg_count = 0
                             for child in node.get_children():
                                 instructions += _r_compile(child)
-                            instructions.append(Instruction(PPUInstruction.CALL, node.get_value(), node.get_line()))
+                                arg_count += 1
+                            instructions.append(Instruction(PPUInstruction.CALL, (node.get_value(), arg_count), node.get_line()))
                         case Function():
                             raise NotImplementedError
                         case _:
