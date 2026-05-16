@@ -544,7 +544,9 @@ class Parser(object):
             lst += _r_compile(branch, new_global)
         
         logger.info(f"Finish compiling '{self.path}'")
-        return Program(lst, new_global)
+        program = Program(lst, new_global)
+        logger.debug(f"Compiled program:\n{str(program)}")
+        return program
     
     def compile_from_file(self) -> Program:
         source = self.get_source()
