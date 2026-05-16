@@ -199,14 +199,15 @@ class TokenType(Enum):
 
 class NodeType(Enum):
     """Used by Parser to organize a list of tokens into a ProcessTree."""
-    CLOSURE    = auto()
-    EXPRESSION = auto()
-    READ       = auto()
-    WRITE      = auto()
-    DEFINE     = auto()
-    LITERAL    = auto()
-    CALL       = auto()
-    OPERATION  = auto()
+    CLOSURE     = auto()
+    PARENTHESIS = auto()
+    EXPRESSION  = auto()
+    READ        = auto()
+    WRITE       = auto()
+    DEFINE      = auto()
+    LITERAL     = auto()
+    CALL        = auto()
+    OPERATION   = auto()
 
 
 class OperatorMixin(NamedTuple):

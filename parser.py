@@ -373,15 +373,19 @@ class Parser(object):
                                 raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a constant or variable")
                             current_node.add_child(ProcessNode(current_node, NodeType.READ, current_token.line, value))
                 
+                case TokenType.OPEN_PAREN:
+                    step_into(NodeType.PARENTHESIS, current_token.line, None)
+
                 case TokenType.CLOSE_PAREN:
+                    if code_stack[-1].get_type() != NodeType.EXPRESSION:
+                        print(f"Current ProcessTree:\n{repr(process_tree)}")
+                        raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): unexpected )")
+                    step_out_of(NodeType.EXPRESSION)
                     match code_stack[-1].get_type(): # TODO: update for other uses of parentheses
-                        case NodeType.EXPRESSION:
-                            match code_stack[-2].get_type(): # could this be a simple if?
-                                case NodeType.CALL:
-                                    step_out_of(NodeType.EXPRESSION)
-                                    step_out_of(NodeType.CALL)
-                                case _:
-                                    step_out_of(NodeType.EXPRESSION)
+                        case NodeType.CALL:
+                            step_out_of(NodeType.CALL)
+                        case NodeType.PARENTHESIS:
+                            step_out_of(NodeType.PARENTHESIS)
                         case _:
                             print(f"Current ProcessTree:\n{repr(process_tree)}")
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
