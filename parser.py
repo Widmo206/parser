@@ -497,15 +497,15 @@ class Parser(object):
                     instructions.append(Instruction(PPUInstruction.READ, node.get_value(), node.get_line()))
                 case NodeType.WRITE:
                     instructions += _r_compile(node.get_children()[0])
-                    instructions.append(Instruction(PPUInstruction.WRITE, node.get_value(), node.get_line()))
+                    instructions.append(Instruction(PPUInstruction.WRIT, node.get_value(), node.get_line()))
                 case NodeType.DEFINE:
                     match node.get_value():
                         case Constant():
                             instructions += _r_compile(node.get_children()[0])
-                            instructions.append(Instruction(PPUInstruction.DEF, node.get_value(), node.get_line()))
+                            instructions.append(Instruction(PPUInstruction.DEFC, node.get_value(), node.get_line()))
                         case Variable():
                             instructions += _r_compile(node.get_children()[0])
-                            instructions.append(Instruction(PPUInstruction.DEF, node.get_value(), node.get_line()))
+                            instructions.append(Instruction(PPUInstruction.DEFV, node.get_value(), node.get_line()))
                         case Function():
                             raise NotImplementedError
                         case _:

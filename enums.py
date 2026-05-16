@@ -246,14 +246,16 @@ class ClosureLabel(Enum):
 
 class PPUInstruction(Enum):
     # PyScript Processing Unit
-    DEF    = auto() # define a const or var
-    RUN    = auto() # run a subprogram (anything in a closure)
-    PUSH   = auto() # push a value onto the stack
-    PULL   = auto() # pull a value from the stack
-    READ   = auto() # read a const or var
-    WRITE  = auto() # write to a var
-    CALL   = auto() # call an ExternalFunction
-    EVAL   = auto() # evaluate a math operation
+    PUSH = auto() # push a value onto the stack
+    PULL = auto() # pull a value from the stack
+    READ = auto() # read from a const or var
+    WRIT = auto() # write to a var
+    CALL = auto() # call an ExternalFunction
+    EVAL = auto() # evaluate a math operation
+    DEFC = auto() # define a constant
+    DEFV = auto() # define a variable
+    DEFF = auto() # define a function
+    EXEC = auto() # run a subprogram (anything in a closure)
 
 
 def _test() -> None:
