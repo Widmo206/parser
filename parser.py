@@ -478,13 +478,11 @@ class Parser(object):
         logger.debug(f"Program structure:\n{repr(process_tree)}")
         return process_tree
 
-    
-
     def compile(self, tree: ProcessTree) -> Program:
         """"Compile" the parsers result into a list of Instructions that can be executed by the Player's processor."""
         logger.info(f"Start compiling '{self.path}'")
 
-        def _r_compile(node: ProcessNode) -> list[Instruction]:
+        def _r_compile(node: ProcessNode, current_closure: Closure) -> list[Instruction]:
             instructions: list[Instruction] = []
             match node.get_type():
                 case NodeType.CLOSURE:
@@ -492,12 +490,13 @@ class Parser(object):
                     # There's probably a better way to do it though
                     program = []
                     for child in node.get_children():
-                        program += _r_compile(child)
-                    closure: Closure = node.get_value()
+                        program += _r_compile(child, current_closure)
+                    parsed_closure: Closure = node.get_value()
+                    closure = Closure(parsed_closure.label, current_closure)
                     instructions.append(Instruction(PPUInstruction.EXEC, Program(program, closure), node.get_line()))
                 case NodeType.EXPRESSION:
                     for child in node.get_children():
-                        instructions += _r_compile(child)
+                        instructions += _r_compile(child, current_closure)
                 case NodeType.READ:
                     instructions.append(Instruction(PPUInstruction.READ, node.get_value(), node.get_line()))
                 case NodeType.WRITE:
@@ -506,10 +505,10 @@ class Parser(object):
                 case NodeType.DEFINE:
                     match node.get_value():
                         case Constant():
-                            instructions += _r_compile(node.get_children()[0])
+                            instructions += _r_compile(node.get_children()[0], current_closure)
                             instructions.append(Instruction(PPUInstruction.DEFC, node.get_value(), node.get_line()))
                         case Variable():
-                            instructions += _r_compile(node.get_children()[0])
+                            instructions += _r_compile(node.get_children()[0], current_closure)
                             instructions.append(Instruction(PPUInstruction.DEFV, node.get_value(), node.get_line()))
                         case Function():
                             raise NotImplementedError
@@ -522,7 +521,7 @@ class Parser(object):
                         case ExternalFunction():
                             arg_count = 0
                             for child in node.get_children():
-                                instructions += _r_compile(child)
+                                instructions += _r_compile(child, current_closure)
                                 arg_count += 1
                             instructions.append(Instruction(PPUInstruction.CALL, (node.get_value(), arg_count), node.get_line()))
                         case Function():
@@ -534,12 +533,15 @@ class Parser(object):
             return instructions
         
         root = tree.get_root()
+        parsed_global = root.get_value()
+        new_global = Closure(parsed_global.label, None)
+        new_global.add_many(self.external_references)
         lst = []
         for branch in root.get_children():
-            lst += _r_compile(branch)
+            lst += _r_compile(branch, new_global)
         
         logger.info(f"Finish compiling '{self.path}'")
-        return Program(lst, root.get_value())
+        return Program(lst, new_global)
     
     def compile_from_file(self) -> Program:
         source = self.get_source()
@@ -549,6 +551,7 @@ class Parser(object):
 
 
 if __name__ == "__main__":
+    from processor import Processor # conditional import at the bottom of a script >:)
     # clear the log file (doesn't happen otherwise, idk why)
     with open("latest.log", "wt") as _:
         pass
@@ -567,6 +570,7 @@ if __name__ == "__main__":
         ExternalFunction('hello', NoneType, hello_world, False),
         ExternalFunction('print', NoneType, print, False)
     ]
+    PPU = Processor()
 
     parser  = Parser(external_references=external_functions)
     source  = parser.get_source()
@@ -574,4 +578,6 @@ if __name__ == "__main__":
     tree    = parser.parse(tokens)
     program = parser.compile(tree)
     print(str(program))
+    PPU.load(program)
+    next(PPU.advance(0, 0))
     print("finished")
