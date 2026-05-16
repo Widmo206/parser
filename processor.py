@@ -138,7 +138,7 @@ class Processor(object):
     def _print(self, text: Any = "") -> None:
         events.PyscriptOutputRequested(self.processor_id, text)
 
-    def _scan(self) -> TileType:
+    def _scan(self) -> int:
         self_tile_data = self.level_data.tile_data_matrix.get(
             self.level_data.x,
             self.level_data.y,
