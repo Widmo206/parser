@@ -68,7 +68,6 @@ class GameController:
             events.ActivePyscriptRequested()
             return
 
-        # TODO: generate processors and pass them to level model tiles
         self.cycle_controller.start()
 
     def _on_step_back_requested(self, _event: events.StepBackRequested) -> None:
