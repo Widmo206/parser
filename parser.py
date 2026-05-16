@@ -26,8 +26,7 @@ from typing import Type, Any, Collection
 
 from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
-from pyscript_types import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType
-from pyscript_dataclasses import Token, ProcessNode, ProcessTree, Instruction, Closure, Program
+from pyscript_dataclasses import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType, Token, ProcessNode, ProcessTree, Closure, Instruction, Program
 
 
 logger = logging.getLogger(__name__)

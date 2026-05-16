@@ -17,7 +17,7 @@ from level import Level
 from matrix import Matrix
 from parser import Parser
 from processor import Processor, NoneType
-from pyscript_types import ExternalFunction
+from pyscript_dataclasses import ExternalFunction
 from scheduler import Scheduler
 from tile_data import TileData
 from tile_model import TileModel
