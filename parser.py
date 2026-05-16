@@ -38,8 +38,11 @@ QUOTES = "\"'"
 KEYWORDS = (
     "const",
     "var",
+    "func",
+    "if",
+    "else",
+    "while",
     "return",
-    "exit",
     )
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
