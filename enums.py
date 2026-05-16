@@ -11,9 +11,10 @@ from __future__ import annotations
 from enum import auto, Enum
 import logging
 from pathlib import Path
+from typing import Any, NamedTuple
+
 from PIL import Image
 from PIL.Image import Image as PILImage
-from typing import Any, NamedTuple
 
 from common import print_enum
 from errors import UnknownDirectionError, UnknownTileTypeError
@@ -58,12 +59,12 @@ class Direction(Enum):
         try:
             return Direction(value)
         except UnknownDirectionError:
-            logger.error(f"No direction matching value '{value}'")
+            logger.error("No direction matching value %s", value)
             return cls.RIGHT
 
     @classmethod
     def _missing_(cls, value: Any) -> Direction:
-        raise UnknownDirectionError(f"No direction matching value '{value}'")
+        raise UnknownDirectionError("No direction matching value %s", value)
 
     def __neg__(self) -> Direction:
         for direction in Direction:
@@ -106,17 +107,17 @@ class TileAction(Enum):
 
 
 class TileType(Enum):
-    BLOCKED    = ("X", None,                                None,                           False, 2)
-    EMPTY      = ("O", Path("sprites/tile_background.png"), None,                           True,  2)
-    PLAYER     = ("P", Path("sprites/tile_background.png"), Path("sprites/player.png"),     False, 0)
-    PLAYER_KEY = ("p", Path("sprites/tile_background.png"), Path("sprites/player_key.png"), False, 0)
-    ENEMY      = ("E", Path("sprites/tile_background.png"), Path("sprites/enemy.png"),      False, 1)
-    ENEMY_KEY  = ("e", Path("sprites/tile_background.png"), Path("sprites/enemy_key.png"),  False, 1)
-    FLAG       = ("F", Path("sprites/tile_background.png"), Path("sprites/flag.png"),       True,  2)
-    KEY        = ("K", Path("sprites/tile_background.png"), Path("sprites/key.png"),        True,  2)
-    DOOR       = ("D", Path("sprites/tile_background.png"), Path("sprites/door.png"),       False, 2)
-    ATTACK     = ("A", Path("sprites/tile_background.png"), Path("sprites/attack.png"),     True,  2)
-    WIN        = ("W", Path("sprites/tile_background.png"), Path("sprites/win.png"),        True,  2)
+    BLOCKED    = ("X", None,                          None,                     False, 2)
+    EMPTY      = ("O", "sprites/tile_background.png", None,                     True,  2)
+    PLAYER     = ("P", "sprites/tile_background.png", "sprites/player.png",     False, 0)
+    PLAYER_KEY = ("p", "sprites/tile_background.png", "sprites/player_key.png", False, 0)
+    ENEMY      = ("E", "sprites/tile_background.png", "sprites/enemy.png",      False, 1)
+    ENEMY_KEY  = ("e", "sprites/tile_background.png", "sprites/enemy_key.png",  False, 1)
+    FLAG       = ("F", "sprites/tile_background.png", "sprites/flag.png",       True,  2)
+    KEY        = ("K", "sprites/tile_background.png", "sprites/key.png",        True,  2)
+    DOOR       = ("D", "sprites/tile_background.png", "sprites/door.png",       False, 2)
+    ATTACK     = ("A", "sprites/tile_background.png", "sprites/attack.png",     True,  2)
+    WIN        = ("W", "sprites/tile_background.png", "sprites/win.png",        True,  2)
 
     character: str
     image: PILImage | None
@@ -126,13 +127,13 @@ class TileType(Enum):
     def __new__(
         cls,
         character: str,
-        background_path: Path | None,
-        foreground_path: Path | None,
+        background_path: str | None,
+        foreground_path: str | None,
         is_walkable: bool,
         action_priority: int,
     ) -> TileType:
-        bg = Image.open(background_path).convert("RGBA") if background_path else None
-        fg = Image.open(foreground_path).convert("RGBA") if foreground_path else None
+        bg = Image.open(Path(background_path)).convert("RGBA") if background_path else None
+        fg = Image.open(Path(foreground_path)).convert("RGBA") if foreground_path else None
 
         if bg is None:
             image = fg
@@ -160,12 +161,12 @@ class TileType(Enum):
         try:
             return TileType(value)
         except UnknownTileTypeError:
-            logger.error(f"No tile type matching value '{value}'")
+            logger.error("No tile type matching value %s", value)
             return cls.EMPTY
 
     @classmethod
     def _missing_(cls, value: Any) -> TileType:
-        raise UnknownTileTypeError(f"No tile type matching value '{value}'")
+        raise UnknownTileTypeError("No tile type matching value %s", value)
 
 
 class MoveMixin(NamedTuple):
@@ -211,8 +212,10 @@ class TokenType(Enum):
 class OperatorMixin(NamedTuple):
     chars:            str
     priority:         int
-    is_right_to_left: bool=False # when chaining, whether the rightmost instance should be evaluated first
-    is_unary:         bool=False # whether it only acts on the value immediately after, instead of before and after
+    # when chaining, whether the rightmost instance should be evaluated first
+    is_right_to_left: bool = False
+    # whether it only acts on the value immediately after, instead of before and after
+    is_unary:         bool = False
 
 
 class Operator(OperatorMixin, Enum):

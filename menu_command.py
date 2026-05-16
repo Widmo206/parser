@@ -5,11 +5,11 @@ Contributors:
     Romcode
 """
 
-from common import print_enum
-from enum import Enum
-from typing import Callable, NamedTuple
 import tkinter as tk
+from typing import Callable, NamedTuple
 
+from common import open_user_dir, print_enum
+from enum import Enum
 import events
 
 
@@ -46,11 +46,12 @@ class MenuCommandEnum(MenuCommandMixin, Enum):
 
 
 class FileMenuCommand(MenuCommandEnum):
-    NEW     = ("New", events.FileNewRequested, "Ctrl+N", "<Control-n>")
-    OPEN    = ("Open...", events.FileOpenRequested, "Ctrl+O", "<Control-o>")
-    SAVE    = ("Save", events.FileSaveRequested, "Ctrl+S", "<Control-s>")
-    SAVE_AS = ("Save as...", events.FileSaveAsRequested, "Ctrl+Shift+S", "<Control-S>")
-    EXIT    = ("Exit", events.ExitRequested, "Ctrl+Q", "<Control-q>")
+    NEW              = ("New",        events.FileNewRequested,    "Ctrl+N",       "<Control-n>")
+    OPEN             = ("Open...",    events.FileOpenRequested,   "Ctrl+O",       "<Control-o>")
+    SAVE             = ("Save",       events.FileSaveRequested,   "Ctrl+S",       "<Control-s>")
+    SAVE_AS          = ("Save as...", events.FileSaveAsRequested, "Ctrl+Shift+S", "<Control-S>")
+    OPEN_USER_FOLDER = ("Open user directory", open_user_dir)
+    EXIT             = ("Exit",       events.ExitRequested,       "Ctrl+Q",       "<Control-q>")
 
 
 class EditMenuCommand(MenuCommandEnum):

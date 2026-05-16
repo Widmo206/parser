@@ -9,6 +9,7 @@ platformdirs = "*"
 pyyaml = "*"
 pillow = "*"
 ttkbootstrap = "*"
+pylint = ">=3.0"
 
 [dev-packages]
 

@@ -7,7 +7,10 @@ Contributors:
 
 from enum import Enum
 import logging
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import showinfo, showerror, showwarning
@@ -68,7 +71,7 @@ def ask_save_as_pyscript() -> Path | None:
 
 
 def get_solution_path(path: Path) -> Path | None:
-    logger.debug(f"Creating solution path for '{path.name}'")
+    logger.debug("Creating solution path for %s", path.name)
     return SOLUTIONS_DIR / f"{path.stem}_solution{PYSCRIPT_EXTENSION}"
 
 
@@ -92,3 +95,17 @@ def normalize_path(value: Path | str) -> Path:
     if isinstance(value, Path):
         return value
     return Path(value)
+
+
+def open_user_dir() -> None:
+    try:
+        if sys.platform == "win32":
+            os.startfile(str(USER_DATA_DIR))
+        elif sys.platform == "darwin":
+            subprocess.run(["open", str(USER_DATA_DIR)], check=True)
+        else:
+            subprocess.run(["xdg-open", str(USER_DATA_DIR)], check=True)
+    except OSError as e:
+        message_error("Failed to open user directory '%s': %s", USER_DATA_DIR, e)
+    except subprocess.CalledProcessError as e:
+        message_error("Failed to open user directory '%s': %s", USER_DATA_DIR, e)

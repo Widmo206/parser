@@ -9,13 +9,12 @@ from dataclasses import dataclass, field
 
 import logging
 from math import inf
-from tkinter.simpledialog import askstring
 
-import events
 from astar import astar
 from enums import TileAction, TileType
 from matrix import Matrix
 from processor import Processor
+from processor import ProcessorLevelData
 from tile_data import TileData
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,8 @@ class TileModel:
 
     tile_data: TileData = field(default_factory=TileData)
     processor: Processor | None = None
-    floor_tile_data: TileData = field(default_factory=TileData) # Hm yes the floor here is made out of floor.
+    # Hm yes the floor here is made out of floor.
+    floor_tile_data: TileData = field(default_factory=TileData)
 
     def __post_init__(self) -> None:
         if self.processor is None and self.tile_data.tile_type is TileType.PLAYER:
@@ -47,21 +47,28 @@ class TileModel:
         tile_data_matrix: Matrix[TileData]
     ) -> TileAction | None:
         if self.processor is not None:
-            # return self.processor.advance(self_x, self_y, tile_data_matrix)
-            # TODO: Remove manual actions once processor is implemented.
-            try:
-                return self.INPUT_ACTION_MAP[askstring(
-                    "Player action",
-                    "Player action (wasdx): ",
-                )]
-            except KeyError:
-                events.RunPauseRequested()
-                return None
+            return self.processor.advance(
+                ProcessorLevelData(self_x, self_y, tile_data_matrix)
+            )
+
+            # Manual input action code
+            # try:
+            #     return self.INPUT_ACTION_MAP[askstring(
+            #         "Player action",
+            #         "Player action (wasdx): ",
+            #     )]
+            # except KeyError:
+            #     events.RunPauseRequested()
+            #     return None
 
         # If no pyscript processor, match behavior to tile type.
         match self.tile_data.tile_type:
-            case TileType.PLAYER:
-                logger.error("Player tile model at (%d, %d) has no processor")
+            case TileType.PLAYER | TileType.PLAYER_KEY:
+                logger.warning(
+                    "Player tile model at (%d, %d) has no processor",
+                    self_x,
+                    self_y,
+                )
                 return None
 
             case TileType.ENEMY | TileType.ENEMY_KEY:
