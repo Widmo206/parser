@@ -29,5 +29,4 @@ if __name__ == "__main__":
     setup_logging()
     App().run()
 
-# TODO: Replace all logging f-strings with % formatting. (source: Kessler said it was a bit faster)
 # TODO: Ensure all events get disconnected on widget destroy.
