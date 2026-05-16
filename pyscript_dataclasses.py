@@ -49,7 +49,7 @@ class Constant(object):
     _value: Any
 
     def __post_init__(self):
-        assert isinstance(self._value, self.type)
+        assert self._value is None or isinstance(self._value, self.type)
 
     def __repr__(self):
         if self._value is None:

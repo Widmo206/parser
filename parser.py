@@ -459,7 +459,7 @@ class Parser(object):
                                 var_type: Type = Any # idek what Pylance is complaining about here
                                 var_token = tokens.pop(0) # declared variable name
                                 if var_token.type != TokenType.REFERENCE:
-                                    raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var must be followed by a valid variable name")
+                                    raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var must be followed by a valid name")
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
@@ -480,8 +480,36 @@ class Parser(object):
                                 if tokens[0].type != TokenType.ASSIGN:
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
-                            # \end{word soup}
                             
+                            # word soup 2: electric boogaloo
+                            case "const": # literally copy-pasted the case for var
+                                require_closure(current_token.line, "define a constant")
+                                var_type: Type = Any # idek what Pylance is complaining about here
+                                var_token = tokens.pop(0) # declared variable name
+                                if var_token.type != TokenType.REFERENCE:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): const must be followed by a valid name")
+                                var_name: str = var_token.value
+                                if current_closure.has(var_name):
+                                    raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
+                                if tokens[0].type == TokenType.COLON:
+                                    tokens.pop(0) # consume the :
+                                    type_token = tokens.pop(0)
+                                    if type_token.type != TokenType.REFERENCE:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): incomplete type declaration of const {var_name}")
+                                    type_ref = current_closure.find(type_token.value)
+                                    if type_ref is None:
+                                        raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown type {current_token.value}")
+                                    elif not isinstance(type_ref, DataType):
+                                        raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {type_token.value} is not a data type")
+                                    var_type = type_ref.type
+                                variable = Constant(var_name, var_type, None)
+                                current_closure.add(variable)
+                                step_into(NodeType.DEFINE, var_token.line, variable)
+                                if tokens[0].type != TokenType.ASSIGN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): const {var_name} must be followed by assignment operator: =")
+                                step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
+                            # \end{word soup}
+
                             # TODO add other keywords
 
                     case _:
