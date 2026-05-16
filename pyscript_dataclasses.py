@@ -191,8 +191,11 @@ class Instruction(object):
     parameter: Any
     source_line: int
 
-    def __str__(self):
-        return f"{self.instruction.name}: {self.parameter}"
+    def __str__(self, _indent: int=0):
+        if isinstance(self.parameter, Program): # just for passing the variable down
+            return f"{self.instruction.name}: {self.parameter.__str__(_indent)}"
+        else:
+            return f"{self.instruction.name}: {self.parameter}"
 
 
 @dataclass
@@ -201,8 +204,9 @@ class Program(object):
     closure: Closure
     index: int=0
 
-    def __str__(self):
-        return f"Program\nClosure: {self.closure}\nInstructions:\n|" + "\n|".join([str(i) for i in self.instructions])
+    def __str__(self, indent: int=1):
+        e = indent
+        return f"Program\n{e*"|"}Closure: {self.closure}\n{e*"|"}Instructions:\n{e*"|"}" + f"\n{e*"|"}".join([i.__str__(e+1) for i in self.instructions]) # absolute jank, but it works
 
     def next(self) -> tuple[Instruction, Closure]:
         """Grab the next instruction in the program, with the coresponding closure.
