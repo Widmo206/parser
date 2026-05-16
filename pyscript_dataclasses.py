@@ -188,3 +188,16 @@ class Closure(object):
 class Instruction(object):
     instruction: PPUInstruction # creative name!
     parameter: Any
+    source_line: int
+
+
+@dataclass
+class Program(object):
+    instructions: list[Instruction]
+    closure: Closure
+    index: int=0
+
+    def next(self):
+        instruction = self.instructions[self.index]
+        self.index += 1
+        return instruction
