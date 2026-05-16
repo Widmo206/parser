@@ -6,7 +6,6 @@ Contributors:
 
     
 TODO list:
-    (properly) add parentheses
     add function definition
     add arg type/count checking to all functions
     add booleans
@@ -349,6 +348,8 @@ class Parser(object):
                                 raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
                             elif not isinstance(function, AnyFunction):
                                 raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not callable")
+                            if code_stack[-1].get_type() == NodeType.PARENTHESIS:
+                                step_into(NodeType.EXPRESSION, current_token.line, None)
                             step_into(NodeType.CALL, current_token.line, function)
                             if tokens[1].type == TokenType.CLOSE_PAREN: # no arguments
                                 tokens.pop(0) # consume the OPEN_PAREN
@@ -371,9 +372,13 @@ class Parser(object):
                                 raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
                             elif not isinstance(value, AnyValue):
                                 raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a constant or variable")
+                            if code_stack[-1].get_type() == NodeType.PARENTHESIS:
+                                step_into(NodeType.EXPRESSION, current_token.line, None)
                             current_node.add_child(ProcessNode(current_node, NodeType.READ, current_token.line, value))
                 
                 case TokenType.OPEN_PAREN:
+                    if code_stack[-1].get_type() == NodeType.PARENTHESIS:
+                        step_into(NodeType.EXPRESSION, current_token.line, None)
                     step_into(NodeType.PARENTHESIS, current_token.line, None)
 
                 case TokenType.CLOSE_PAREN:
