@@ -650,10 +650,17 @@ class Parser(object):
         def compile_subprogram(closure_node: ProcessNode, initial_references: list[AnyFrozenRef]) -> SubprogramProvider:
             assert closure_node.get_type() == NodeType.CLOSURE
             program = [
-                Instruction(PPUInstruction.STRT, None, 0) # it *should* get replaced at runtime
+                # Instruction(PPUInstruction.STRT, None, 0) # it *should* get replaced at runtime
             ]
             for child in closure_node.get_children():
                 program += _r_compile(child)
+            if program[-1].instruction != PPUInstruction.EXIT:
+                last_line = closure_node.get_children()[-1].get_line()
+                program += [
+                    Instruction(PPUInstruction.PUSH, 0, last_line),
+                    Instruction(PPUInstruction.EXIT, None, last_line),
+                ] # EXIT needed to exit closure; PUSH 0 because EXIT needs a return value
+
             # It's fine to pass the refs directly since they're only placeholders and will be replaced at runtime by the Processor
             return SubprogramProvider(program, closure_node.get_value().label, initial_references)
 
@@ -725,15 +732,11 @@ class Parser(object):
             return instructions
         
         root = tree.get_root()
-        parsed_global = root.get_value()
-        new_global = Closure(parsed_global.label, None)
-        new_global.add_many(self.external_references)
         lst = []
         for branch in root.get_children():
             lst += _r_compile(branch)
-        
+        program = Program(lst, ClosureLabel.GLOBAL, self.external_references)
         logger.info(f"Finish compiling '{self.path}'")
-        program = Program(lst, new_global)
         logger.debug(f"Compiled program:\n{str(program)}")
         return program
     

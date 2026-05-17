@@ -336,14 +336,23 @@ class Instruction(object):
 @dataclass
 class Program(object):
     instructions: list[Instruction]
-    closure: Closure
+    closure_type: ClosureLabel
+    initial_references: list[AnyFrozenRef] | None = None
+    current_subprogram: Program | None = None
     index: int=0
 
     def __str__(self, indent: int=1):
         e = indent
-        return f"Program\n{e*"|"}Closure: {self.closure}\n{e*"|"}Instructions:\n{e*"|"}" + f"\n{e*"|"}".join([i.__str__(e+1) for i in self.instructions]) # absolute jank, but it works
+        instructions = ""
+        for i in self.instructions:
+            if i.instruction == PPUInstruction.EXEC:
+                instructions += "\n" + e * "|" + i.__str__(e+1)
+            else:
+                instructions += "\n" + e * "|" + str(i)
 
-    def next(self) -> tuple[Instruction, Closure]:
+        return f"Subprogram\n{e*"|"}Closure Type: {self.closure_type}\n{e*"|"}Initial References: {self.initial_references}\n{e*"|"}Instructions:" + instructions
+
+    def next(self) -> Instruction:
         """Grab the next instruction in the program, with the coresponding closure.
         
         If the instruction is a RUN, get the next instruction from it instead.
@@ -352,20 +361,24 @@ class Program(object):
         while True:
             if self.index < len(self.instructions):
                 instruction = self.instructions[self.index]
-                closure = self.closure
             else:
                 raise EndOfProgram
             match instruction.instruction:
                 case PPUInstruction.EXEC:
-                    try:
-                        instruction, closure = instruction.parameter.next()
-                    except EndOfProgram:
-                        self.index += 1
-                        continue # I wish Python had jumps
+                    subprogram_provider = instruction.parameter
+                    if self.current_subprogram is None:
+                        self.current_subprogram = subprogram_provider.new()
+                        break
+                    else:
+                        try:
+                            instruction = self.current_subprogram.next()
+                        except EndOfProgram:
+                            self.index += 1
+                            continue # I wish Python had jumps
                 case _:
                     self.index += 1
             break
-        return instruction, closure
+        return instruction
 
 
 @dataclass
@@ -380,12 +393,17 @@ class SubprogramProvider(object):
     
     def __str__(self, indent: int=1):
         e = indent
-        return f"Subprogram\n{e*"|"}Closure Type: {self.closure_type}\n{e*"|"}Initial References: {self.initial_references}\n{e*"|"}Instructions:\n{e*"|"}" + f"\n{e*"|"}".join([i.__str__(e+1) for i in self.program]) # absolute jank, but it works
+        instructions = ""
+        for i in self.program:
+            if i.instruction == PPUInstruction.EXEC:
+                instructions += "\n" + e * "|" + i.__str__(e+1)
+            else:
+                instructions += "\n" + e * "|" + str(i)
 
-    def new(self, parent_closure: Closure):
-        program_closure = Closure(self.closure_type, parent_closure)
-        program_closure.add_many(self.initial_references)
-        program = Program(self.program, program_closure)
+        return f"Subprogram\n{e*"|"}Closure Type: {self.closure_type}\n{e*"|"}Initial References: {self.initial_references}\n{e*"|"}Instructions:" + instructions
+
+    def new(self):
+        return Program(self.program, self.closure_type, self.initial_references)
 
 
 if __name__ == "__main__":

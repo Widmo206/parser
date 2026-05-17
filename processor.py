@@ -14,7 +14,7 @@ from enums import TileAction, TileType, PPUInstruction, Operator
 from errors import EndOfProgram
 import events
 from processor_level_data import ProcessorLevelData
-from pyscript_dataclasses import ExternalFunction, Constant, Variable, Function, Instruction, Program
+from pyscript_dataclasses import ExternalFunction, Constant, Variable, Function, Instruction, Program, Closure
 
 logger = logging.getLogger(__name__)
 
@@ -126,13 +126,16 @@ class Processor(object):
         # that should all succeed with the same code to force versatility.
         # One processor per player tile, to keep variables separate.
         assert self.program is not None
+        global_closure = Closure(self.program.closure_type, None)
+        global_closure.add_many(self.program.initial_references)
+        current_closure = global_closure
 
         self.level_data = yield
 
         while True:
             try:
-                instruction, current_closure = self.program.next()
-                # logger.debug(instruction)
+                instruction = self.program.next()
+                logger.debug(instruction)
             except EndOfProgram:
                 break
 
