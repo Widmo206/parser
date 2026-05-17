@@ -130,6 +130,9 @@ class Function(object):
 
     def __repr__(self):
         return f"func {self.name}() -> {format_type(self.return_type)}"
+    
+    def __str__(self):
+        return repr(self)
 
     # def call(self, *args) -> Any:
     #     result = self.function(*args)
@@ -166,6 +169,9 @@ class ProcessNode(object):
     _source_line: int
     _value: Any=None
     _children: tuple[ProcessNode, ...] | None=None
+
+    def __repr__(self):
+        return f"ProcessNode(..., NodeType.{self._type.name}, {self._source_line}, {self._value}, ...)"
 
     def get_type(self) -> NodeType:
         """Return the type of this node."""
@@ -321,7 +327,7 @@ class Instruction(object):
     source_line: int
 
     def __str__(self, _indent: int=0):
-        if isinstance(self.parameter, Program): # just for passing the variable down
+        if isinstance(self.parameter, Program | SubprogramProvider): # just for passing the variable down
             return f"{self.instruction.name}: {self.parameter.__str__(_indent)}"
         else:
             return f"{self.instruction.name}: {self.parameter}"
@@ -371,6 +377,10 @@ class SubprogramProvider(object):
     def __post_init__(self):
         if self.initial_references is None:
             self.initial_references = []
+    
+    def __str__(self, indent: int=1):
+        e = indent
+        return f"Subprogram\n{e*"|"}Closure Type: {self.closure_type}\n{e*"|"}Initial References: {self.initial_references}\n{e*"|"}Instructions:\n{e*"|"}" + f"\n{e*"|"}".join([i.__str__(e+1) for i in self.program]) # absolute jank, but it works
 
     def new(self, parent_closure: Closure):
         program_closure = Closure(self.closure_type, parent_closure)
