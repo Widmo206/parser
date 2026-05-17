@@ -546,7 +546,7 @@ class Parser(object):
                 case NodeType.READ:
                     instructions.append(Instruction(PPUInstruction.READ, node.get_value(), node.get_line()))
                 case NodeType.WRITE:
-                    instructions += _r_compile(node.get_children()[0])
+                    instructions += _r_compile(node.get_children()[0], current_closure)
                     instructions.append(Instruction(PPUInstruction.WRIT, node.get_value(), node.get_line()))
                 case NodeType.DEFINE:
                     match node.get_value():
