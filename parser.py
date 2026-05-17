@@ -621,7 +621,7 @@ class Parser(object):
                                 # set up closure
                                 function_closure = Closure(ClosureLabel.FUNCTION, current_closure)
                                 for arg in arguments:
-                                    function_closure.add(Constant(arg[0], arg[1], None))
+                                    function_closure.add(Variable(arg[0], arg[1], None))
                                 step_into(NodeType.CLOSURE, open_closure.line, function_closure)
                                 current_closure = function_closure
                             
@@ -688,7 +688,7 @@ class Parser(object):
                             closure_node: ProcessNode = node.get_children()[0] # DEFINE Function should only have one child
                             args = []
                             for arg in function.args:
-                                args.append(Constant(arg[0], arg[1], None))
+                                args.append(Variable(arg[0], arg[1], None))
                             function_body = compile_subprogram(closure_node, args)
                             function.program = function_body
                             instructions.append(Instruction(PPUInstruction.DEFF, function, node.get_line()))
