@@ -26,7 +26,8 @@ from typing import Type, Any, Collection
 
 from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
-from pyscript_dataclasses import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType, Token, ProcessNode, ProcessTree, Closure, Instruction, Program, FunctionArg
+from pyscript_dataclasses import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType, Token, ProcessNode, ProcessTree, Closure, Instruction, Program, FunctionArg, SubprogramProvider
+# ATP we might as well 'from pyscript_dataclasses import *'
 
 
 logger = logging.getLogger(__name__)
@@ -638,33 +639,39 @@ class Parser(object):
         """"Compile" the parsers result into a list of Instructions that can be executed by the Player's processor."""
         logger.info(f"Start compiling '{self.path}'")
 
-        def _r_compile(node: ProcessNode, current_closure: Closure) -> list[Instruction]:
+        def compile_subprogram(closure_node: ProcessNode, initial_references: list[AnyFrozenRef]) -> SubprogramProvider:
+            assert closure_node.get_type() == NodeType.CLOSURE
+            program = [
+                Instruction(PPUInstruction.STRT, None, 0) # it *should* get replaced at runtime
+            ]
+            for child in closure_node.get_children():
+                program += _r_compile(child)
+            return SubprogramProvider(program, closure_node.get_value().label, initial_references)
+
+        def _r_compile(node: ProcessNode) -> list[Instruction]:
             instructions: list[Instruction] = []
             match node.get_type():
                 case NodeType.CLOSURE:
-                    # Adding a subprogram was the simplest way to keep closure levels, that I could think of
-                    # There's probably a better way to do it though
-                    program = []
-                    for child in node.get_children():
-                        program += _r_compile(child, current_closure)
-                    parsed_closure: Closure = node.get_value()
-                    closure = Closure(parsed_closure.label, current_closure)
-                    instructions.append(Instruction(PPUInstruction.EXEC, Program(program, closure), node.get_line()))
+                    instructions.append(Instruction(
+                        PPUInstruction.EXEC,
+                        compile_subprogram(node, []),
+                        node.get_line()
+                    ))
                 case NodeType.EXPRESSION:
                     for child in node.get_children():
-                        instructions += _r_compile(child, current_closure)
+                        instructions += _r_compile(child)
                 case NodeType.READ:
                     instructions.append(Instruction(PPUInstruction.READ, node.get_value(), node.get_line()))
                 case NodeType.WRITE:
-                    instructions += _r_compile(node.get_children()[0], current_closure)
+                    instructions += _r_compile(node.get_children()[0])
                     instructions.append(Instruction(PPUInstruction.WRIT, node.get_value(), node.get_line()))
                 case NodeType.DEFINE:
                     match node.get_value():
                         case Constant():
-                            instructions += _r_compile(node.get_children()[0], current_closure)
+                            instructions += _r_compile(node.get_children()[0])
                             instructions.append(Instruction(PPUInstruction.DEFC, node.get_value(), node.get_line()))
                         case Variable():
-                            instructions += _r_compile(node.get_children()[0], current_closure)
+                            instructions += _r_compile(node.get_children()[0])
                             instructions.append(Instruction(PPUInstruction.DEFV, node.get_value(), node.get_line()))
                         case Function():
                             raise NotImplementedError
@@ -677,7 +684,7 @@ class Parser(object):
                         case ExternalFunction():
                             arg_count = 0
                             for child in node.get_children():
-                                instructions += _r_compile(child, current_closure)
+                                instructions += _r_compile(child)
                                 arg_count += 1
                             instructions.append(Instruction(PPUInstruction.CALL, (node.get_value(), arg_count), node.get_line()))
                         case Function():
@@ -687,7 +694,7 @@ class Parser(object):
                 case NodeType.OPERATION:
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
                 case NodeType.PARENTHESIS: # tuples aren't planned; parser should ensure there's only one child
-                    instructions += _r_compile(node.get_children()[0], current_closure)
+                    instructions += _r_compile(node.get_children()[0])
                 case _:
                     raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions
@@ -698,7 +705,7 @@ class Parser(object):
         new_global.add_many(self.external_references)
         lst = []
         for branch in root.get_children():
-            lst += _r_compile(branch, new_global)
+            lst += _r_compile(branch)
         
         logger.info(f"Finish compiling '{self.path}'")
         program = Program(lst, new_global)

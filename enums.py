@@ -253,6 +253,7 @@ class ClosureLabel(Enum):
 
 class PPUInstruction(Enum):
     # PyScript Processing Unit
+    STRT = auto() # start of a subprogram; should be replaced with a corresponding EXEC before it reaches the processor
     PUSH = auto() # push a value onto the stack
     PULL = auto() # pull a value from the stack
     READ = auto() # read from a const or var
@@ -262,7 +263,7 @@ class PPUInstruction(Enum):
     DEFC = auto() # define a constant
     DEFV = auto() # define a variable
     DEFF = auto() # define a function
-    EXEC = auto() # run a subprogram (anything in a closure)
+    EXEC = auto() # step into a subprogram (anything in a closure)
 
 
 def _test() -> None:
