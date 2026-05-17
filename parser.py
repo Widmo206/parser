@@ -35,6 +35,10 @@ REFERENCE_START_CHARS = ascii_letters + "_"
 SINGLE_COMMENT = "#"
 ESCAPE_CHAR = "\\"
 QUOTES = "\"'"
+BOOLEANS = {
+    "true": True,
+    "false": False,
+}
 KEYWORDS = (
     "const",
     "var",
@@ -43,11 +47,11 @@ KEYWORDS = (
     "else",
     "while",
     "return",
-    )
+)
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
     TokenType.INDENT:     TokenType.DEINDENT,
-    }
+}
 SINGLE_CHAR_TOKENS = {
     "{": TokenType.INDENT,
     "}": TokenType.DEINDENT,
@@ -57,11 +61,12 @@ SINGLE_CHAR_TOKENS = {
     ":": TokenType.COLON,
     ";": TokenType.SEMICOLON,
     ",": TokenType.COMMA,
-    }
+}
 DATATYPES = (
     DataType("str", str),
     DataType("int", int),
     DataType("float", float),
+    DataType("bool", bool)
 )
 operator_map = {op.value[0]: op for op in Operator}                   # string -> operator lookup table
 operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
@@ -193,10 +198,12 @@ class Parser(object):
                     i += 1
                     char = source[c + i]
                 if current_token in KEYWORDS:
-                    token_type = TokenType.KEYWORD
+                    add_token(TokenType.KEYWORD, current_token, i)
+                elif current_token in BOOLEANS:
+                    add_token(TokenType.BOOL_LIT, BOOLEANS[current_token], i)
                 else:
-                    token_type = TokenType.REFERENCE
-                add_token(token_type, current_token, i)
+                    add_token(TokenType.REFERENCE, current_token, i)
+                
 
             elif char in digits:
                 is_int = True
@@ -416,6 +423,8 @@ class Parser(object):
                                         pass # expression in script/loop/function body
                                     case NodeType.DEFINE:
                                         step_out_of(NodeType.DEFINE)
+                                    case NodeType.WRITE:
+                                        step_out_of(NodeType.WRITE)
                                     case _:
                                         raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
                             case _:
@@ -445,6 +454,10 @@ class Parser(object):
                         current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
 
                     case TokenType.STRING_LIT:
+                        ensure_expression(current_token.line)
+                        current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
+                    
+                    case TokenType.BOOL_LIT:
                         ensure_expression(current_token.line)
                         current_node.add_child(ProcessNode(current_node, NodeType.LITERAL, current_token.line, current_token.value))
 

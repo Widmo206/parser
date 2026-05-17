@@ -190,6 +190,7 @@ class TokenType(Enum):
     STRING_LIT  = auto() # "abcd"
     INT_LIT     = auto() # 1234
     FLOAT_LIT   = auto() # 1.2e3
+    BOOL_LIT    = auto() # true / false
 #     # operators
 #     PLUS        = auto() # +
 #     MINUS       = auto() # -
