@@ -452,6 +452,8 @@ class Parser(object):
                         except AssertionError as e:
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
                         current_closure = current_closure.get_parent() # This only returns None for the Global Closure, which is already covered
+                        if code_stack[-1].get_type() == NodeType.DEFINE:
+                            step_out_of(NodeType.DEFINE)
 
                     case TokenType.INT_LIT:
                         ensure_expression(current_token.line)
