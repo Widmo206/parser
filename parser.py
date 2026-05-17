@@ -8,7 +8,6 @@ Contributors:
 TODO list:
     add function definition
     add arg type/count checking to all functions
-    add booleans
     add if statements
     add while loop
     add things I forgot to add
@@ -70,6 +69,7 @@ DATATYPES = (
 )
 operator_map = {op.value[0]: op for op in Operator}                   # string -> operator lookup table
 operator_initial_characters = {key[0] for key in operator_map.keys()} # chars that prompt the tokenizer to look for operators
+operator_all_characters = {c for c in "".join(operator_map.keys())}   # this is horrible
 
 
 def read_file(path: Path) -> str:
@@ -167,7 +167,7 @@ class Parser(object):
         # if you have a token (like "=") that starts with the same char as an operator (like "=="),
         # one of them will claim that character, even if it's not the correct one
         # solution: put operators first and raise this flag if the check fails
-        # flag is lowered immediately after the operator section
+        # flag is lowered immediately after the operator is checked
         skip_operators = False
         while c < len(source):
             current_token = ""
@@ -275,7 +275,7 @@ class Parser(object):
 
             elif char in operator_initial_characters and not skip_operators:
                 i = 0
-                while current_token + char in operator_map:
+                while char in operator_all_characters:
                     # get the rest of the token
                     current_token += char
                     i += 1
