@@ -7,6 +7,7 @@ Contributors:
     
 TODO list:
     add function definition
+    add checks for unterminated parens/closures/strings/expressions/...
     add arg type/count checking to all functions
     add if statements
     add while loop
@@ -25,7 +26,7 @@ from typing import Type, Any, Collection
 
 from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
-from pyscript_dataclasses import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType, Token, ProcessNode, ProcessTree, Closure, Instruction, Program
+from pyscript_dataclasses import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType, Token, ProcessNode, ProcessTree, Closure, Instruction, Program, FunctionArg
 
 
 logger = logging.getLogger(__name__)
@@ -364,7 +365,7 @@ class Parser(object):
                                 # looks like a function call
                                 function = current_closure.find(current_token.value)
                                 if function is None:
-                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
+                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference: {current_token.value}")
                                 elif not isinstance(function, AnyFunction):
                                     raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not callable")
                                 if code_stack[-1].get_type() == NodeType.PARENTHESIS:
@@ -380,7 +381,7 @@ class Parser(object):
                                 require_closure(current_token.line, "assign a value to a variable")
                                 variable = current_closure.find(current_token.value)
                                 if variable is None:
-                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
+                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference: {current_token.value}")
                                 elif not isinstance(variable, Variable):
                                     raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a variable")
                                 step_into(NodeType.WRITE, current_token.line, variable)
@@ -388,7 +389,7 @@ class Parser(object):
                             case _:
                                 value = current_closure.find(current_token.value)
                                 if value is None:
-                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference {current_token.value}")
+                                    raise PyScriptNameError(f"{self.path} (line {current_token.line}): Unknown reference: {current_token.value}")
                                 elif not isinstance(value, AnyValue):
                                     raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a constant or variable")
                                 if code_stack[-1].get_type() == NodeType.PARENTHESIS:
@@ -522,9 +523,95 @@ class Parser(object):
                                 if tokens[0].type != TokenType.ASSIGN:
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): const {var_name} must be followed by assignment operator: =")
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
-                            # \end{word soup}
+
+                            # I should be banned from using Pathon again
+                            case "func":
+                                require_closure(current_token.line, "define a function")
+                                name_token = tokens.pop(0) # function name
+                                func_name = name_token.value
+                                logger.debug(f"Defining func {func_name}")
+                                # Verify that name is free
+                                if name_token.type != TokenType.REFERENCE:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {name_token.line}): func must be followed by a valid name")
+                                if current_closure.has(func_name):
+                                    raise PyScriptNameError(f"{self.path} (line {name_token.line}): {func_name} is already defined in the current scope")
+                                # Find arguments
+                                arguments: list[FunctionArg] = []
+                                open_paren = tokens.pop(0)
+                                if open_paren.type != TokenType.OPEN_PAREN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {open_paren.line}): func {name_token.value} must be followed by a parenthesis with function arguments")
+                                while True:
+                                    arg_token = tokens.pop(0)
+                                    arg_type: Type = Any
+                                    # Verify arg name
+                                    if arg_token.type != TokenType.REFERENCE:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {arg_token.line}): '{arg_token.value}' is not a valid argument name")
+                                    arg_name = arg_token.value
+                                    # check for type declaration
+                                    if tokens[0].type == TokenType.COLON:
+                                        tokens.pop(0) # consume :
+                                        type_token = tokens.pop(0)
+                                        # Verify that it's a valid type
+                                        if type_token.type != TokenType.REFERENCE:
+                                            raise PyScriptSyntaxError(f"{self.path} (line {arg_token.line}): incomplete type declaration of argument {arg_name}")
+                                        type_ref = current_closure.find(type_token.value)
+                                        if type_ref is None:
+                                            raise PyScriptNameError(f"{self.path} (line {type_token.line}): Unknown type {type_token.value}")
+                                        elif not isinstance(type_ref, DataType):
+                                            raise PyScriptTypeError(f"{self.path} (line {type_token.line}): {type_token.value} is not a data type")
+                                        arg_type = type_ref.type
+                                    # finalize argument
+                                    arguments.append((arg_name, arg_type))
+                                    # check if there's another one
+                                    separator_token = tokens.pop(0)
+                                    if separator_token.type == TokenType.CLOSE_PAREN:
+                                        break
+                                    elif separator_token.type == TokenType.COMMA:
+                                        continue
+                                    else:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {separator_token.line}): expected ',' or ')' in function definition")
+                                logger.debug(f"Found arguments: {arguments}")
+                                # check for the arrow: func name(args) -> (return_type)
+                                arrow_token = tokens.pop(0)
+                                if arrow_token.type != TokenType.OPERATOR or arrow_token.value != Operator.ARROW:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {arrow_token.line}): expected '->' after function arguments")
+                                # check for the return type
+                                open_paren = tokens.pop(0)
+                                if open_paren.type != TokenType.OPEN_PAREN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {open_paren.line}): expected parenthesis with function return type")
+                                return_type_token = tokens.pop(0)
+                                if return_type_token.type != TokenType.REFERENCE:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {return_type_token.line}): expected function return type")
+                                type_ref = current_closure.find(return_type_token.value)
+                                if type_ref is None:
+                                    raise PyScriptNameError(f"{self.path} (line {return_type_token.line}): Unknown type {return_type_token.value}")
+                                elif not isinstance(type_ref, DataType):
+                                    raise PyScriptTypeError(f"{self.path} (line {return_type_token.line}): {return_type_token.value} is not a data type")
+                                return_type = type_ref.type
+                                logger.debug(f"found return type: {return_type}")
+                                close_paren = tokens.pop(0)
+                                if close_paren.type != TokenType.CLOSE_PAREN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {close_paren.line}): expected ')' after return type")
+                                # check for function body
+                                open_closure = tokens.pop(0)
+                                if open_closure.type != TokenType.INDENT:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {open_closure.line}): expected function body after definition")
+                                # create function with values found above
+                                function = Function(func_name, return_type, None, arguments)
+                                current_closure.add(function)
+                                step_into(NodeType.DEFINE, current_token.line, function)
+                                # set up closure
+                                function_closure = Closure(ClosureLabel.FUNCTION, current_closure)
+                                for arg in arguments:
+                                    function_closure.add(Constant(arg[0], arg[1], None))
+                                step_into(NodeType.CLOSURE, open_closure.line, function_closure)
+                                current_closure = function_closure
+                            
 
                             # TODO add other keywords
+                            case _:
+                                continue
+                                raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented keyword {current_token.value}")
 
                     case _:
                         raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")

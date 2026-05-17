@@ -10,4 +10,10 @@ const x: float = 1.0e-6 * 5e7 + 1.1 / (y % 3);
     print(x);
 }
 print(x);
-print(y * "yes")
+print(y * "yes");
+
+func equal(arg1: int, arg2: int) -> (bool){
+    return arg1 == arg2;
+}
+
+print(equal(1, 2))

@@ -237,6 +237,8 @@ class Operator(OperatorMixin, Enum):
     DIV       = ('/',  3)
     MOD       = ('%',  3)
 
+    ARROW     = ('->', 0) # not exactly an operator, but this was the simplest way to handle it
+
     def __repr__(self):
         return f"Operator.{self.name}"
 
