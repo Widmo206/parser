@@ -182,6 +182,7 @@ class Parser(object):
                 while char != "\n":
                     i += 1
                     char = source[c+i]
+                line += 1
                 c += i+1
 
             elif char in REFERENCE_START_CHARS:
