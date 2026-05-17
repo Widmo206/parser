@@ -5,8 +5,7 @@ Contributors:
     Widmo
     Romcode
 """
-
-
+from functools import partial
 import logging
 from typing import Generator, Any, TypeAlias
 
@@ -104,7 +103,10 @@ class Processor(object):
                 ExternalFunction(
                     action.name.lower(),
                     NoneType,
-                    lambda: self._set_next_action(action),
+                    # This was a lambda function, but python is weird and it
+                    # was keeping the last action value (ATTACK) for all the
+                    # lambdas.
+                    partial(self._set_next_action, action),
                     True,
                 )
             )

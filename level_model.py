@@ -137,7 +137,11 @@ class LevelModel:
                 )
 
             case TileAction.DECAY:
-                self.tile_model_matrix.set(x, y, TileModel(tile_model.floor_tile_data))
+                self.tile_model_matrix.set(x, y, (
+                    TileModel(TileData(TileType.KEY))
+                    if tile_model.tile_data.tile_type in (TileType.PLAYER_KEY, TileType.ENEMY_KEY)
+                    else TileModel(tile_model.floor_tile_data)
+                ))
 
             case _:
                 logger.error("Unknown tile action %s", action)
