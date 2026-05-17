@@ -658,6 +658,7 @@ class Parser(object):
             return SubprogramProvider(program, closure_node.get_value().label, initial_references)
 
         def _r_compile(node: ProcessNode) -> list[Instruction]:
+            logger.debug(f"Now compiling {node}")
             instructions: list[Instruction] = []
             match node.get_type():
                 case NodeType.CLOSURE:
@@ -689,25 +690,29 @@ class Parser(object):
                             for arg in function.args:
                                 args.append(Constant(arg[0], arg[1], None))
                             function_body = compile_subprogram(closure_node, args)
+                            function.program = function_body
+                            instructions.append(Instruction(PPUInstruction.DEFF, function, node.get_line()))
                         case _:
                             raise NotImplementedError
                 case NodeType.LITERAL:
                     instructions.append(Instruction(PPUInstruction.PUSH, node.get_value(), node.get_line()))
                 case NodeType.CALL:
+                    arg_count = 0
+                    for child in node.get_children():
+                        instructions += _r_compile(child)
+                        arg_count += 1
                     match node.get_value():
                         case ExternalFunction():
-                            arg_count = 0
-                            for child in node.get_children():
-                                instructions += _r_compile(child)
-                                arg_count += 1
                             instructions.append(Instruction(PPUInstruction.CALL, (node.get_value(), arg_count), node.get_line()))
                         case Function():
-                            raise NotImplementedError
+                            # remember to make the processor assign the values
+                            instructions.append(Instruction(PPUInstruction.CALL, (node.get_value(), arg_count), node.get_line()))
+                            instructions.append(Instruction(PPUInstruction.EXEC, node.get_value().program, node.get_line()))
                         case _:
                             raise NotImplementedError
                 case NodeType.OPERATION:
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
-                case NodeType.PARENTHESIS: # tuples aren't planned; parser should ensure there's only one child
+                case NodeType.PARENTHESIS: # tuples aren't planned; parser should ensure there's only one child (EXPRESSION)
                     instructions += _r_compile(node.get_children()[0])
                 case NodeType.RETURN:
                     if node.has_children():
