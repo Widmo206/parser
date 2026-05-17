@@ -40,6 +40,9 @@ class Matrix(Generic[T]):
     def __len__(self) -> int:
         return len(self._elements)
 
+    def __repr__(self) -> str:
+        return str(self)
+
     def __str__(self) -> str:
         # I'm sorry
         return "(\n{}\n)".format("\n".join(

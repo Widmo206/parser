@@ -14,7 +14,15 @@ from enums import TileAction, TileType, PPUInstruction, Operator
 from errors import EndOfProgram
 import events
 from processor_level_data import ProcessorLevelData
-from pyscript_dataclasses import ExternalFunction, Constant, Variable, Function, Instruction, Program, Closure
+from pyscript_dataclasses import (
+    Constant,
+    Closure,
+    ExternalFunction,
+    Function,
+    Instruction,
+    Program,
+    Variable,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,10 +75,14 @@ class Processor(object):
     def load(self, program: Program) -> None:
         """Load a compiled program into the processor.
         
-        Remember to use generate_action_functions and load them in the Parser, if you want to use them.
+        Remember to use generate_action_functions and load them in the Parser,
+        if you want to use them.
         """
         self.program = program
         self.action_generator = self.make_action_generator()
+        # Initialize the generator as you can't send values to just-started
+        # generators.
+        next(self.action_generator)
     
     def push(self, value: Any):
         """Push a value onto the stack."""
@@ -83,7 +95,8 @@ class Processor(object):
     def generate_action_functions(self) -> list[ExternalFunction]:
         """Generate a list of functions corresponding to TileActions.
 
-        N.B.: the functions are specific to a given Processor instance and should be inputted as external_references when setting up the Parser.
+        N.B.: the functions are specific to a given Processor instance and
+        should be inputted as external_references when setting up the Parser.
         """
         result = [
             ExternalFunction(

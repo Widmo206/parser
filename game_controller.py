@@ -46,7 +46,7 @@ class GameController:
             self.cycle_controller.stop()
 
     def _on_parse_requested(self, event: events.ParseRequested) -> None:
-        self.level_model.create_processors(event.path)
+        self.level_model.load_processors(event.path)
         if event.queue_cycle_start:
             self.cycle_controller.start()
         else:
@@ -63,7 +63,7 @@ class GameController:
             self.cycle_controller.stop()
             return
 
-        if len(self.level_model.history) == 0:
+        if self.level_model.view_step == 0:
             events.LevelStateChanged(True)
             events.ActivePyscriptRequested()
             return
@@ -75,11 +75,11 @@ class GameController:
             self.cycle_controller.stop()
         self.level_model.step_back()
 
-        if len(self.level_model.history) == 0:
+        if self.level_model.view_step == 0:
             events.LevelStateChanged(False)
 
     def _on_step_forward_requested(self, _event: events.StepForwardRequested) -> None:
-        if len(self.level_model.history) == 0:
+        if self.level_model.view_step == 0:
             events.LevelStateChanged(True)
             events.ActivePyscriptRequested()
             return
