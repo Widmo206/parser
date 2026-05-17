@@ -220,7 +220,7 @@ class Editor(ttk.Notebook):
         self.is_level_active = event.is_active
         self._update_tab_visuals()
 
-    def _on_active_pyscript_requested(self, _event: events.ActivePyscriptRequested) -> None:
+    def _on_active_pyscript_requested(self, event: events.ActivePyscriptRequested) -> None:
         self._save()
 
         active_tab = self._get_active_tab()
@@ -231,4 +231,4 @@ class Editor(ttk.Notebook):
             message_error("Cannot run tab without assigned path")
             return
 
-        events.ParseRequested(active_tab.path)
+        events.ParseRequested(active_tab.path, event.queue_cycle_start)

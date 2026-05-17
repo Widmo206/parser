@@ -92,6 +92,7 @@ class TileAction(Enum):
     TURN_LEFT    = auto()
     TURN_RIGHT   = auto()
     ATTACK       = auto()
+    DECAY        = auto()
 
 
 class TileType(Enum):

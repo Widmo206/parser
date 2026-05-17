@@ -64,7 +64,6 @@ class Processor(object):
     level_data: ProcessorLevelData | None
     next_action: TileAction | None
 
-
     def __init__(self, processor_id: int = 0, program: Program = None) -> None:
         self.processor_id = processor_id
         self.program = program
@@ -73,26 +72,6 @@ class Processor(object):
     def advance(self, level_data: ProcessorLevelData) -> TileAction | None:
         assert self.action_generator is not None
         return self.action_generator.send(level_data)
-
-    def load(self, program: Program) -> None:
-        """Load a compiled program into the processor.
-        
-        Remember to use generate_action_functions and load them in the Parser,
-        if you want to use them.
-        """
-        self.program = program
-        self.action_generator = self.make_action_generator()
-        # Initialize the generator as you can't send values to just-started
-        # generators.
-        next(self.action_generator)
-
-    def push(self, value: Any):
-        """Push a value onto the stack."""
-        self.value_stack.append(value)
-    
-    def pull(self) -> Any:
-        """Pull a value from the stack."""
-        return self.value_stack.pop(-1)
 
     def generate_action_functions(self) -> list[ExternalFunction]:
         """Generate a list of functions corresponding to TileActions.
@@ -132,6 +111,26 @@ class Processor(object):
 
         return result
 
+    def load(self, program: Program) -> None:
+        """Load a compiled program into the processor.
+        
+        Remember to use generate_action_functions and load them in the Parser,
+        if you want to use them.
+        """
+        self.program = program
+        self.action_generator = self.make_action_generator()
+        # Initialize the generator as you can't send values to just-started
+        # generators.
+        next(self.action_generator)
+
+    def push(self, value: Any):
+        """Push a value onto the stack."""
+        self.value_stack.append(value)
+    
+    def pull(self) -> Any:
+        """Pull a value from the stack."""
+        return self.value_stack.pop(-1)
+
     def make_action_generator(self) -> ActionGenerator:
         """Run the Processor until it runs into a function that makes it pass the turn, then yield a chosen TileAction.
         
@@ -147,6 +146,7 @@ class Processor(object):
         function_call_args = []
 
         self.level_data = yield
+        self._log_advance()
 
         while True:
             try:
@@ -154,18 +154,6 @@ class Processor(object):
                 logger.debug(instruction)
             except EndOfProgram:
                 break
-
-            if self.level_data is not None:
-                logger.debug(
-                    "Advancing processor %i for tile %s (%s, %s)",
-                    self.processor_id,
-                    self.level_data.tile_data_matrix.get(
-                        self.level_data.x,
-                        self.level_data.y
-                    ).tile_type,
-                    self.level_data.x,
-                    self.level_data.y,
-                )
 
             self.next_action = None
 
@@ -196,6 +184,7 @@ class Processor(object):
                         self.push(function.call(*args))
                         if function.pauses_execution:
                             self.level_data = yield self.next_action
+                            self._log_advance()
                     else:
                         function_call_args = []
                         assert len(args) == len(function.args)
@@ -253,6 +242,21 @@ class Processor(object):
 
         while True:
             yield None
+
+    def _log_advance(self) -> None:
+        if self.level_data is None:
+            return
+
+        logger.debug(
+            "Advancing processor %d for tile %s at (%d, %d)",
+            self.processor_id,
+            self.level_data.tile_data_matrix.get(
+                self.level_data.x,
+                self.level_data.y
+            ).tile_type,
+            self.level_data.x,
+            self.level_data.y,
+        )
 
     def _check_forward(self) -> str:
         if self.level_data is None:

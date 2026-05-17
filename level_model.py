@@ -17,7 +17,6 @@ from level import Level
 from matrix import Matrix
 from parser import Parser
 from processor import Processor
-from scheduler import Scheduler
 from tile_data import TileData
 from tile_model import TileModel
 
@@ -29,19 +28,18 @@ class LevelModel:
     ATTACK_DURATION = 250
 
     level: Level
-    scheduler: Scheduler
     tile_model_matrix: Matrix[TileModel]
     history: list[Matrix[TileData]] = field(default_factory=list)
     view_step: int = 0
 
     @classmethod
-    def from_path(cls, path: Path, scheduler: Scheduler) -> LevelModel:
+    def from_path(cls, path: Path) -> LevelModel:
         level = Level.from_path(path)
         tile_data_matrix = level.get_tile_data_matrix()
         tile_model_matrix = tile_data_matrix.map(TileModel)
         history = [tile_data_matrix]
 
-        return cls(level, scheduler, tile_model_matrix, history)
+        return cls(level, tile_model_matrix, history)
 
     @property
     def model_step(self) -> int:
@@ -79,10 +77,7 @@ class LevelModel:
         if self.view_step == 0:
             return
 
-        for x, y, tile_data in self.history[0].iter_xy():
-            events.TileDataChanged(x, y, tile_data)
-
-        self.view_step = 0
+        self._set_view_step(0)
 
     def step_back(self) -> None:
         if self.view_step == 0:
@@ -122,14 +117,14 @@ class LevelModel:
                 self._move_tile(x, y, -tile_data.tile_direction)
 
             case TileAction.TURN_LEFT:
-                self._set_tile_model(x, y, TileModel(
+                self.tile_model_matrix.set(x, y, TileModel(
                     TileData(tile_data.tile_type, tile_data.tile_direction.rotate()),
                     tile_model.processor,
                     tile_model.floor_tile_data,
                 ))
 
             case TileAction.TURN_RIGHT:
-                self._set_tile_model(x, y, TileModel(
+                self.tile_model_matrix.set(x, y, TileModel(
                     TileData(tile_data.tile_type, tile_data.tile_direction.rotate(True)),
                     tile_model.processor,
                     tile_model.floor_tile_data,
@@ -139,7 +134,10 @@ class LevelModel:
                 self._attack_tile(
                     x + tile_data.tile_direction.x,
                     y + tile_data.tile_direction.y,
-                    )
+                )
+
+            case TileAction.DECAY:
+                self.tile_model_matrix.set(x, y, TileModel(tile_model.floor_tile_data))
 
             case _:
                 logger.error("Unknown tile action %s", action)
@@ -178,14 +176,38 @@ class LevelModel:
         except (IndexError, AssertionError):
             return
 
+        # Attack tiles are temporary and should not count when moving into one.
+        if to_tile_model.tile_data.tile_type is TileType.ATTACK:
+            to_tile_model = TileModel(to_tile_model.floor_tile_data)
+
         try:
             move = SpecialMove(MoveMixin(
                 from_tile_model.tile_data.tile_type,
                 to_tile_model.tile_data.tile_type
             ))
 
+        except ValueError:
+            if not to_tile_model.tile_data.tile_type.is_walkable:
+                return
+
             logger.debug(
-                "Executing special move %s from tile %s (%i, %i) in direction %s (%s)",
+                "Moving tile %s from (%d, %d) in direction %s (%s)",
+                from_tile_model.tile_data.tile_type,
+                x,
+                y,
+                direction,
+                to_tile_model.tile_data.tile_type,
+            )
+
+            new_tile_model = TileModel(
+                from_tile_model.tile_data,
+                from_tile_model.processor,
+                to_tile_model.tile_data,
+            )
+
+        else:
+            logger.debug(
+                "Executing special move %s from tile %s at (%d, %d) in direction %s (%s)",
                 move,
                 from_tile_model.tile_data.tile_type,
                 x,
@@ -200,27 +222,8 @@ class LevelModel:
                 to_tile_model
             )
 
-        except ValueError:
-            if not to_tile_model.tile_data.tile_type.is_walkable:
-                return
-
-            logger.debug(
-                "Moving tile %s from (%i, %i) in direction %s (%s)",
-                from_tile_model.tile_data.tile_type,
-                x,
-                y,
-                direction,
-                to_tile_model.tile_data.tile_type,
-            )
-
-            new_tile_model = TileModel(
-                from_tile_model.tile_data,
-                from_tile_model.processor,
-                to_tile_model.tile_data,
-            )
-
-        self._set_tile_model(x, y, TileModel(from_tile_model.floor_tile_data))
-        self._set_tile_model(to_x, to_y, new_tile_model)
+        self.tile_model_matrix.set(x, y, TileModel(from_tile_model.floor_tile_data))
+        self.tile_model_matrix.set(to_x, to_y, new_tile_model)
 
     @staticmethod
     def _get_special_move_result(
@@ -273,41 +276,30 @@ class LevelModel:
         except IndexError:
             return
 
+        # Preserve what's on the floor
+        if tile_model.tile_data.tile_type.is_walkable:
+            self.tile_model_matrix.set(x, y, TileModel(
+                TileData(TileType.ATTACK),
+                floor_tile_data=tile_model.tile_data,
+            ))
+            return
+
         match tile_model.tile_data.tile_type:
             case TileType.ENEMY:
-                self._set_tile_model(x, y, TileModel(tile_model.floor_tile_data))
+                self.tile_model_matrix.set(x, y, TileModel(tile_model.floor_tile_data))
             case TileType.ENEMY_KEY:
-                self._set_tile_model(x, y, TileModel(TileData(TileType.KEY)))
-
-        events.TileDataChanged(x, y, TileData(TileType.ATTACK))
-        self.scheduler.after(
-            self.ATTACK_DURATION,
-            lambda: events.TileDataChanged(
-                x,
-                y,
-                self.tile_model_matrix.get(x, y).tile_data
-            )
-        )
-
-    def _set_tile_model(
-        self,
-        x: int,
-        y: int,
-        tile_model: TileModel
-    ) -> None:
-        self.tile_model_matrix.set(x, y, tile_model)
-        events.TileDataChanged(x, y, tile_model.tile_data)
+                self.tile_model_matrix.set(x, y, TileModel(TileData(TileType.KEY)))
 
     def _set_view_step(self, step: int) -> None:
         if self.view_step < 0:
             logger.error(
-                "View step (%i) cannot be negative",
+                "View step (%d) cannot be negative",
                 self.view_step,
             )
             self.view_step = self.model_step
         elif self.view_step > self.model_step:
             logger.error(
-                "View step (%i) cannot be higher than model step (%i)",
+                "View step (%d) cannot be higher than model step (%d)",
                 self.view_step,
                 self.model_step,
             )

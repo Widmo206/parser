@@ -63,6 +63,9 @@ class TileModel:
 
         # If no pyscript processor, match behavior to tile type.
         match self.tile_data.tile_type:
+            case TileType.ATTACK:
+                return TileAction.DECAY
+
             case TileType.PLAYER | TileType.PLAYER_KEY:
                 logger.warning(
                     "Player tile model at (%d, %d) has no processor",

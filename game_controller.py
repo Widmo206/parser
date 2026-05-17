@@ -18,7 +18,7 @@ class GameController:
 
     def __init__(self, scheduler: Scheduler, path: Path) -> None:
         self.cycle_controller = CycleController(scheduler)
-        self.level_model = LevelModel.from_path(path, scheduler)
+        self.level_model = LevelModel.from_path(path)
 
         events.Cycled.connect(self._on_cycled)
         events.LevelComplete.connect(self._on_level_complete)
@@ -65,7 +65,7 @@ class GameController:
 
         if self.level_model.view_step == 0:
             events.LevelStateChanged(True)
-            events.ActivePyscriptRequested()
+            events.ActivePyscriptRequested(True)
             return
 
         self.cycle_controller.start()
