@@ -48,3 +48,7 @@ class EndOfProgram(PyScriptError):
     
     This includes subprograms.
     """
+
+
+class PyScriptRuntimeError(PyScriptError):
+    """Raised when the Processor detects that something went wrong, but the cause isn't clear."""

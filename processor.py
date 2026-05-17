@@ -11,18 +11,10 @@ import logging
 from typing import Generator, Any, TypeAlias
 
 from enums import TileAction, TileType, PPUInstruction, Operator
-from errors import EndOfProgram
+from errors import EndOfProgram, PyScriptRuntimeError
 import events
 from processor_level_data import ProcessorLevelData
-from pyscript_dataclasses import (
-    Constant,
-    Closure,
-    ExternalFunction,
-    Function,
-    Instruction,
-    Program,
-    Variable,
-)
+from pyscript_dataclasses import ExternalFunction, Constant, Variable, Function, Instruction, Program, SubprogramProvider, Closure, AnyFunction
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +75,7 @@ class Processor(object):
         # Initialize the generator as you can't send values to just-started
         # generators.
         next(self.action_generator)
-    
+
     def push(self, value: Any):
         """Push a value onto the stack."""
         self.value_stack.append(value)
@@ -142,6 +134,7 @@ class Processor(object):
         global_closure = Closure(self.program.closure_type, None)
         global_closure.add_many(self.program.initial_references)
         current_closure = global_closure
+        function_call_args = []
 
         self.level_data = yield
 
@@ -181,16 +174,23 @@ class Processor(object):
                     current_closure.find(instruction.parameter.name).set(self.pull())
 
                 case PPUInstruction.CALL:
-                    function: ExternalFunction = current_closure.find(instruction.parameter[0].name)
+                    function: AnyFunction = current_closure.find(instruction.parameter[0].name)
                     no_args: int = instruction.parameter[1]
                     args = []
                     # TODO: check that the function actually accepts that number of args + check type
                     for i in range(no_args):
                         args.append(self.pull())
-                    self.push(function.call(*args))
+                    args.reverse() # args are back-to-front on the stack
 
-                    if function.pauses_execution:
-                        self.level_data = yield self.next_action
+                    if isinstance(function, ExternalFunction):
+                        self.push(function.call(*args))
+                        if function.pauses_execution:
+                            self.level_data = yield self.next_action
+                    else:
+                        function_call_args = []
+                        assert len(args) == len(function.args)
+                        for arg, value in zip(function.args, args):
+                            function_call_args.append(Variable(arg[0], arg[1], value))
 
                 case PPUInstruction.EVAL:
                     operator: Operator = instruction.parameter
@@ -210,10 +210,36 @@ class Processor(object):
                     current_closure.add(Variable(instruction.parameter.name, instruction.parameter.type, self.pull()))
 
                 case PPUInstruction.DEFF:
-                    raise NotImplementedError
+                    current_closure.add(instruction.parameter) # Function doesn't have anything that's supposed to be modified, so this should be fine
+
+                case PPUInstruction.EXEC:
+                    subprogram: SubprogramProvider = instruction.parameter
+                    current_closure.value_stack_length = len(self.value_stack)
+                    current_closure = Closure(subprogram.closure_type, current_closure)
+                    current_closure.add_many(function_call_args)
+                    function_call_args = []
+
+                case PPUInstruction.EXIT:
+                    has_return_value = instruction.parameter
+                    if has_return_value:
+                        return_value = self.pull()
+                    else:
+                        return_value = None
+                    previous_closure = current_closure
+                    current_closure = current_closure.get_parent()
+                    if len(self.value_stack) < current_closure.value_stack_length:
+                        raise PyScriptRuntimeError(f"Missing values on value_stack after exiting closure {previous_closure.label}")
+                    trimmed_values = 0
+                    while len(self.value_stack) > current_closure.value_stack_length:
+                        trimmed_values += 1
+                        self.pull()
+                    if trimmed_values > 0:
+                        logger.debug(f"Trimmed {trimmed_values} values from value_stack")
+                    if return_value is not None:
+                        self.push(return_value)
 
                 case _:
-                    raise NotImplementedError
+                    raise NotImplementedError(f"Unimplemented instruction: {instruction.instruction.name}")
 
         while True:
             yield None

@@ -656,10 +656,7 @@ class Parser(object):
                 program += _r_compile(child)
             if program[-1].instruction != PPUInstruction.EXIT:
                 last_line = closure_node.get_children()[-1].get_line()
-                program += [
-                    Instruction(PPUInstruction.PUSH, 0, last_line),
-                    Instruction(PPUInstruction.EXIT, None, last_line),
-                ] # EXIT needed to exit closure; PUSH 0 because EXIT needs a return value
+                program.append(Instruction(PPUInstruction.EXIT, False, last_line)) # EXIT needed to exit closure; False = no return value
 
             # It's fine to pass the refs directly since they're only placeholders and will be replaced at runtime by the Processor
             return SubprogramProvider(program, closure_node.get_value().label, initial_references)
@@ -724,9 +721,10 @@ class Parser(object):
                 case NodeType.RETURN:
                     if node.has_children():
                         instructions += _r_compile(node.get_children()[0])
+                        instructions.append(Instruction(PPUInstruction.EXIT, True, node.get_line()))
                     else:
-                        instructions.append(Instruction(PPUInstruction.PUSH, 0, node.get_line()))
-                    instructions.append(Instruction(PPUInstruction.EXIT, None, node.get_line()))
+                        instructions.append(Instruction(PPUInstruction.EXIT, False, node.get_line()))
+                    
                 case _:
                     raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions
@@ -775,7 +773,6 @@ if __name__ == "__main__":
     tree    = parser.parse(tokens)
     program = parser.compile(tree)
     PPU.load(program)
-    gen = PPU.make_action_generator()
-    next(gen)
-    next(gen)
+    PPU.advance(None)
+    PPU.advance(None)
     print("\n<Parser test finished>")

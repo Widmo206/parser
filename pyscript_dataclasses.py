@@ -125,7 +125,7 @@ class Function(object):
     """WIP don't use"""
     name: str
     return_type: Type
-    program: Program
+    program: SubprogramProvider
     args: tuple[FunctionArg, ...]
 
     def __repr__(self):
