@@ -1,5 +1,8 @@
 """Attempt at making a simple code parser
 
+Here be Dragons (and bad code)
+Ye've been warned
+
 Created on 2026.01.14
 Contributors:
     Widmo

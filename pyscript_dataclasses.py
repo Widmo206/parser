@@ -316,7 +316,7 @@ class Closure(object):
 
 @dataclass(frozen=True)
 class Instruction(object):
-    instruction: PPUInstruction # creative name!
+    instruction: PPUInstruction # Naming things is hard
     parameter: Any
     source_line: int
 
