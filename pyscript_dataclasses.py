@@ -16,6 +16,15 @@ from errors import EndOfProgram
 FunctionArg: TypeAlias = tuple[str, Type]
 
 
+def is_of_type(value: Any, type: Type) -> bool:
+    if type == Any:
+        return True
+    elif value is None:
+        return True
+    else:
+        return isinstance(value, type)
+
+
 def format_type(type: Type) -> str:
     """Turn a Type into a string.
     
@@ -49,7 +58,7 @@ class Constant(object):
     _value: Any
 
     def __post_init__(self):
-        assert self._value is None or isinstance(self._value, self.type)
+        assert is_of_type(self._value, self.type)
 
     def __repr__(self):
         if self._value is None:
@@ -69,7 +78,7 @@ class Variable(object):
     _value: Any
 
     def __post_init__(self):
-        assert self._value is None or isinstance(self._value, self.type)
+        assert is_of_type(self._value, self.type)
 
     def __repr__(self):
         if self._value is None:
@@ -86,7 +95,7 @@ class Variable(object):
         
         The type of the new value must match self.type.
         """
-        assert isinstance(self._value, self.type)
+        assert is_of_type(self._value, self.type)
         self._value = value
 
 

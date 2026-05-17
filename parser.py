@@ -645,4 +645,5 @@ if __name__ == "__main__":
     PPU.load(program)
     gen = PPU.make_action_generator()
     next(gen)
+    next(gen)
     print("\n<Parser test finished>")
