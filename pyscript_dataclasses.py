@@ -362,6 +362,22 @@ class Program(object):
         return instruction, closure
 
 
+@dataclass
+class SubprogramProvider(object):
+    program: list[Instruction]
+    closure_type: ClosureLabel
+    initial_references: list[AnyFrozenRef] | None = None
+    
+    def __post_init__(self):
+        if self.initial_references is None:
+            self.initial_references = []
+
+    def new(self, parent_closure: Closure):
+        program_closure = Closure(self.closure_type, parent_closure)
+        program_closure.add_many(self.initial_references)
+        program = Program(self.program, program_closure)
+
+
 if __name__ == "__main__":
     foo = Constant("foo", int, 42)
     bar = Variable("bar", float, 9e9)
