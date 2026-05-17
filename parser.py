@@ -413,6 +413,13 @@ class Parser(object):
                             case _:
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
 
+                    case TokenType.COMMA:
+                        if code_stack[-1].get_type() != NodeType.EXPRESSION or code_stack[-2].get_type() != NodeType.CALL:
+                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ,")
+                        else:
+                            step_out_of(NodeType.EXPRESSION)
+                            step_into(NodeType.EXPRESSION, current_token.line, None)
+
                     case TokenType.SEMICOLON:
                         match code_stack[-1].get_type(): # TODO: update for other uses of semicolon
                             case NodeType.CLOSURE:
