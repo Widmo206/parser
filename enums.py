@@ -208,6 +208,7 @@ class NodeType(Enum):
     DEFINE      = auto()
     LITERAL     = auto()
     CALL        = auto()
+    RETURN      = auto()
     OPERATION   = auto()
 
 
@@ -264,6 +265,7 @@ class PPUInstruction(Enum):
     DEFV = auto() # define a variable
     DEFF = auto() # define a function
     EXEC = auto() # step into a subprogram (anything in a closure)
+    EXIT = auto() # exit a subprogram
 
 
 def _test() -> None:

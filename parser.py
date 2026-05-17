@@ -438,8 +438,12 @@ class Parser(object):
                                         step_out_of(NodeType.DEFINE)
                                     case NodeType.WRITE:
                                         step_out_of(NodeType.WRITE)
+                                    case NodeType.RETURN:
+                                        step_out_of(NodeType.RETURN)
                                     case _:
                                         raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
+                            case NodeType.RETURN:
+                                step_out_of(NodeType.RETURN)
                             case _:
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected ;")
 
@@ -451,11 +455,9 @@ class Parser(object):
                     
                     case TokenType.DEINDENT:
                         if current_closure.label == ClosureLabel.GLOBAL:
-                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") # why
-                        try:
-                            step_out_of(NodeType.CLOSURE)
-                        except AssertionError as e:
-                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
+                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'} in script body") # why
+                        if code_stack[-1].get_type() != NodeType.CLOSURE:
+                            raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}")
                         current_closure = current_closure.get_parent() # This only returns None for the Global Closure, which is already covered
                         if code_stack[-1].get_type() == NodeType.DEFINE:
                             step_out_of(NodeType.DEFINE)
@@ -621,10 +623,11 @@ class Parser(object):
                                 step_into(NodeType.CLOSURE, open_closure.line, function_closure)
                                 current_closure = function_closure
                             
+                            case "return":
+                                step_into(NodeType.RETURN, current_token.line, None)
 
                             # TODO add other keywords
                             case _:
-                                continue
                                 raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented keyword {current_token.value}")
 
                     case _:
@@ -649,6 +652,7 @@ class Parser(object):
             ]
             for child in closure_node.get_children():
                 program += _r_compile(child)
+            # It's fine to pass the refs directly since they're only placeholders and will be replaced at runtime by the Processor
             return SubprogramProvider(program, closure_node.get_value().label, initial_references)
 
         def _r_compile(node: ProcessNode) -> list[Instruction]:
@@ -677,7 +681,12 @@ class Parser(object):
                             instructions += _r_compile(node.get_children()[0])
                             instructions.append(Instruction(PPUInstruction.DEFV, node.get_value(), node.get_line()))
                         case Function():
-                            raise NotImplementedError
+                            function: Function = node.get_value()
+                            closure_node: ProcessNode = node.get_children()[0] # DEFINE Function should only have one child
+                            args = []
+                            for arg in function.args:
+                                args.append(Constant(arg[0], arg[1], None))
+                            function_body = compile_subprogram(closure_node, args)
                         case _:
                             raise NotImplementedError
                 case NodeType.LITERAL:
@@ -698,6 +707,12 @@ class Parser(object):
                     instructions.append(Instruction(PPUInstruction.EVAL, node.get_value(), node.get_line()))
                 case NodeType.PARENTHESIS: # tuples aren't planned; parser should ensure there's only one child
                     instructions += _r_compile(node.get_children()[0])
+                case NodeType.RETURN:
+                    if node.has_children():
+                        instructions += _r_compile(node.get_children()[0])
+                    else:
+                        instructions.append(Instruction(PPUInstruction.PUSH, 0, node.get_line()))
+                    instructions.append(Instruction(PPUInstruction.EXIT, None, node.get_line()))
                 case _:
                     raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions
