@@ -14,7 +14,17 @@ from enums import TileAction, TileType, PPUInstruction, Operator
 from errors import EndOfProgram, PyScriptRuntimeError
 import events
 from processor_level_data import ProcessorLevelData
-from pyscript_dataclasses import ExternalFunction, Constant, Variable, Function, Instruction, Program, SubprogramProvider, Closure, AnyFunction
+from pyscript_dataclasses import (
+    AnyFunction,
+    Closure,
+    Constant,
+    ExternalFunction,
+    Function,
+    Instruction,
+    Program,
+    SubprogramProvider,
+    Variable,
+)
 
 logger = logging.getLogger(__name__)
 
