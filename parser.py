@@ -394,6 +394,7 @@ class Parser(object):
                                     raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a constant or variable")
                                 if code_stack[-1].get_type() == NodeType.PARENTHESIS:
                                     step_into(NodeType.EXPRESSION, current_token.line, None)
+                                ensure_expression(current_token.line)
                                 current_node.add_child(ProcessNode(current_node, NodeType.READ, current_token.line, value))
                     
                     case TokenType.OPEN_PAREN:
