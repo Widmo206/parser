@@ -6,7 +6,6 @@ Ye've been warned
 Created on 2026.01.14
 Contributors:
     Widmo
-
     
 TODO list:
     add function definition
@@ -20,7 +19,6 @@ TODO list:
     add lists?
 """
 
-
 from __future__ import annotations
 import logging
 from pathlib import Path
@@ -29,9 +27,26 @@ from typing import Type, Any, Collection
 
 from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
-from pyscript_dataclasses import Constant, Variable, ExternalFunction, Function, AnyValue, AnyFunction, AnyReference, AnyFrozenRef, DataType, Token, ProcessNode, ProcessTree, Closure, Instruction, Program, FunctionArg, SubprogramProvider
+from pyscript_dataclasses import (
+    Constant,
+    Variable,
+    ExternalFunction,
+    Function,
+    AnyValue,
+    AnyFunction,
+    AnyReference,
+    AnyFrozenRef,
+    DataType,
+    Token,
+    ProcessNode,
+    ProcessTree,
+    Closure,
+    Instruction,
+    Program,
+    FunctionArg,
+    SubprogramProvider,
+)
 # ATP we might as well 'from pyscript_dataclasses import *'
-
 
 logger = logging.getLogger(__name__)
 REFERENCE_CHARS = ascii_letters + digits + "_" # should these be sets?
@@ -89,6 +104,7 @@ class Parser(object):
     """Handles parsing of PyScript files."""
     path: Path
     external_references: Collection[AnyFrozenRef]
+    token_count: int
 
     def __init__(
         self,
@@ -100,6 +116,7 @@ class Parser(object):
             self.external_references = []
         else:
             self.external_references = *DATATYPES, *external_references
+        self.token_count = 0
 
     @staticmethod
     def parse_expression(expression: ProcessNode):
@@ -297,7 +314,9 @@ class Parser(object):
             else:
                 raise PyScriptSyntaxError(f"{self.path} (line {line}): invalid character {repr(char)}")
             skip_operators = False
-        logger.info(f"Finished tokenizing '{self.path}' into {len(tokens)} tokens")
+
+        self.token_count = len(tokens)
+        logger.info(f"Finished tokenizing '{self.path}' into {self.token_count} tokens")
         return tokens
 
     def parse(self, tokens: list[Token]) -> ProcessTree:

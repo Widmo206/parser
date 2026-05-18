@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Callable, ClassVar
 
 from level import Level
+from save import LevelScore
 from tile_data import TileData
 
 logger = logging.getLogger(__name__)
@@ -116,8 +117,8 @@ class LevelClosed(Event):
 
 @dataclass(frozen=True, slots=True)
 class LevelComplete(Event):
-    level: Level
-    step_count: int
+    level_name: str
+    level_score: LevelScore
 
 
 @dataclass(frozen=True, slots=True)

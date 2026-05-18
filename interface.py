@@ -110,7 +110,7 @@ class Interface(ttk.Window):
 
     def _on_level_complete(self, event: events.LevelComplete) -> None:
         self._close_popup()
-        self.level_complete_popup = LevelCompletePopup(self)
+        self.level_complete_popup = LevelCompletePopup(self, event.level_name, event.level_score)
 
     def _on_restart_requested(self, _event: events.RestartRequested) -> None:
         self._close_popup()

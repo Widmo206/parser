@@ -17,6 +17,7 @@ from level import Level
 from matrix import Matrix
 from parser import Parser
 from processor import Processor
+from save import LevelScore
 from tile_data import TileData
 from tile_model import TileModel
 
@@ -31,6 +32,8 @@ class LevelModel:
     tile_model_matrix: Matrix[TileModel]
     history: list[Matrix[TileData]] = field(default_factory=list)
     view_step: int = 0
+    pyscript_name: str = ""
+    token_count: int = 0
 
     @classmethod
     def from_path(cls, path: Path) -> LevelModel:
@@ -59,7 +62,10 @@ class LevelModel:
         self.history = [self.history[0]]
         self.tile_model_matrix = self.history[0].map(TileModel)
 
+        parser = None
         processor_id = 0
+        # We parse code for each processor, which is wasteful but required
+        # because of how external functions work.
         for x, y, tile_model in self.tile_model_matrix.iter_xy():
             if tile_model.tile_data.tile_type not in (TileType.PLAYER, TileType.PLAYER_KEY):
                 continue
@@ -78,6 +84,10 @@ class LevelModel:
             self.tile_model_matrix.set(x, y, new_tile_model)
             processor_id += 1
 
+        assert parser is not None
+        self.pyscript_name = pyscript_path.name
+        self.token_count = parser.token_count
+
     def restart(self) -> None:
         if self.view_step == 0:
             return
@@ -95,7 +105,7 @@ class LevelModel:
             # Early check looks redundant but is necessary
             # to avoid stepping when level is already complete.
             if self._check_win_state():
-                events.LevelComplete(self.level, len(self.history))
+                self._emit_level_complete()
                 return
 
             self._model_step_forward()
@@ -103,12 +113,16 @@ class LevelModel:
         self._set_view_step(self.view_step + 1)
 
         if self._check_win_state() and self.view_step == self.model_step:
-            events.LevelComplete(self.level, len(self.history))
+            self._emit_level_complete()
 
     def _check_win_state(self) -> bool:
         return all(self.tile_model_matrix.map(
             lambda tile_model: tile_model.tile_data.tile_type != TileType.FLAG
         ))
+
+    def _emit_level_complete(self) -> None:
+        level_score = LevelScore(self.pyscript_name, self.model_step, self.token_count)
+        events.LevelComplete(self.level.name, level_score)
 
     def _handle_tile_action(self, x: int, y: int, action: TileAction) -> None:
         tile_model = self.tile_model_matrix.get(x, y)

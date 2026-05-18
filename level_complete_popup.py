@@ -12,6 +12,7 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
 import events
+from save import LevelScore
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,13 @@ logger = logging.getLogger(__name__)
 class LevelCompletePopup(ttk.Toplevel):
     SIZE = (440, 320)
 
-    def __init__(self, master: tk.Misc, **kwargs) -> None:
+    def __init__(
+        self,
+        master: tk.Misc,
+        level_name: str,
+        level_score: LevelScore,
+        **kwargs,
+    ) -> None:
         super().__init__(master, **kwargs)
 
         self.title("Level complete")
@@ -54,10 +61,10 @@ class LevelCompletePopup(ttk.Toplevel):
 
         # TODO: Pass completion stats correctly.
         stats = (
-            ("Level", "level_name"),
-            ("Script", "script_name"),
-            ("Steps", "step_count"),
-            ("Tokens", "token_count"),
+            ("Level", level_name),
+            ("Script", level_score.solution_path),
+            ("Steps", level_score.step_count),
+            ("Tokens", level_score.token_count),
         )
 
         for row, (name, value) in enumerate(stats):
