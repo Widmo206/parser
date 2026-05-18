@@ -7,8 +7,6 @@ Contributors:
 
 from __future__ import annotations
 
-from cgitb import text
-from dataclasses import asdict
 import logging
 from math import ceil, floor
 from pathlib import Path
@@ -20,7 +18,6 @@ from ttkbootstrap.widgets.scrolled import ScrolledText
 
 from common import PYSCRIPT_EXTENSION, message_error
 from errors import EditorTabCreationError
-import events
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +59,7 @@ class EditorTab(ttk.Frame):
         if path is not None and path.suffix != PYSCRIPT_EXTENSION:
             logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in path '{path}'")
         if default_path is not None and default_path.suffix != PYSCRIPT_EXTENSION:
-            logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in default_content_path '{default_content_path}'")
+            logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in default path '{default_path}'")
 
         super().__init__(master, **kwargs)
 
