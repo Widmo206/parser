@@ -1,4 +1,4 @@
-"""Editor class to manage PyscriptEditorTabs
+"""Editor class to manage PyscriptEditorTabs.
 
 Created on 2026.01.28
 Contributors:

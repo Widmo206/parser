@@ -1,4 +1,4 @@
-"""CycleController class that routes events and uses a timer to send level cycle requests
+"""CycleController class that routes events and uses a timer to send level cycle requests.
 
 Created on 2026.03.04
 Contributors:

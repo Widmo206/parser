@@ -1,4 +1,4 @@
-"""TileData class for managing tile data
+"""TileData class for managing tile data.
 
 Created on 2026.02.25
 Contributors:

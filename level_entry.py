@@ -1,4 +1,4 @@
-"""LevelEntry class that displays level info and can be clicked to play it
+"""LevelEntry class that displays level info and can be clicked to play it.
 
 Created on 2026.02.06
 Contributors:

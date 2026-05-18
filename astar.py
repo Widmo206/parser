@@ -1,4 +1,4 @@
-"""Custom implementation of the A* algorithm for enemy pathfinding
+"""Custom implementation of the A* algorithm for enemy pathfinding.
 
 Created on 2026.03.04
 Contributors:
@@ -23,7 +23,7 @@ class Node:
         return f"{self.direction.value}{str(self.cost).rjust(3)}"
 
     def get_future_cost(self, dx: int, dy: int) -> int:
-        """Estimate the minimum amount of actions needed to reach target"""
+        """Estimate the minimum amount of actions needed to reach target."""
         sign_dx = 0 if dx == 0 else (1 if dx > 0 else -1)
         sign_dy = 0 if dy == 0 else (1 if dy > 0 else -1)
 
@@ -53,7 +53,7 @@ def astar(
     target_y: int,
     walkable_matrix: Matrix[bool],
 ) -> tuple[Direction, ...] | None:
-    """Return the shortest path from self to target using A* algorithm"""
+    """Return the shortest path from self to target using A* algorithm."""
     if self_x == target_x and self_y == target_y:
         return ()
 

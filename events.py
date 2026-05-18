@@ -1,4 +1,4 @@
-"""A global event system to pass around data through the composition tree
+"""A global event system to pass around data through the composition tree.
 
 We'll probably need it, so better build it right now.
 We need it. But be careful choosing between tk events and these events.

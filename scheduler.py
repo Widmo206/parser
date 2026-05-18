@@ -1,4 +1,4 @@
-"""Scheduler class that serves as an abstraction layer for tkinter timed tasks
+"""Scheduler class that serves as an abstraction layer for tkinter timed tasks.
 
 Created on 2026.03.04
 Contributors:

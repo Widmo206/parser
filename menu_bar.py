@@ -1,4 +1,4 @@
-"""MenuBar class to manage pyscript files
+"""MenuBar class to manage pyscript files.
 
 Created on 2026.02.01
 Contributors:

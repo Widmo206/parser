@@ -1,4 +1,4 @@
-"""Matrix generic class that represents a grid of things
+"""Matrix generic class that represents a grid of things.
 
 Created on 2026.02.27
 Contributors:

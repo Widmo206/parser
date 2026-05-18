@@ -1,4 +1,4 @@
-"""TileModel class that holds tile data and can hold a pyscript processor
+"""TileModel class that holds tile data and can hold a pyscript processor.
 
 Created on 2026.03.01
 Contributors:

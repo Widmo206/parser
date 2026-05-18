@@ -1,4 +1,4 @@
-"""EditorTab class for writing pyscript in tkinter
+"""EditorTab class for writing pyscript in tkinter.
 
 Created on 2026.02.11
 Contributors:
