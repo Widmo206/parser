@@ -377,6 +377,11 @@ class Parser(object):
             nonlocal code_stack
             if code_stack[-1].get_type() != NodeType.CLOSURE:
                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): You cannot {action_description} here; maybe you forgot a semicolon?")
+        
+        def is_next_token(token_type: TokenType, lookahead: int=0) -> bool:
+            nonlocal tokens
+            return tokens[lookahead].type == token_type
+
         try:
             while len(tokens) > 0:
                 current_token = tokens.pop(0)
@@ -393,7 +398,7 @@ class Parser(object):
                                 if code_stack[-1].get_type() == NodeType.PARENTHESIS:
                                     step_into(NodeType.EXPRESSION, current_token.line, None)
                                 step_into(NodeType.CALL, current_token.line, function)
-                                if tokens[1].type == TokenType.CLOSE_PAREN: # no arguments
+                                if is_next_token(TokenType.CLOSE_PAREN, 1): # no arguments
                                     tokens.pop(0) # consume the OPEN_PAREN
                                     tokens.pop(0) # consume the CLOSE_PAREN
                                     step_out_of(NodeType.CALL)
@@ -514,7 +519,7 @@ class Parser(object):
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
-                                if tokens[0].type == TokenType.COLON:
+                                if is_next_token(TokenType.COLON):
                                     tokens.pop(0) # consume the :
                                     type_token = tokens.pop(0)
                                     if type_token.type != TokenType.REFERENCE:
@@ -528,7 +533,7 @@ class Parser(object):
                                 variable = Variable(var_name, var_type, None)
                                 current_closure.add(variable)
                                 step_into(NodeType.DEFINE, var_token.line, variable)
-                                if tokens[0].type != TokenType.ASSIGN:
+                                if not is_next_token(TokenType.ASSIGN):
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
                             
@@ -542,7 +547,7 @@ class Parser(object):
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
-                                if tokens[0].type == TokenType.COLON:
+                                if is_next_token(TokenType.COLON):
                                     tokens.pop(0) # consume the :
                                     type_token = tokens.pop(0)
                                     if type_token.type != TokenType.REFERENCE:
@@ -556,7 +561,7 @@ class Parser(object):
                                 variable = Constant(var_name, var_type, None)
                                 current_closure.add(variable)
                                 step_into(NodeType.DEFINE, var_token.line, variable)
-                                if tokens[0].type != TokenType.ASSIGN:
+                                if not is_next_token(TokenType.ASSIGN):
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): const {var_name} must be followed by assignment operator: =")
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
 
@@ -584,7 +589,7 @@ class Parser(object):
                                         raise PyScriptSyntaxError(f"{self.path} (line {arg_token.line}): '{arg_token.value}' is not a valid argument name")
                                     arg_name = arg_token.value
                                     # check for type declaration
-                                    if tokens[0].type == TokenType.COLON:
+                                    if is_next_token(TokenType.COLON):
                                         tokens.pop(0) # consume :
                                         type_token = tokens.pop(0)
                                         # Verify that it's a valid type
