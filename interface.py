@@ -16,7 +16,7 @@ from level_complete_popup import LevelCompletePopup
 from level_interface import LevelInterface
 from menu_bar import MenuBar
 from pyscript_interface import PyscriptInterface
-from save import Save
+from save import LevelScore, Save
 
 logger = logging.getLogger(__name__)
 
@@ -83,17 +83,19 @@ class Interface(ttk.Window):
 
         events.ClosePopupRequested.connect(self._on_close_popup_requested)
         events.CloseLevelRequested.connect(self._on_close_level_requested)
-        events.LevelComplete.connect(self._on_level_complete)
         events.RestartRequested.connect(self._on_restart_requested)
         events.ToggleFullscreenRequested.connect(self._on_toggle_fullscreen_requested)
 
     def destroy(self) -> None:
         events.ClosePopupRequested.disconnect(self._on_close_popup_requested)
         events.CloseLevelRequested.disconnect(self._on_close_level_requested)
-        events.LevelComplete.disconnect(self._on_level_complete)
         events.RestartRequested.disconnect(self._on_restart_requested)
         events.ToggleFullscreenRequested.disconnect(self._on_toggle_fullscreen_requested)
         super().destroy()
+
+    def open_level_complete_popup(self, level_name: str, level_score: LevelScore) -> None:
+        self._close_popup()
+        self.level_complete_popup = LevelCompletePopup(self, level_name, level_score)
 
     def _close_popup(self) -> None:
         if self.level_complete_popup is None:
@@ -107,10 +109,6 @@ class Interface(ttk.Window):
 
     def _on_close_popup_requested(self, _event: events.ClosePopupRequested) -> None:
         self._close_popup()
-
-    def _on_level_complete(self, event: events.LevelComplete) -> None:
-        self._close_popup()
-        self.level_complete_popup = LevelCompletePopup(self, event.level_name, event.level_score)
 
     def _on_restart_requested(self, _event: events.RestartRequested) -> None:
         self._close_popup()

@@ -1,7 +1,4 @@
-"""
-Level 2 - Bend
-
-blablalablablblablablabablajnkjlswnkflnabw erclkgqlirgb
-"""
+# Level 2 - Bend
 
 move_forward()
+turn_right()

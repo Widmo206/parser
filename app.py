@@ -32,6 +32,7 @@ class App:
 
         events.ExitRequested.connect(self._on_exit_requested)
         events.CloseLevelRequested.connect(self._on_close_level_requested)
+        events.LevelComplete.connect(self._on_level_complete)
         events.LevelSelected.connect(self._on_level_selected)
 
     def run(self) -> None:
@@ -42,6 +43,11 @@ class App:
             self.game_controller.destroy()
             self.game_controller = None
             events.LevelClosed()
+
+    def _on_level_complete(self, event: events.LevelComplete) -> None:
+        self.save.level_scores[event.level_name] = event.level_score
+        self.save.save(SAVE_PATH)
+        self.interface.open_level_complete_popup(event.level_name, event.level_score)
 
     def _on_exit_requested(self, _event: events.ExitRequested) -> None:
         logger.debug("Exiting application")
