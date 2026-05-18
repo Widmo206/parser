@@ -172,6 +172,16 @@ class SpecialMove(MoveMixin, Enum):
     ENEMY_PICKUP_KEY  = (TileType.ENEMY,      TileType.KEY)
 
 
+class Keyword(Enum):
+    CONST  = auto()
+    VAR    = auto()
+    FUNC   = auto()
+    IF     = auto()
+    ELSE   = auto()
+    WHILE  = auto()
+    RETURN = auto()
+
+
 class TokenType(Enum):
     NOP         = auto() # pass
     KEYWORD     = auto()

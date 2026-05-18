@@ -8,7 +8,6 @@ Contributors:
     Widmo
     
 TODO list:
-    add function definition
     add checks for unterminated parens/closures/strings/expressions/...
     add arg type/count checking to all functions
     add if statements
@@ -25,7 +24,7 @@ from pathlib import Path
 from string import ascii_letters, digits, whitespace
 from typing import Type, Any, Collection
 
-from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
+from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction, Keyword
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
 from pyscript_dataclasses import (
     Constant,
@@ -58,15 +57,15 @@ BOOLEANS = {
     "true": True,
     "false": False,
 }
-KEYWORDS = (
-    "const",
-    "var",
-    "func",
-    "if",
-    "else",
-    "while",
-    "return",
-)
+KEYWORDS = {
+    "const":  Keyword.CONST,
+    "var":    Keyword.VAR,
+    "func":   Keyword.FUNC,
+    "if":     Keyword.IF,
+    "else":   Keyword.ELSE,
+    "while":  Keyword.WHILE,
+    "return": Keyword.RETURN,
+}
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
     TokenType.INDENT:     TokenType.DEINDENT,
@@ -220,7 +219,7 @@ class Parser(object):
                     i += 1
                     char = source[c + i]
                 if current_token in KEYWORDS:
-                    add_token(TokenType.KEYWORD, current_token, i)
+                    add_token(TokenType.KEYWORD, KEYWORDS[current_token], i)
                 elif current_token in BOOLEANS:
                     add_token(TokenType.BOOL_LIT, BOOLEANS[current_token], i)
                 else:
@@ -505,7 +504,7 @@ class Parser(object):
 
                     case TokenType.KEYWORD:
                         match current_token.value:
-                            case "var":
+                            case Keyword.VAR:
                             # \begin{word soup}
                                 require_closure(current_token.line, "define a variable")
                                 var_type: Type = Any # idek what Pylance is complaining about here
@@ -534,7 +533,7 @@ class Parser(object):
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
                             
                             # word soup 2: electric boogaloo
-                            case "const": # literally copy-pasted the case for var
+                            case Keyword.CONST: # literally copy-pasted the case for var
                                 require_closure(current_token.line, "define a constant")
                                 var_type: Type = Any # idek what Pylance is complaining about here
                                 var_token = tokens.pop(0) # declared variable name
@@ -562,7 +561,7 @@ class Parser(object):
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
 
                             # I should be banned from using Pathon again
-                            case "func":
+                            case Keyword.FUNC:
                                 require_closure(current_token.line, "define a function")
                                 name_token = tokens.pop(0) # function name
                                 func_name = name_token.value
@@ -644,7 +643,7 @@ class Parser(object):
                                 step_into(NodeType.CLOSURE, open_closure.line, function_closure)
                                 current_closure = function_closure
                             
-                            case "return":
+                            case Keyword.RETURN:
                                 step_into(NodeType.RETURN, current_token.line, None)
 
                             # TODO add other keywords
