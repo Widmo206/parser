@@ -51,12 +51,8 @@ class FileMenuCommand(MenuCommandEnum):
     SAVE             = ("Save",       events.FileSaveRequested,   "Ctrl+S",       "<Control-s>")
     SAVE_AS          = ("Save as...", events.FileSaveAsRequested, "Ctrl+Shift+S", "<Control-S>")
     OPEN_USER_FOLDER = ("Open user directory", open_user_dir)
+    RELOAD           = ("Reload default code", events.ReloadDefaultRequested)
     EXIT             = ("Exit",       events.ExitRequested,       "Ctrl+Q",       "<Control-q>")
-
-
-class EditMenuCommand(MenuCommandEnum):
-    UNDO = ("Undo", events.UndoRequested, "Ctrl+Z", "<Control-z>")
-    REDO = ("Redo", events.RedoRequested, "Ctrl+Y", "<Control-y>")
 
 
 class ViewMenuCommand(MenuCommandEnum):
@@ -64,7 +60,7 @@ class ViewMenuCommand(MenuCommandEnum):
 
 
 def _test() -> None:
-    for enum in (FileMenuCommand, EditMenuCommand, ViewMenuCommand):
+    for enum in (FileMenuCommand, ViewMenuCommand):
         if len(enum) == 0:
             continue
         print()

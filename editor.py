@@ -53,6 +53,7 @@ class Editor(ttk.Notebook):
         events.LevelOpened.connect(self._on_level_opened)
         events.LevelSelectOpened.connect(self._on_level_select_opened)
         events.LevelStateChanged.connect(self._on_level_state_changed)
+        events.ReloadDefaultRequested.connect(self._on_reload_default_requested)
 
     def destroy(self) -> None:
         events.ActivePyscriptRequested.disconnect(self._on_active_pyscript_requested)
@@ -63,6 +64,7 @@ class Editor(ttk.Notebook):
         events.LevelOpened.disconnect(self._on_level_opened)
         events.LevelSelectOpened.disconnect(self._on_level_select_opened)
         events.LevelStateChanged.disconnect(self._on_level_state_changed)
+        events.ReloadDefaultRequested.disconnect(self._on_reload_default_requested)
         super().destroy()
 
     def _add_tab(
@@ -232,3 +234,11 @@ class Editor(ttk.Notebook):
             return
 
         events.ParseRequested(active_tab.path, event.queue_cycle_start)
+
+    def _on_reload_default_requested(self, _event: events.ReloadDefaultRequested) -> None:
+        active_tab = self._get_active_tab()
+        if active_tab is None:
+            message_error("No active tab to reload")
+            return
+
+        active_tab.reload_default()

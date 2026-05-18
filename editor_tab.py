@@ -6,6 +6,9 @@ Contributors:
 """
 
 from __future__ import annotations
+
+from cgitb import text
+from dataclasses import asdict
 import logging
 from math import ceil, floor
 from pathlib import Path
@@ -17,6 +20,7 @@ from ttkbootstrap.widgets.scrolled import ScrolledText
 
 from common import PYSCRIPT_EXTENSION, message_error
 from errors import EditorTabCreationError
+import events
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +29,7 @@ class EditorTab(ttk.Frame):
     DELTA_PER_ZOOM = 120
 
     path: Path | None
+    default_path: Path | None
     is_dirty: bool
     font: str
     font_size: int
@@ -43,7 +48,7 @@ class EditorTab(ttk.Frame):
         master: tk.Misc,
         style: ttk.Style,
         path: Path | None = None,
-        default_content_path: Path | None = None,
+        default_path: Path | None = None,
         on_dirty_changed: Callable[[EditorTab], None] | None = None,
         font: str = "Consolas",
         font_size: int = 11,
@@ -56,12 +61,14 @@ class EditorTab(ttk.Frame):
     ) -> None:
         if path is not None and path.suffix != PYSCRIPT_EXTENSION:
             logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in path '{path}'")
-        if default_content_path is not None and default_content_path.suffix != PYSCRIPT_EXTENSION:
+        if default_path is not None and default_path.suffix != PYSCRIPT_EXTENSION:
             logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in default_content_path '{default_content_path}'")
 
         super().__init__(master, **kwargs)
 
         self.path = path
+        self.default_path = default_path
+
         self.is_dirty = False
         self._saved_content = ""
         self._on_dirty_changed = on_dirty_changed
@@ -130,15 +137,15 @@ class EditorTab(ttk.Frame):
         if self.path.is_file():
             self._try_load(self.path)
         else:
-            logger.debug(f"No file found at '{self.path}'")
-            if default_content_path is not None and default_content_path.is_file():
-                logger.debug(f"Using default content path '{default_content_path}'")
-                self._try_load(default_content_path)
+            logger.debug("No file found at '%s'", self.path)
+            if self.default_path is not None and self.default_path.is_file():
+                logger.debug("Using default path '%s'", self.default_path)
+                self._try_load(self.default_path)
             else:
-                if default_content_path is None:
-                    logger.debug("No default content path provided")
+                if self.default_path is None:
+                    logger.debug("No default path provided")
                 else:
-                    logger.debug(f"No default content file found at '{default_content_path}'")
+                    logger.debug("No default file found at '%s'", self.default_path)
                 logger.debug("Keeping empty tab")
 
         self.mark_saved()
@@ -149,6 +156,14 @@ class EditorTab(ttk.Frame):
     def mark_saved(self) -> None:
         self._saved_content = self.get_content()
         self._set_dirty(False)
+
+    def reload_default(self) -> None:
+        logger.debug("Reloading default tab content")
+        if self.default_path is None:
+            message_error("Current tab has no default path")
+            return
+
+        self._try_load(self.default_path)
 
     def _refresh_dirty_state(self) -> None:
         self._set_dirty(self.get_content() != self._saved_content)
@@ -161,11 +176,12 @@ class EditorTab(ttk.Frame):
             self._on_dirty_changed(self)
 
     def _try_load(self, path: Path) -> None:
-        logger.debug(f"Loading text from '{path}'")
+        logger.debug("Loading text from '%s'", path)
         try:
+            self.text.delete("1.0", tk.END)
             self.text.insert("1.0", path.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError) as error:
-            logger.error(f"Failed to load text from '{path}'")
+            logger.error("Failed to load text from '%s'", path)
             raise EditorTabCreationError from error
 
     def _update_line_numbers(self) -> None:

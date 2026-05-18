@@ -163,6 +163,11 @@ class RedoRequested(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class ReloadDefaultRequested(Event):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class RestartRequested(Event):
     pass
 

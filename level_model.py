@@ -52,6 +52,13 @@ class LevelModel:
         Also clears step history, so this should only be used when level is in
         base state.
         """
+        if self.view_step != 0:
+            logger.error("Cannot load processors when level is not in base state")
+            return
+
+        self.history = [self.history[0]]
+        self.tile_model_matrix = self.history[0].map(TileModel)
+
         processor_id = 0
         for x, y, tile_model in self.tile_model_matrix.iter_xy():
             if tile_model.tile_data.tile_type not in (TileType.PLAYER, TileType.PLAYER_KEY):
@@ -70,8 +77,6 @@ class LevelModel:
             )
             self.tile_model_matrix.set(x, y, new_tile_model)
             processor_id += 1
-
-        self.history = [self.history[0]]
 
     def restart(self) -> None:
         if self.view_step == 0:
