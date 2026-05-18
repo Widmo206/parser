@@ -14,7 +14,7 @@ import dacite
 import yaml
 from yaml.parser import ParserError
 
-from common import message_error
+from common import message_error, normalize_path
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ class LevelScore:
 @dataclass(frozen=True)
 class Save:
     DACITE_CONFIG = dacite.Config(
+        type_hooks={Path: normalize_path},
         strict=True,
     )
 
@@ -40,12 +41,12 @@ class Save:
 
         try:
             with open(path, "r", encoding="utf-8") as file:
-                data = yaml.safe_load(file)
+                data = yaml.safe_load(file) or {}
             return dacite.from_dict(cls, data, cls.DACITE_CONFIG)
         except FileNotFoundError:
             message_error("Missing save file at '%s'", path)
-        except ParserError:
-            message_error("Failed to parse YAML data from '%s'", path)
+        except ParserError as e:
+            message_error("Failed to parse YAML data from '%s': '%s'", path, e)
         except dacite.DaciteError as e:
             message_error("Failed to parse save from YAML data from '%s': %s", path, e)
 
@@ -55,8 +56,11 @@ class Save:
         logger.debug("Saving save to '%s'", path)
 
         data = asdict(self)
+        for level_score in data["level_scores"].values():
+            level_score["solution_path"] = str(level_score["solution_path"])
+
         try:
             with open(path, "w", encoding="utf-8") as file:
                 yaml.safe_dump(data, file)
-        except OSError:
-            message_error("Failed to save to '%s'", path)
+        except Exception as e:
+            message_error("Failed to save to '%s': '%s'", path, e)

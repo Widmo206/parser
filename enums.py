@@ -164,7 +164,7 @@ class MoveMixin(NamedTuple):
 
 
 class SpecialMove(MoveMixin, Enum):
-    PLAYER_WIN        = (TileType.PLAYER,     TileType.WIN)
+    PLAYER_WIN        = (TileType.PLAYER,     TileType.FLAG)
     ENEMY_KILL_PLAYER = (TileType.ENEMY,      TileType.PLAYER)
     PLAYER_OPEN_DOOR  = (TileType.PLAYER_KEY, TileType.DOOR)
     ENEMY_OPEN_DOOR   = (TileType.ENEMY_KEY,  TileType.DOOR)

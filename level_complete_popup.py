@@ -62,7 +62,7 @@ class LevelCompletePopup(ttk.Toplevel):
         # TODO: Pass completion stats correctly.
         stats = (
             ("Level", level_name),
-            ("Script", level_score.solution_path),
+            ("Script", level_score.solution_path.name),
             ("Steps", level_score.step_count),
             ("Tokens", level_score.token_count),
         )
