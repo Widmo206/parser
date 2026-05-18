@@ -10,7 +10,7 @@ from scheduler import Scheduler
 
 
 class CycleController:
-    CYCLE_DELAY = 250
+    CYCLE_DELAY = 500
 
     scheduler: Scheduler
     is_running: bool

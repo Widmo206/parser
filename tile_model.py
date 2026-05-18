@@ -5,13 +5,14 @@ Contributors:
     Romcode
 """
 
+from __future__ import annotations
 from dataclasses import dataclass, field
-
 import logging
 from math import inf
 
 from astar import astar
 from enums import TileAction, TileType
+from errors import InvalidSpecialMoveError
 from matrix import Matrix
 from processor import Processor
 from processor import ProcessorLevelData
@@ -79,6 +80,59 @@ class TileModel:
 
             case _:
                 return None
+
+    def get_special_move_result(self, to_tile_model: TileModel) -> TileModel:
+        """Return the resulting TileModel for when this tile moves into the given TileModel."""
+        to_tile_type = to_tile_model.tile_data.tile_type
+        match self.tile_data.tile_type:
+            case TileType.PLAYER:
+                if to_tile_type is TileType.FLAG:
+                    return TileModel(TileData(TileType.WIN))
+                elif to_tile_type is TileType.KEY:
+                    return TileModel(
+                        TileData(TileType.PLAYER_KEY, self.tile_data.tile_direction),
+                        self.processor,
+                    )
+
+            case TileType.PLAYER_KEY:
+                if to_tile_type is TileType.FLAG:
+                    return TileModel(TileData(TileType.WIN))
+                elif to_tile_type is TileType.DOOR:
+                    return TileModel(
+                        TileData(TileType.PLAYER, self.tile_data.tile_direction),
+                        self.processor,
+                    )
+
+            case TileType.ENEMY:
+                if to_tile_type is TileType.PLAYER:
+                    return self
+                elif to_tile_type is TileType.PLAYER_KEY:
+                    return TileModel(
+                        TileData(TileType.ENEMY_KEY, self.tile_data.tile_direction),
+                        self.processor,
+                    )
+                elif to_tile_type is TileType.KEY:
+                    return TileModel(
+                        TileData(TileType.ENEMY_KEY, self.tile_data.tile_direction),
+                        self.processor,
+                    )
+
+            case TileType.ENEMY_KEY:
+                if to_tile_type is TileType.PLAYER:
+                    return self
+                elif to_tile_type is TileType.PLAYER_KEY:
+                    return TileModel(
+                        TileData(TileType.ENEMY_KEY, self.tile_data.tile_direction),
+                        self.processor,
+                        TileData(TileType.KEY),
+                    )
+                elif to_tile_type is TileType.DOOR:
+                    return TileModel(
+                        TileData(TileType.ENEMY, self.tile_data.tile_direction),
+                        self.processor,
+                    )
+
+        raise InvalidSpecialMoveError
 
     def _get_astar_action(
         self,

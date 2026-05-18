@@ -50,9 +50,11 @@ class Output(ScrolledText):
             bg=style.colors.bg,
         )
 
+        events.ParseRequested.connect(self._on_parse_requested)
         events.PyscriptOutputRequested.connect(self._on_processor_output_requested)
 
     def destroy(self) -> None:
+        events.ParseRequested.disconnect(self._on_parse_requested)
         events.PyscriptOutputRequested.disconnect(self._on_processor_output_requested)
         super().destroy()
 
@@ -63,8 +65,12 @@ class Output(ScrolledText):
 
     def print(self, text: Any = "") -> None:
         self.text.configure(state=tk.NORMAL)
-        self.text.insert(tk.END, repr(text) + "\n")
+        self.text.insert(tk.END, str(text) + "\n")
         self.text.configure(state=tk.DISABLED)
+
+    def _on_parse_requested(self, event: events.ParseRequested) -> None:
+        self.clear()
+        self.print(event.path)
 
     def _on_processor_output_requested(self, event: events.PyscriptOutputRequested) -> None:
         self.print(event.text)

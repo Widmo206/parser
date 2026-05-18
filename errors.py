@@ -11,6 +11,11 @@ class EditorTabCreationError(ValueError):
     pass
 
 
+class InvalidSpecialMoveError(ValueError):
+    """Raised when trying to execute a special move that doesn't exist."""
+    pass
+
+
 class UnknownDirectionError(ValueError):
     """Raised when trying to convert a character to a direction that doesn't exist."""
     pass
