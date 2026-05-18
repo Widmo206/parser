@@ -9,10 +9,13 @@ Contributors:
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Collection, Type, TypeAlias
+import logging
+
 from enums import TokenType, NodeType, ClosureLabel, PPUInstruction
 from errors import EndOfProgram
 
 
+logger = logging.getLogger(__name__)
 FunctionArg: TypeAlias = tuple[str, Type]
 
 
@@ -125,7 +128,7 @@ class Function(object):
     """WIP don't use"""
     name: str
     return_type: Type
-    program: SubprogramProvider
+    subprogram: SubprogramProvider
     args: tuple[FunctionArg, ...]
 
     def __repr__(self):
@@ -350,7 +353,7 @@ class Program(object):
             else:
                 instructions += "\n" + e * "|" + str(i)
 
-        return f"Subprogram\n{e*'|'}Closure Type: {self.closure_type}\n{e*'|'}Initial References: {self.initial_references}\n{e*'|'}Instructions:" + instructions
+        return f"Subprogram\n{e*"|"}Closure Type: {self.closure_type}\n{e*"|"}Initial References: {self.initial_references}\n{e*"|"}Instructions:" + instructions
 
     def next(self) -> Instruction:
         """Grab the next instruction in the program, with the coresponding closure.
@@ -365,14 +368,18 @@ class Program(object):
                 raise EndOfProgram
             match instruction.instruction:
                 case PPUInstruction.EXEC:
+                    # logger.debug("EXEC instruction")
                     subprogram_provider = instruction.parameter
                     if self.current_subprogram is None:
+                        # logger.debug("No subprogram; loading...")
                         self.current_subprogram = subprogram_provider.new()
                         break
                     else:
                         try:
                             instruction = self.current_subprogram.next()
+                            # logger.debug("Subprogram instruction retrieved")
                         except EndOfProgram:
+                            # logger.debug("End of subprogram")
                             self.current_subprogram = None
                             self.index += 1
                             continue # I wish Python had jumps
@@ -401,7 +408,7 @@ class SubprogramProvider(object):
             else:
                 instructions += "\n" + e * "|" + str(i)
 
-        return f"Subprogram\n{e*'|'}Closure Type: {self.closure_type}\n{e*'|'}Initial References: {self.initial_references}\n{e*'|'}Instructions:" + instructions
+        return f"Subprogram\n{e*"|"}Closure Type: {self.closure_type}\n{e*"|"}Initial References: {self.initial_references}\n{e*"|"}Instructions:" + instructions
 
     def new(self):
         return Program(self.program, self.closure_type, self.initial_references)
