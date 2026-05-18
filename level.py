@@ -26,6 +26,8 @@ class Level:
     PATHS = (
         Path("levels/tutorial.yaml"),
         Path("levels/bend.yaml"),
+        Path("levels/staircase.yaml"),
+        Path("levels/clone.yaml"),
         Path("levels/test.yaml"),
         Path("levels/astar_test.yaml"),
     )
