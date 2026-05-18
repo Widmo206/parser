@@ -8,7 +8,6 @@ Contributors:
     Widmo
     
 TODO list:
-    add function definition
     add checks for unterminated parens/closures/strings/expressions/...
     add arg type/count checking to all functions
     add if statements
@@ -25,7 +24,7 @@ from pathlib import Path
 from string import ascii_letters, digits, whitespace
 from typing import Type, Any, Collection
 
-from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction
+from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction, Keyword
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
 from pyscript_dataclasses import (
     Constant,
@@ -58,15 +57,15 @@ BOOLEANS = {
     "true": True,
     "false": False,
 }
-KEYWORDS = (
-    "const",
-    "var",
-    "func",
-    "if",
-    "else",
-    "while",
-    "return",
-)
+KEYWORDS = {
+    "const":  Keyword.CONST,
+    "var":    Keyword.VAR,
+    "func":   Keyword.FUNC,
+    "if":     Keyword.IF,
+    "else":   Keyword.ELSE,
+    "while":  Keyword.WHILE,
+    "return": Keyword.RETURN,
+}
 TOKEN_PAIRS = {
     TokenType.OPEN_PAREN: TokenType.CLOSE_PAREN,
     TokenType.INDENT:     TokenType.DEINDENT,
@@ -220,7 +219,7 @@ class Parser(object):
                     i += 1
                     char = source[c + i]
                 if current_token in KEYWORDS:
-                    add_token(TokenType.KEYWORD, current_token, i)
+                    add_token(TokenType.KEYWORD, KEYWORDS[current_token], i)
                 elif current_token in BOOLEANS:
                     add_token(TokenType.BOOL_LIT, BOOLEANS[current_token], i)
                 else:
@@ -335,12 +334,17 @@ class Parser(object):
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
+            nonlocal current_closure
             if node_type == NodeType.EXPRESSION and value == None:
                 value = len(expressions) # expression counter
             if value is None:
                 logger.debug(f"Stepping into   {node_type}")
             else:
                 logger.debug(f"Stepping into   {node_type} ({repr(value)})")
+            if node_type == NodeType.CLOSURE:
+                assert isinstance(value, Closure)
+                assert value.get_parent() is current_closure
+                current_closure = value
             new_node = ProcessNode(current_node, node_type, line, value)
             current_node.add_child(new_node)
             current_node = new_node
@@ -362,6 +366,9 @@ class Parser(object):
                 logger.debug(f"Stepping out of {exited_node.get_type()} ({repr(exited_node.get_value())})")
             if node_type is not Any:
                 assert exited_node.get_type() == node_type
+            if node_type == NodeType.CLOSURE:
+                assert isinstance(exited_node.get_value(), Closure)
+                current_closure = exited_node.get_value()
             current_node = code_stack[-1]
 
         def ensure_expression(current_line: int) -> None:
@@ -378,6 +385,11 @@ class Parser(object):
             nonlocal code_stack
             if code_stack[-1].get_type() != NodeType.CLOSURE:
                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): You cannot {action_description} here; maybe you forgot a semicolon?")
+        
+        def is_next_token(token_type: TokenType, lookahead: int=0) -> bool:
+            nonlocal tokens
+            return tokens[lookahead].type == token_type
+
         try:
             while len(tokens) > 0:
                 current_token = tokens.pop(0)
@@ -394,7 +406,7 @@ class Parser(object):
                                 if code_stack[-1].get_type() == NodeType.PARENTHESIS:
                                     step_into(NodeType.EXPRESSION, current_token.line, None)
                                 step_into(NodeType.CALL, current_token.line, function)
-                                if tokens[1].type == TokenType.CLOSE_PAREN: # no arguments
+                                if is_next_token(TokenType.CLOSE_PAREN, 1): # no arguments
                                     tokens.pop(0) # consume the OPEN_PAREN
                                     tokens.pop(0) # consume the CLOSE_PAREN
                                     step_out_of(NodeType.CALL)
@@ -434,6 +446,11 @@ class Parser(object):
                                 step_out_of(NodeType.CALL)
                             case NodeType.PARENTHESIS:
                                 step_out_of(NodeType.PARENTHESIS)
+                                if code_stack[-1].get_type() == NodeType.CONDITION:
+                                    bracket = tokens.pop(0)
+                                    if bracket.type != TokenType.INDENT:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected closure after if statement")
+                                    step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
                             case _:
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
 
@@ -468,9 +485,7 @@ class Parser(object):
 
                     case TokenType.INDENT:
                         require_closure(current_token.line, "create a closure")
-                        new_closure = Closure(ClosureLabel.MISC, current_closure)
-                        step_into(NodeType.CLOSURE, current_token.line, new_closure)
-                        current_closure = new_closure
+                        step_into(NodeType.CLOSURE, current_token.line, Closure(ClosureLabel.MISC, current_closure))
                     
                     case TokenType.DEINDENT:
                         if current_closure.label == ClosureLabel.GLOBAL:
@@ -479,7 +494,6 @@ class Parser(object):
                             step_out_of(NodeType.CLOSURE)
                         except AssertionError as e:
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
-                        current_closure = current_closure.get_parent() # This only returns None for the Global Closure, which is already covered
                         if code_stack[-1].get_type() == NodeType.DEFINE:
                             step_out_of(NodeType.DEFINE)
 
@@ -505,7 +519,7 @@ class Parser(object):
 
                     case TokenType.KEYWORD:
                         match current_token.value:
-                            case "var":
+                            case Keyword.VAR:
                             # \begin{word soup}
                                 require_closure(current_token.line, "define a variable")
                                 var_type: Type = Any # idek what Pylance is complaining about here
@@ -515,7 +529,7 @@ class Parser(object):
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
-                                if tokens[0].type == TokenType.COLON:
+                                if is_next_token(TokenType.COLON):
                                     tokens.pop(0) # consume the :
                                     type_token = tokens.pop(0)
                                     if type_token.type != TokenType.REFERENCE:
@@ -529,12 +543,12 @@ class Parser(object):
                                 variable = Variable(var_name, var_type, None)
                                 current_closure.add(variable)
                                 step_into(NodeType.DEFINE, var_token.line, variable)
-                                if tokens[0].type != TokenType.ASSIGN:
+                                if not is_next_token(TokenType.ASSIGN):
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
                             
                             # word soup 2: electric boogaloo
-                            case "const": # literally copy-pasted the case for var
+                            case Keyword.CONST: # literally copy-pasted the case for var
                                 require_closure(current_token.line, "define a constant")
                                 var_type: Type = Any # idek what Pylance is complaining about here
                                 var_token = tokens.pop(0) # declared variable name
@@ -543,7 +557,7 @@ class Parser(object):
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
-                                if tokens[0].type == TokenType.COLON:
+                                if is_next_token(TokenType.COLON):
                                     tokens.pop(0) # consume the :
                                     type_token = tokens.pop(0)
                                     if type_token.type != TokenType.REFERENCE:
@@ -557,12 +571,12 @@ class Parser(object):
                                 variable = Constant(var_name, var_type, None)
                                 current_closure.add(variable)
                                 step_into(NodeType.DEFINE, var_token.line, variable)
-                                if tokens[0].type != TokenType.ASSIGN:
+                                if not is_next_token(TokenType.ASSIGN):
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): const {var_name} must be followed by assignment operator: =")
                                 step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
 
                             # I should be banned from using Pathon again
-                            case "func":
+                            case Keyword.FUNC:
                                 require_closure(current_token.line, "define a function")
                                 name_token = tokens.pop(0) # function name
                                 func_name = name_token.value
@@ -585,7 +599,7 @@ class Parser(object):
                                         raise PyScriptSyntaxError(f"{self.path} (line {arg_token.line}): '{arg_token.value}' is not a valid argument name")
                                     arg_name = arg_token.value
                                     # check for type declaration
-                                    if tokens[0].type == TokenType.COLON:
+                                    if is_next_token(TokenType.COLON):
                                         tokens.pop(0) # consume :
                                         type_token = tokens.pop(0)
                                         # Verify that it's a valid type
@@ -644,8 +658,20 @@ class Parser(object):
                                 step_into(NodeType.CLOSURE, open_closure.line, function_closure)
                                 current_closure = function_closure
                             
-                            case "return":
+                            case Keyword.RETURN:
                                 step_into(NodeType.RETURN, current_token.line, None)
+                            
+                            case Keyword.IF:
+                                step_into(NodeType.CONDITION, current_token.line, None)
+                                paren = tokens.pop(0)
+                                if paren.type != TokenType.OPEN_PAREN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {paren.line}): expected (condition) after if statement")
+                                step_into(NodeType.PARENTHESIS, paren.line, None)
+                                step_into(NodeType.EXPRESSION, paren.line, None)
+                                # handle the rest when exiting
+                                # honestly could have done something similar for Functions
+                                # and I *thought* about it... should've listened to myself
+
 
                             # TODO add other keywords
                             case _:
@@ -655,8 +681,8 @@ class Parser(object):
                         raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
             for expression in expressions:
                 Parser.parse_expression(expression)
-        except PyScriptError as err:
-            logger.error(f"Parsing failed due to an exception:\n\n{err}\n\nCurrent ProcessTree:\n{repr(process_tree)}")
+        except Exception as err:
+            logger.error(f"Parsing failed due to an exception:\n\n{err.__class__.__name__}: {err}\n\nCurrent ProcessTree:\n{repr(process_tree)}")
             raise
         logger.info(f"Finished parsing '{self.path}'")
         logger.debug(f"Program structure:\n{repr(process_tree)}")

@@ -158,6 +158,16 @@ class TileType(Enum):
         raise UnknownTileTypeError("No tile type matching value %s", value)
 
 
+class Keyword(Enum):
+    CONST  = auto()
+    VAR    = auto()
+    FUNC   = auto()
+    IF     = auto()
+    ELSE   = auto()
+    WHILE  = auto()
+    RETURN = auto()
+
+
 class TokenType(Enum):
     NOP         = auto() # pass
     KEYWORD     = auto()
@@ -188,6 +198,7 @@ class TokenType(Enum):
 class NodeType(Enum):
     """Used by Parser to organize a list of tokens into a ProcessTree."""
     CLOSURE     = auto()
+    CONDITION   = auto()
     PARENTHESIS = auto()
     EXPRESSION  = auto()
     READ        = auto()

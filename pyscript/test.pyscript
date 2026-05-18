@@ -3,6 +3,7 @@ hello();
 
 print("I'm a string!");
 var y = -5;
+# postfix notation is not a feature; it's lack of expression validation
 const x: float = 1.0e-6 * 5e7 + 1.1 / (y 3 %);
 { # this shouldn't affect the original x
     var x: int = 42;
@@ -16,4 +17,9 @@ func equal(arg1: int, arg2: int) -> (bool){
     return arg1 == arg2;
 }
 
-print(equal(1, 2))
+if (equal(1, 2)){
+    print("what");
+}
+else {
+    print("Predictible");
+}
