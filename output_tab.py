@@ -15,6 +15,8 @@ from ttkbootstrap.widgets.scrolled import ScrolledText
 
 class OutputTab(ScrolledText):
     DELTA_PER_ZOOM = 120
+    NORMAL_TEXT_TAG = "normal"
+    ERROR_TEXT_TAG = "error"
 
     font: str
     font_size: int
@@ -54,6 +56,8 @@ class OutputTab(ScrolledText):
             highlightthickness=0,
             bg=style.colors.bg,
         )
+        self.text.tag_config(self.NORMAL_TEXT_TAG, foreground=style.colors.fg)
+        self.text.tag_config(self.ERROR_TEXT_TAG, foreground=style.colors.danger)
         self.text.bind("<Control-MouseWheel>", self._on_zoom)
 
     def clear(self) -> None:
@@ -61,9 +65,10 @@ class OutputTab(ScrolledText):
         self.text.delete("1.0", tk.END)
         self.text.configure(state=tk.DISABLED)
 
-    def print(self, text: Any = "") -> None:
+    def print(self, text: Any = "", is_error: bool = False) -> None:
+        tag_name = self.ERROR_TEXT_TAG if is_error else self.NORMAL_TEXT_TAG
         self.text.configure(state=tk.NORMAL)
-        self.text.insert(tk.END, str(text) + "\n")
+        self.text.insert(tk.END, str(text) + "\n", tag_name)
         self.text.configure(state=tk.DISABLED)
 
     def _zoom(self, zoom_delta: int) -> None:

@@ -27,8 +27,6 @@ class Output(ttk.Notebook):
         self.style = style
         self.output_tabs = {}
 
-        self._get_output_tab(0)
-
         events.ParseRequested.connect(self._on_parse_requested)
         events.PyscriptOutputRequested.connect(self._on_processor_output_requested)
 
@@ -48,17 +46,16 @@ class Output(ttk.Notebook):
         tab = self.output_tabs.get(processor_id)
         if tab is not None:
             return tab
+
         return self._add_output_tab(processor_id)
 
-    def _on_parse_requested(self, event: events.ParseRequested) -> None:
+    def _on_parse_requested(self, _event: events.ParseRequested) -> None:
         for tab in self.output_tabs.values():
-            tab.clear()
-
-        output_tab = self._get_output_tab(0)
-        output_tab.print(event.path)
-        self.select(output_tab)
+            self.forget(tab)
+            tab.destroy()
+        self.output_tabs.clear()
 
     def _on_processor_output_requested(self, event: events.PyscriptOutputRequested) -> None:
         output_tab = self._get_output_tab(event.processor_id)
-        output_tab.print(event.text)
+        output_tab.print(event.text, event.is_error)
         self.select(output_tab)
