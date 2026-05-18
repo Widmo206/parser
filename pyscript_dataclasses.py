@@ -373,6 +373,7 @@ class Program(object):
                         try:
                             instruction = self.current_subprogram.next()
                         except EndOfProgram:
+                            self.current_subprogram = None
                             self.index += 1
                             continue # I wish Python had jumps
                 case _:
