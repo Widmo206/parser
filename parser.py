@@ -659,8 +659,8 @@ class Parser(object):
                         raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
             for expression in expressions:
                 Parser.parse_expression(expression)
-        except PyScriptError as err:
-            logger.error(f"Parsing failed due to an exception:\n\n{err}\n\nCurrent ProcessTree:\n{repr(process_tree)}")
+        except Exception as err:
+            logger.error(f"Parsing failed due to an exception:\n\n{err.__class__.__name__}: {err}\n\nCurrent ProcessTree:\n{repr(process_tree)}")
             raise
         logger.info(f"Finished parsing '{self.path}'")
         logger.debug(f"Program structure:\n{repr(process_tree)}")
