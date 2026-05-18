@@ -10,10 +10,12 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
+import events
 from save import LevelScore
 
 class LevelTopBar(ttk.Frame):
     name_label: ttk.Label
+    step_count_label: ttk.Label
     token_count_label: ttk.Label
 
     def __init__(
@@ -41,22 +43,17 @@ class LevelTopBar(ttk.Frame):
             bootstyle=(ttkc.PRIMARY, ttkc.INVERSE),
         )
         self.name_label.grid(column=1, row=0, sticky=tk.NSEW)
-
-        step_text = "N/A" if level_score is None else str(level_score.step_count)
-        self.token_count_label = ttk.Label(
+        self.step_count_label = ttk.Label(
             self,
-            text=f"Best step count: {step_text}",
             anchor=tk.CENTER,
             font=("Segoe UI", 16),
             padding=16,
             bootstyle=(ttkc.PRIMARY, ttkc.INVERSE),
         )
-        self.token_count_label.grid(column=3, row=0, sticky=tk.NSEW)
-
-        token_text = "N/A" if level_score is None else str(level_score.token_count)
+        self.step_count_label.grid(column=3, row=0, sticky=tk.NSEW)
         self.token_count_label = ttk.Label(
             self,
-            text=f"Best token count: {token_text}",
+
             anchor=tk.CENTER,
             font=("Segoe UI", 16),
             padding=16,
@@ -64,4 +61,22 @@ class LevelTopBar(ttk.Frame):
         )
         self.token_count_label.grid(column=5, row=0, sticky=tk.NSEW)
 
-    # TODO: Add an event handler that updates best score on labels.
+        self._update_labels(level_score)
+        events.LevelScoreUpdated.connect(self._on_level_score_updated)
+
+    def destroy(self) -> None:
+        events.LevelScoreUpdated.disconnect(self._on_level_score_updated)
+        super().destroy()
+
+    def _update_labels(self, level_score: LevelScore | None) -> None:
+        step_text = "N/A" if level_score is None else str(level_score.step_count)
+        self.step_count_label.config(
+            text=f"Best step count: {step_text}"
+        )
+        token_text = "N/A" if level_score is None else str(level_score.token_count)
+        self.token_count_label.config(
+            text=f"Best token count: {token_text}",
+        )
+
+    def _on_level_score_updated(self, event: events.LevelScoreUpdated) -> None:
+        self._update_labels(event.level_score)

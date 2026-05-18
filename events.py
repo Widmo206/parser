@@ -137,6 +137,11 @@ class LevelSelected(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class LevelScoreUpdated(Event):
+    level_score: LevelScore
+
+
+@dataclass(frozen=True, slots=True)
 class LevelStateChanged(Event):
     is_active: bool
 

@@ -32,7 +32,7 @@ class LevelModel:
     tile_model_matrix: Matrix[TileModel]
     history: list[Matrix[TileData]] = field(default_factory=list)
     view_step: int = 0
-    pyscript_name: str = ""
+    pyscript_path: Path | None = None
     token_count: int = 0
 
     @classmethod
@@ -85,7 +85,7 @@ class LevelModel:
             processor_id += 1
 
         assert parser is not None
-        self.pyscript_name = pyscript_path.name
+        self.pyscript_path = pyscript_path
         self.token_count = parser.token_count
 
     def restart(self) -> None:
@@ -121,7 +121,7 @@ class LevelModel:
         ))
 
     def _emit_level_complete(self) -> None:
-        level_score = LevelScore(self.pyscript_name, self.model_step, self.token_count)
+        level_score = LevelScore(self.pyscript_path, self.model_step, self.token_count)
         events.LevelComplete(self.level.name, level_score)
 
     def _handle_tile_action(self, x: int, y: int, action: TileAction) -> None:

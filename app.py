@@ -10,7 +10,7 @@ from common import SAVE_PATH, SOLUTIONS_DIR
 import events
 from game_controller import GameController
 from interface import Interface
-from save import Save
+from save import LevelScore, Save
 from scheduler import Scheduler
 
 logger = logging.getLogger(__name__)
@@ -45,8 +45,23 @@ class App:
             events.LevelClosed()
 
     def _on_level_complete(self, event: events.LevelComplete) -> None:
-        self.save.level_scores[event.level_name] = event.level_score
+        if event.level_name in self.save.level_scores:
+            # Only keep latest solution path to reload it when opening the
+            # level again, but independently save best step and token count.
+            old_level_score = self.save.level_scores[event.level_name]
+            new_level_score = LevelScore(
+                event.level_score.solution_path,
+                min(event.level_score.step_count, old_level_score.step_count),
+                min(event.level_score.token_count, old_level_score.token_count),
+            )
+
+        else:
+            new_level_score = event.level_score
+
+        self.save.level_scores[event.level_name] = new_level_score
         self.save.save(SAVE_PATH)
+
+        events.LevelScoreUpdated(new_level_score)
         self.interface.open_level_complete_popup(event.level_name, event.level_score)
 
     def _on_exit_requested(self, _event: events.ExitRequested) -> None:
