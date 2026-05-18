@@ -660,6 +660,18 @@ class Parser(object):
                             
                             case Keyword.RETURN:
                                 step_into(NodeType.RETURN, current_token.line, None)
+                            
+                            case Keyword.IF:
+                                step_into(NodeType.CONDITION, current_token.line, None)
+                                paren = tokens.pop(0)
+                                if paren.type != TokenType.OPEN_PAREN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {paren.line}): expected (condition) after if statement")
+                                step_into(NodeType.PARENTHESIS, paren.line, None)
+                                step_into(NodeType.EXPRESSION, paren.line, None)
+                                # handle the rest when exiting
+                                # honestly could have done something similar for Functions
+                                # and I *thought* about it... should've listened to myself
+
 
                             # TODO add other keywords
                             case _:
