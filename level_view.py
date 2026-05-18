@@ -1,4 +1,4 @@
-"""LevelView class to manage TileLabels and obey LevelModel
+"""LevelView class to manage TileLabels and obey LevelModel.
 
 Created on 2026.01.28
 Contributors:

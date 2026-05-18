@@ -1,4 +1,4 @@
-"""LevelSelect class that displays a list of available levels
+"""LevelSelect class that displays a list of available levels.
 
 Created on 2026.02.06
 Contributors:

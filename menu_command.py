@@ -1,4 +1,4 @@
-"""MenuCommand class to ease tkinter menu creation and binding
+"""MenuCommand class to ease tkinter menu creation and binding.
 
 Created on 2026.02.09
 Contributors:

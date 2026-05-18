@@ -1,4 +1,4 @@
-"""Centralized location for easy error access
+"""Centralized location for easy error access.
 
 Created on 2026.01.31
 Contributors:

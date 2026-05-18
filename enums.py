@@ -1,4 +1,4 @@
-"""Centralized location for easy enum access
+"""Centralized location for easy enum access.
 
 Created on 2026.01.30
 Contributors:

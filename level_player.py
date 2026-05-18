@@ -1,4 +1,4 @@
-"""LevelPlayer class that contains LevelBottomBar and LevelView
+"""LevelPlayer class that contains LevelBottomBar and LevelView.
 
 Created on 2026.02.05
 Contributors:

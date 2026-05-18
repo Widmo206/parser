@@ -1,4 +1,4 @@
-"""PyscriptInterface class that links Editor and Output
+"""PyscriptInterface class that links Editor and Output.
 
 Created on 2026.02.08
 Contributors:

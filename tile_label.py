@@ -1,4 +1,4 @@
-"""TileLabel class for tile image display
+"""TileLabel class for tile image display.
 
 Created on 2026.01.28
 Contributors:

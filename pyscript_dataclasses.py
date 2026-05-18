@@ -1,10 +1,9 @@
-"""Data structures used by the PyScript parser
+"""Data structures used by the PyScript parser.
 
 Created on 2026.02.21
 Contributors:
     Widmo
 """
-
 
 from __future__ import annotations
 from dataclasses import dataclass
@@ -13,7 +12,6 @@ import logging
 
 from enums import TokenType, NodeType, ClosureLabel, PPUInstruction
 from errors import EndOfProgram
-
 
 logger = logging.getLogger(__name__)
 FunctionArg: TypeAlias = tuple[str, Type]
