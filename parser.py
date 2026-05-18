@@ -334,12 +334,17 @@ class Parser(object):
             """Create a new node of the specified type as a child of current_node and step into it."""
             nonlocal code_stack
             nonlocal current_node
+            nonlocal current_closure
             if node_type == NodeType.EXPRESSION and value == None:
                 value = len(expressions) # expression counter
             if value is None:
                 logger.debug(f"Stepping into   {node_type}")
             else:
                 logger.debug(f"Stepping into   {node_type} ({repr(value)})")
+            if node_type == NodeType.CLOSURE:
+                assert isinstance(value, Closure)
+                assert value.get_parent() is current_closure
+                current_closure = value
             new_node = ProcessNode(current_node, node_type, line, value)
             current_node.add_child(new_node)
             current_node = new_node
@@ -361,6 +366,9 @@ class Parser(object):
                 logger.debug(f"Stepping out of {exited_node.get_type()} ({repr(exited_node.get_value())})")
             if node_type is not Any:
                 assert exited_node.get_type() == node_type
+            if node_type == NodeType.CLOSURE:
+                assert isinstance(exited_node.get_value(), Closure)
+                current_closure = exited_node.get_value()
             current_node = code_stack[-1]
 
         def ensure_expression(current_line: int) -> None:
@@ -438,6 +446,11 @@ class Parser(object):
                                 step_out_of(NodeType.CALL)
                             case NodeType.PARENTHESIS:
                                 step_out_of(NodeType.PARENTHESIS)
+                                if code_stack[-1].get_type() == NodeType.CONDITION:
+                                    bracket = tokens.pop(0)
+                                    if bracket.type != TokenType.INDENT:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected closure after if statement")
+                                    step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
                             case _:
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
 
@@ -472,9 +485,7 @@ class Parser(object):
 
                     case TokenType.INDENT:
                         require_closure(current_token.line, "create a closure")
-                        new_closure = Closure(ClosureLabel.MISC, current_closure)
-                        step_into(NodeType.CLOSURE, current_token.line, new_closure)
-                        current_closure = new_closure
+                        step_into(NodeType.CLOSURE, current_token.line, Closure(ClosureLabel.MISC, current_closure))
                     
                     case TokenType.DEINDENT:
                         if current_closure.label == ClosureLabel.GLOBAL:
@@ -483,7 +494,6 @@ class Parser(object):
                             step_out_of(NodeType.CLOSURE)
                         except AssertionError as e:
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
-                        current_closure = current_closure.get_parent() # This only returns None for the Global Closure, which is already covered
                         if code_stack[-1].get_type() == NodeType.DEFINE:
                             step_out_of(NodeType.DEFINE)
 
