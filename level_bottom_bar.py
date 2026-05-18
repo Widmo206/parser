@@ -1,4 +1,4 @@
-"""LevelBottomBar class to holds buttons for playing through levels
+"""LevelBottomBar class to holds buttons for playing through levels.
 
 Created on 2026.02.04
 Contributors:

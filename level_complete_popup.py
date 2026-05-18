@@ -1,4 +1,4 @@
-"""LevelCompletePopup class that opens a window with completion info
+"""LevelCompletePopup class that opens a window with completion info.
 
 Created on 2026.04.02
 Contributors:

@@ -1,4 +1,4 @@
-"""Pyscript - a coding learning game
+"""Pyscript - a coding learning game.
 
 yaml module error: pip install pyyaml
 

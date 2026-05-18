@@ -1,4 +1,4 @@
-"""Common classes and functions used by different modules
+"""Common classes and functions used by different modules.
 
 Created on 2026.02.07
 Contributors:

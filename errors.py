@@ -1,4 +1,4 @@
-"""Centralized location for easy error access
+"""Centralized location for easy error access.
 
 Created on 2026.01.31
 Contributors:
@@ -8,6 +8,11 @@ Contributors:
 
 class EditorTabCreationError(ValueError):
     """Raised when trying to create an editor tab from an invalid file."""
+    pass
+
+
+class InvalidSpecialMoveError(ValueError):
+    """Raised when trying to execute a special move that doesn't exist."""
     pass
 
 

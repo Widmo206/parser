@@ -1,4 +1,4 @@
-"""LevelModel class to handle level logic and interact with LevelBottomBar and LevelView
+"""LevelModel class to handle level logic and interact with LevelBottomBar and LevelView.
 
 Created on 2026.02.18
 Contributors:
@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 
-from enums import Direction, MoveMixin, SpecialMove, TileAction, TileType
+from enums import Direction, TileAction, TileType
+from errors import InvalidSpecialMoveError
 import events
 from level import Level
 from matrix import Matrix
@@ -204,12 +205,8 @@ class LevelModel:
             to_tile_model = TileModel(to_tile_model.floor_tile_data)
 
         try:
-            move = SpecialMove(MoveMixin(
-                from_tile_model.tile_data.tile_type,
-                to_tile_model.tile_data.tile_type
-            ))
-
-        except ValueError:
+            new_tile_model = from_tile_model.get_special_move_result(to_tile_model)
+        except InvalidSpecialMoveError:
             if not to_tile_model.tile_data.tile_type.is_walkable:
                 return
 
@@ -227,11 +224,9 @@ class LevelModel:
                 from_tile_model.processor,
                 to_tile_model.tile_data,
             )
-
         else:
             logger.debug(
-                "Executing special move %s from tile %s at (%d, %d) in direction %s (%s)",
-                move,
+                "Executing special move from tile %s (%d, %d) in direction %s (%s)",
                 from_tile_model.tile_data.tile_type,
                 x,
                 y,
@@ -239,59 +234,8 @@ class LevelModel:
                 to_tile_model.tile_data.tile_type,
             )
 
-            new_tile_model = self._get_special_move_result(
-                move,
-                from_tile_model,
-                to_tile_model
-            )
-
         self.tile_model_matrix.set(x, y, TileModel(from_tile_model.floor_tile_data))
         self.tile_model_matrix.set(to_x, to_y, new_tile_model)
-
-    @staticmethod
-    def _get_special_move_result(
-        move: SpecialMove,
-        from_tile_model: TileModel,
-        _to_tile_model: TileModel,
-    ) -> TileModel:
-        match move:
-            case SpecialMove.PLAYER_WIN:
-                return TileModel(TileData(TileType.WIN))
-
-            case SpecialMove.ENEMY_KILL_PLAYER:
-                return TileModel(
-                    from_tile_model.tile_data,
-                    from_tile_model.processor,
-                )
-
-            case SpecialMove.PLAYER_OPEN_DOOR | SpecialMove.ENEMY_OPEN_DOOR:
-                return TileModel(
-                    TileData(
-                        (
-                            TileType.PLAYER
-                            if move is SpecialMove.PLAYER_OPEN_DOOR
-                            else TileType.ENEMY
-                        ),
-                        from_tile_model.tile_data.tile_direction,
-                    ),
-                    from_tile_model.processor,
-                )
-
-            case SpecialMove.PLAYER_PICKUP_KEY | SpecialMove.ENEMY_PICKUP_KEY:
-                return TileModel(
-                    TileData(
-                        (
-                            TileType.PLAYER_KEY
-                            if move is SpecialMove.PLAYER_PICKUP_KEY
-                            else TileType.ENEMY_KEY
-                        ),
-                        from_tile_model.tile_data.tile_direction,
-                    ),
-                    from_tile_model.processor,
-                )
-
-            case _:
-                logger.error("Unknown special move %s", move)
 
     def _attack_tile(self, x: int, y: int) -> None:
         try:
@@ -309,9 +253,15 @@ class LevelModel:
 
         match tile_model.tile_data.tile_type:
             case TileType.ENEMY:
-                self.tile_model_matrix.set(x, y, TileModel(tile_model.floor_tile_data))
+                self.tile_model_matrix.set(x, y, TileModel(
+                    TileData(TileType.ATTACK),
+                    floor_tile_data=tile_model.floor_tile_data,
+                ))
             case TileType.ENEMY_KEY:
-                self.tile_model_matrix.set(x, y, TileModel(TileData(TileType.KEY)))
+                self.tile_model_matrix.set(x, y, TileModel(
+                    TileData(TileType.ATTACK),
+                    floor_tile_data=TileData(TileType.KEY),
+                ))
 
     def _set_view_step(self, step: int) -> None:
         if self.view_step < 0:

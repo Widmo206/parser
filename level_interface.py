@@ -1,4 +1,4 @@
-"""LevelInterface class that links LevelPlayer and LevelSelect
+"""LevelInterface class that links LevelPlayer and LevelSelect.
 
 Created on 2026.02.06
 Contributors:

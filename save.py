@@ -1,4 +1,4 @@
-"""Save class to manage user save files
+"""Save class to manage user save files.
 
 Created on 2026.03.07
 Contributors:

@@ -1,4 +1,4 @@
-"""App class that serves as the root of the composition tree
+"""App class that serves as the root of the composition tree.
 
 Created on 2026.02.21
 Contributors:

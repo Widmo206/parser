@@ -1,4 +1,4 @@
-"""Level class to store level files
+"""Level class to store level files.
 
 Created on 2026.01.28
 Contributors:

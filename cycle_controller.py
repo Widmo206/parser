@@ -1,4 +1,4 @@
-"""CycleController class that routes events and uses a timer to send level cycle requests
+"""CycleController class that routes events and uses a timer to send level cycle requests.
 
 Created on 2026.03.04
 Contributors:
@@ -10,7 +10,7 @@ from scheduler import Scheduler
 
 
 class CycleController:
-    CYCLE_DELAY = 250
+    CYCLE_DELAY = 500
 
     scheduler: Scheduler
     is_running: bool

@@ -1,4 +1,4 @@
-"""GameController class that links LevelModel and CycleController
+"""GameController class that links LevelModel and CycleController.
 
 Created on 2026.03.04
 Contributors:

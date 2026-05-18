@@ -1,4 +1,4 @@
-"""Centralized location for easy enum access
+"""Centralized location for easy enum access.
 
 Created on 2026.01.30
 Contributors:
@@ -158,20 +158,6 @@ class TileType(Enum):
         raise UnknownTileTypeError("No tile type matching value %s", value)
 
 
-class MoveMixin(NamedTuple):
-    from_type: TileType
-    to_type: TileType
-
-
-class SpecialMove(MoveMixin, Enum):
-    PLAYER_WIN        = (TileType.PLAYER,     TileType.FLAG)
-    ENEMY_KILL_PLAYER = (TileType.ENEMY,      TileType.PLAYER)
-    PLAYER_OPEN_DOOR  = (TileType.PLAYER_KEY, TileType.DOOR)
-    ENEMY_OPEN_DOOR   = (TileType.ENEMY_KEY,  TileType.DOOR)
-    PLAYER_PICKUP_KEY = (TileType.PLAYER,     TileType.KEY)
-    ENEMY_PICKUP_KEY  = (TileType.ENEMY,      TileType.KEY)
-
-
 class Keyword(Enum):
     CONST  = auto()
     VAR    = auto()
@@ -287,7 +273,6 @@ def _test() -> None:
         NodeType,
         Operator,
         PPUInstruction,
-        SpecialMove,
         TileAction,
         TileType,
         TokenType,

@@ -1,10 +1,11 @@
-"""Processor - this is what executes the PyScript code
+"""Processor - this is what executes the PyScript code.
 
 Created on 2026.05.15
 Contributors:
     Widmo
     Romcode
 """
+
 from functools import partial
 import logging
 from typing import Generator, Any, TypeAlias
