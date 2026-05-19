@@ -59,7 +59,6 @@ class LevelCompletePopup(ttk.Toplevel):
         stats_frame.grid(column=0, row=1, sticky=tk.NSEW)
         stats_frame.columnconfigure(1, weight=1)
 
-        # TODO: Pass completion stats correctly.
         stats = (
             ("Level", level_name),
             ("Script", level_score.solution_path.name),
