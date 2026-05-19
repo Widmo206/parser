@@ -194,7 +194,10 @@ class EditorTab(ttk.Frame):
         )
         self.line_text.insert("1.0", numbers)
 
-        if self.text.focus_get() == self.text:
+        if (
+            self.text.cget("state") == tk.NORMAL
+            and self.text.focus_get() == self.text
+        ):
             current_line = int(self.text.index(tk.INSERT).split(".")[0])
             self.line_text.tag_add(
                 "active_line",
