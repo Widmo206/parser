@@ -2,4 +2,6 @@
 
 if (check_forward() == "empty") {
     move_forward();
+} else {
+    # ...
 }
