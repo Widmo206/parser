@@ -60,6 +60,12 @@ class LevelView(ttk.Frame):
             (self.winfo_height() - padding * 2) / self.tile_label_matrix.height,
         ))
 
+        for x in range(self.tile_label_matrix.width):
+            self.grid_frame.columnconfigure(x, minsize=tile_size)
+
+        for y in range(self.tile_label_matrix.height):
+            self.grid_frame.rowconfigure(y, minsize=tile_size)
+
         for tile_label in self.tile_label_matrix:
             tile_label.set_tile_size(tile_size)
 
