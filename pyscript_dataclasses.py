@@ -18,6 +18,10 @@ FunctionArg: TypeAlias = tuple[str, Type]
 
 
 def is_of_type(value: Any, type: Type) -> bool:
+    """Check whether an object matches a given data type.
+    
+    None matches all types and all objects match the Any type.
+    """
     if type == Any:
         return True
     elif value is None:
@@ -39,6 +43,7 @@ def format_type(type: Type) -> str:
 
 @dataclass(frozen=True)
 class DataType(object):
+    """Used to specify types of values in variables, function parameters, as well as function return values."""
     name: str
     type: Type
 
@@ -54,6 +59,7 @@ class DataType(object):
 
 @dataclass(frozen=True)
 class Constant(object):
+    """Stores data relevant to a declared constant."""
     name: str
     type: Type
     _value: Any
@@ -74,6 +80,7 @@ class Constant(object):
 
 @dataclass
 class Variable(object):
+    """Stores data relevant to a declared variable."""
     name: str
     type: Type
     _value: Any
@@ -102,6 +109,7 @@ class Variable(object):
 
 @dataclass(frozen=True)
 class ExternalFunction(object):
+    """Stores data relevant to an externally provided function."""
     name: str
     return_type: Type
     function: Callable
@@ -123,11 +131,11 @@ class ExternalFunction(object):
 
 @dataclass()
 class Function(object):
-    """WIP don't use"""
+    """Stores data relevant to a user-defined function."""
     name: str
     return_type: Type
-    subprogram: SubprogramProvider
-    args: tuple[FunctionArg, ...]
+    subprogram: SubprogramProvider | None
+    args: list[FunctionArg]
 
     def __repr__(self):
         return f"func {self.name}() -> {format_type(self.return_type)}"

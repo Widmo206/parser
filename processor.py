@@ -73,7 +73,7 @@ class Processor(object):
     level_data: ProcessorLevelData | None
     next_action: TileAction | None
 
-    def __init__(self, processor_id: int = 0, program: Program = None) -> None:
+    def __init__(self, processor_id: int = 0, program: Program | None = None) -> None:
         self.processor_id = processor_id
         self.program = program
         self.value_stack = []
