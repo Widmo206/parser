@@ -11,7 +11,7 @@ from functools import partial
 import logging
 from typing import Generator, Any, TypeAlias
 
-from enums import TileAction, TileType, PPUInstruction, Operator
+from enums import OutputType, TileAction, TileType, PPUInstruction, Operator
 from errors import EndOfProgram, PyScriptRuntimeError
 import events
 from processor_level_data import ProcessorLevelData
@@ -29,35 +29,43 @@ from pyscript_dataclasses import (
 
 logger = logging.getLogger(__name__)
 
-ACTIONS = (
-    TileAction.MOVE_FORWARD,
-    TileAction.MOVE_BACK,
-    TileAction.TURN_LEFT,
-    TileAction.TURN_RIGHT,
-    TileAction.ATTACK,
-)
-OPERATIONS = {
-    Operator.NEGATIVE:  lambda b: -b,
-    Operator.EQUALS:    lambda a, b: a == b,
-    Operator.NOTEQUALS: lambda a, b: a != b,
-    Operator.LESS_EQ:   lambda a, b: a <= b,
-    Operator.MORE_EQ:   lambda a, b: a >= b,
-    Operator.LESS_THAN: lambda a, b: a < b,
-    Operator.MORE_THAN: lambda a, b: a > b,
-    Operator.POW:       lambda a, b: a ** b,
-    Operator.FLOOR_DIV: lambda a, b: a // b,
-    Operator.ADD:       lambda a, b: a + b,
-    Operator.SUB:       lambda a, b: a - b,
-    Operator.MULT:      lambda a, b: a * b,
-    Operator.DIV:       lambda a, b: a / b,
-    Operator.MOD:       lambda a, b: a % b,
-}
-
 ActionGenerator = Generator[TileAction | None, ProcessorLevelData, None]
 NoneType = type(None)
 
 
 class Processor(object):
+    ACTIONS = (
+        TileAction.MOVE_FORWARD,
+        TileAction.MOVE_BACK,
+        TileAction.TURN_LEFT,
+        TileAction.TURN_RIGHT,
+        TileAction.ATTACK,
+    )
+    ACTION_MESSAGES = {
+        TileAction.MOVE_FORWARD: "Moving forward",
+        TileAction.MOVE_BACK: "Moving back",
+        TileAction.TURN_LEFT: "Turning left",
+        TileAction.TURN_RIGHT: "Turning right",
+        TileAction.ATTACK: "Attacking",
+        None: "Waiting",
+    }
+    OPERATIONS = {
+        Operator.NEGATIVE: lambda b: -b,
+        Operator.EQUALS: lambda a, b: a == b,
+        Operator.NOTEQUALS: lambda a, b: a != b,
+        Operator.LESS_EQ: lambda a, b: a <= b,
+        Operator.MORE_EQ: lambda a, b: a >= b,
+        Operator.LESS_THAN: lambda a, b: a < b,
+        Operator.MORE_THAN: lambda a, b: a > b,
+        Operator.POW: lambda a, b: a ** b,
+        Operator.FLOOR_DIV: lambda a, b: a // b,
+        Operator.ADD: lambda a, b: a + b,
+        Operator.SUB: lambda a, b: a - b,
+        Operator.MULT: lambda a, b: a * b,
+        Operator.DIV: lambda a, b: a / b,
+        Operator.MOD: lambda a, b: a % b,
+    }
+
     processor_id: int
     value_stack: list
     program: Program | None
@@ -100,7 +108,7 @@ class Processor(object):
                 True,
             ),
         ]
-        for action in ACTIONS:
+        for action in self.ACTIONS:
             result.append(
                 ExternalFunction(
                     action.name.lower(),
@@ -200,10 +208,10 @@ class Processor(object):
                     b = self.pull()
                     # TODO: check operand type
                     if operator.is_unary:
-                        result = OPERATIONS[operator](b)
+                        result = self.OPERATIONS[operator](b)
                     else:
                         a = self.pull()
-                        result = OPERATIONS[operator](a, b)
+                        result = self.OPERATIONS[operator](a, b)
                     self.push(result)
 
                 case PPUInstruction.DEFC:
@@ -267,7 +275,10 @@ class Processor(object):
         )
 
     def _check_forward(self) -> str:
+        events.PyscriptOutputRequested(self.processor_id, "Checking forward", OutputType.INFO)
+
         if self.level_data is None:
+            logger.error("Processor %d has no level data", self.processor_id)
             return "Missing level data"
 
         self_tile_data = self.level_data.tile_data_matrix.get(
@@ -283,4 +294,9 @@ class Processor(object):
         events.PyscriptOutputRequested(self.processor_id, text)
 
     def _set_next_action(self, action: TileAction | None) -> None:
+        events.PyscriptOutputRequested(
+            self.processor_id,
+            self.ACTION_MESSAGES[action],
+            OutputType.INFO,
+        )
         self.next_action = action

@@ -23,6 +23,14 @@ from errors import UnknownDirectionError, UnknownTileTypeError
 logger = logging.getLogger(__name__)
 
 
+class ClosureLabel(Enum):
+    GLOBAL      = auto()
+    FUNCTION    = auto()
+    LOOP        = auto()
+    CONDITIONAL = auto()
+    MISC        = auto()
+
+
 class Direction(Enum):
     UP    = ("U",  0, -1, Image.Transpose.ROTATE_90)
     DOWN  = ("D",  0,  1, Image.Transpose.ROTATE_270)
@@ -84,6 +92,87 @@ class Direction(Enum):
                 return direction
 
         raise ValueError("Invalid direction rotation")
+
+
+class Keyword(Enum):
+    CONST  = auto()
+    VAR    = auto()
+    FUNC   = auto()
+    IF     = auto()
+    ELSE   = auto()
+    WHILE  = auto()
+    RETURN = auto()
+
+
+class NodeType(Enum):
+    """Used by Parser to organize a list of tokens into a ProcessTree."""
+    CLOSURE     = auto()
+    CONDITION   = auto()
+    PARENTHESIS = auto()
+    EXPRESSION  = auto()
+    READ        = auto()
+    WRITE       = auto()
+    DEFINE      = auto()
+    LITERAL     = auto()
+    CALL        = auto()
+    RETURN      = auto()
+    OPERATION   = auto()
+
+
+class OperatorMixin(NamedTuple):
+    chars:            str
+    priority:         int
+    # when chaining, whether the rightmost instance should be evaluated first
+    is_right_to_left: bool = False
+    # whether it only acts on the value immediately after, instead of before and after
+    is_unary:         bool = False
+
+
+class Operator(OperatorMixin, Enum):
+    EQUALS    = ('==', 5)
+    NOTEQUALS = ('!=', 5)
+    LESS_EQ   = ('<=', 5)
+    MORE_EQ   = ('>=', 5)
+    LESS_THAN = ('<',  5)
+    MORE_THAN = ('>',  5)
+
+    POW       = ('**', 1, True)
+    NEGATIVE  = ('-',  2, False, True) # N.B.: has to be above SUB, as it uses the same string
+    FLOOR_DIV = ('//', 3)
+    ADD       = ('+',  4)
+    SUB       = ('-',  4)
+    MULT      = ('*',  3)
+    DIV       = ('/',  3)
+    MOD       = ('%',  3)
+
+    ARROW     = ('->', 0) # not exactly an operator, but this was the simplest way to handle it
+
+    def __repr__(self):
+        return f"Operator.{self.name}"
+
+
+class OutputType(Enum):
+    NORMAL = auto()
+    INFO = auto()
+    WARNING = auto()
+    ERROR = auto()
+
+
+class PPUInstruction(Enum):
+    # PyScript Processing Unit
+    STRT = auto() # start of a subprogram; should be replaced with a corresponding EXEC before it reaches the processor
+    PUSH = auto() # push a value onto the stack
+    PULL = auto() # pull a value from the stack
+    READ = auto() # read from a const or var
+    WRIT = auto() # write to a var
+    CALL = auto() # call an ExternalFunction
+    EVAL = auto() # evaluate a math operation
+    DEFC = auto() # define a constant
+    DEFV = auto() # define a variable
+    DEFF = auto() # define a function
+    EXEC = auto() # step into a subprogram (anything in a closure)
+    EXIT = auto() # exit a subprogram
+    IFEL = auto() # if/else
 
 
 class TileAction(Enum):
@@ -158,16 +247,6 @@ class TileType(Enum):
         raise UnknownTileTypeError("No tile type matching value %s", value)
 
 
-class Keyword(Enum):
-    CONST  = auto()
-    VAR    = auto()
-    FUNC   = auto()
-    IF     = auto()
-    ELSE   = auto()
-    WHILE  = auto()
-    RETURN = auto()
-
-
 class TokenType(Enum):
     NOP         = auto() # pass
     EOF         = auto() # end of file
@@ -196,84 +275,13 @@ class TokenType(Enum):
 #     SLASH       = auto() # /
 
 
-class NodeType(Enum):
-    """Used by Parser to organize a list of tokens into a ProcessTree."""
-    CLOSURE     = auto()
-    CONDITION   = auto()
-    PARENTHESIS = auto()
-    EXPRESSION  = auto()
-    READ        = auto()
-    WRITE       = auto()
-    DEFINE      = auto()
-    LITERAL     = auto()
-    CALL        = auto()
-    RETURN      = auto()
-    OPERATION   = auto()
-
-
-class OperatorMixin(NamedTuple):
-    chars:            str
-    priority:         int
-    # when chaining, whether the rightmost instance should be evaluated first
-    is_right_to_left: bool = False
-    # whether it only acts on the value immediately after, instead of before and after
-    is_unary:         bool = False
-
-
-class Operator(OperatorMixin, Enum):
-    EQUALS    = ('==', 5)
-    NOTEQUALS = ('!=', 5)
-    LESS_EQ   = ('<=', 5)
-    MORE_EQ   = ('>=', 5)
-    LESS_THAN = ('<',  5)
-    MORE_THAN = ('>',  5)
-
-    POW       = ('**', 1, True)
-    NEGATIVE  = ('-',  2, False, True) # N.B.: has to be above SUB, as it uses the same string
-    FLOOR_DIV = ('//', 3)
-    ADD       = ('+',  4)
-    SUB       = ('-',  4)
-    MULT      = ('*',  3)
-    DIV       = ('/',  3)
-    MOD       = ('%',  3)
-
-    ARROW     = ('->', 0) # not exactly an operator, but this was the simplest way to handle it
-
-    def __repr__(self):
-        return f"Operator.{self.name}"
-
-
-class ClosureLabel(Enum):
-    GLOBAL      = auto()
-    FUNCTION    = auto()
-    LOOP        = auto()
-    CONDITIONAL = auto()
-    MISC        = auto()
-
-
-class PPUInstruction(Enum):
-    # PyScript Processing Unit
-    STRT = auto() # start of a subprogram; should be replaced with a corresponding EXEC before it reaches the processor
-    PUSH = auto() # push a value onto the stack
-    PULL = auto() # pull a value from the stack
-    READ = auto() # read from a const or var
-    WRIT = auto() # write to a var
-    CALL = auto() # call an ExternalFunction
-    EVAL = auto() # evaluate a math operation
-    DEFC = auto() # define a constant
-    DEFV = auto() # define a variable
-    DEFF = auto() # define a function
-    EXEC = auto() # step into a subprogram (anything in a closure)
-    EXIT = auto() # exit a subprogram
-    IFEL = auto() # if/else
-
-
 def _test() -> None:
     for enum in (
         ClosureLabel,
         Direction,
         NodeType,
         Operator,
+        OutputType,
         PPUInstruction,
         TileAction,
         TileType,

@@ -57,5 +57,5 @@ class Output(ttk.Notebook):
 
     def _on_processor_output_requested(self, event: events.PyscriptOutputRequested) -> None:
         output_tab = self._get_output_tab(event.processor_id)
-        output_tab.print(event.text, event.is_error)
+        output_tab.print(event.text, event.output_type)
         self.select(output_tab)
