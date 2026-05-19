@@ -10,7 +10,6 @@ Contributors:
 TODO list:
     add checks for unterminated parens/closures/strings/expressions/...
     add arg type/count checking to all functions
-    add if statements
     add while loop
     add things I forgot to add
     validate expressions while parsing
@@ -681,6 +680,12 @@ class Parser(object):
                                 current_closure = function_closure
                             
                             case Keyword.RETURN:
+                                for node in reversed(code_stack): # make sure we're in a function
+                                    if node.get_type() == NodeType.CLOSURE:
+                                        if node.get_value().label == ClosureLabel.FUNCTION:
+                                            break
+                                else:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): unexpected return outside function definition")
                                 step_into(NodeType.RETURN, current_token.line, None)
                             
                             case Keyword.IF:
