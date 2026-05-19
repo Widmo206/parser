@@ -1,3 +1,5 @@
 # Level 3 - Staircase
 
-insert loop example here
+while(true){
+    step_forward();
+}
