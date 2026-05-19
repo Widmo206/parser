@@ -47,10 +47,10 @@ class LevelView(ttk.Frame):
 
         self.bind("<Configure>", lambda _: self._update_tile_size())
 
-        events.TileDataChanged.connect(self._on_tile_data_changed)
+        events.TileDataMatrixChanged.connect(self._on_tile_data_matrix_changed)
 
     def destroy(self) -> None:
-        events.TileDataChanged.disconnect(self._on_tile_data_changed)
+        events.TileDataMatrixChanged.disconnect(self._on_tile_data_matrix_changed)
         ttk.Frame.destroy(self)
 
     def _update_tile_size(self) -> None:
@@ -70,11 +70,19 @@ class LevelView(ttk.Frame):
         for tile_label in self.tile_label_matrix:
             tile_label.set_tile_size(tile_size)
 
-    def _on_tile_data_changed(self, event: events.TileDataChanged) -> None:
-        try:
-            tile_label = self.tile_label_matrix.get(event.x, event.y)
-        except IndexError:
-            logger.error(f"No tile label at ({event.x}, {event.y})")
+    def _on_tile_data_matrix_changed(self, event: events.TileDataMatrixChanged) -> None:
+        if (
+            self.tile_label_matrix.width != event.tile_data_matrix.width
+            or self.tile_label_matrix.height != event.tile_data_matrix.height
+        ):
+            logger.error(
+                "Mismatched dimensions in tile label matrix (%dx%d) and tile data matrix (%dx%d)",
+                event.tile_data_matrix.width,
+                self.tile_label_matrix.height,
+                event.tile_data_matrix.width,
+                event.tile_data_matrix.height,
+            )
             return
 
-        tile_label.set_tile_data(event.tile_data)
+        for x, y, tile_data in event.tile_data_matrix.iter_xy():
+            self.tile_label_matrix.get(x, y).set_tile_data(tile_data)

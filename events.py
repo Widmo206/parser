@@ -16,6 +16,7 @@ from typing import Any, Callable, ClassVar
 
 from enums import OutputType
 from level import Level
+from matrix import Matrix
 from save import LevelScore
 from tile_data import TileData
 
@@ -57,11 +58,9 @@ class Event:
 
     def __post_init__(self) -> None:
         cls = type(self)
-        logger.debug(
-            "Emitting event %r to %d listener(s)",
-            self,
-            len(cls._listeners),
-        )
+        text = f"Emitting event {self} to {len(cls._listeners)} listener(s)"
+        for line in text.splitlines():
+            logger.debug(line)
         for callback in cls._listeners:
             callback(self)
 
@@ -196,10 +195,8 @@ class StepForwardRequested(Event):
 
 
 @dataclass(frozen=True, slots=True)
-class TileDataChanged(Event):
-    x: int
-    y: int
-    tile_data: TileData
+class TileDataMatrixChanged(Event):
+    tile_data_matrix: Matrix[TileData]
 
 
 @dataclass(frozen=True, slots=True)

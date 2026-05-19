@@ -40,10 +40,10 @@ class LevelPlayer(ttk.Frame):
 
         self.level = level
 
-        logger.debug("Creating level view from layout")
+        logger.debug("Creating level view from layout:")
         for line in self.level.layout.splitlines():
             logger.debug("'%s'", line)
-        logger.debug("and direction layout")
+        logger.debug("and direction layout:")
         for line in self.level.direction_layout.splitlines():
             logger.debug("'%s'", line)
 

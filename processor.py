@@ -163,7 +163,8 @@ class Processor(object):
         while True:
             try:
                 instruction = self.program.next()
-                logger.debug(instruction)
+                for line in str(instruction).split("\n"):
+                    logger.debug(line)
             except EndOfProgram:
                 break
 

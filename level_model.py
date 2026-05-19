@@ -284,5 +284,4 @@ class LevelModel:
             self.view_step = self.model_step
 
         self.view_step = step
-        for x, y, tile_data in self.history[step].iter_xy():
-            events.TileDataChanged(x, y, tile_data)
+        events.TileDataMatrixChanged(self.history[step])

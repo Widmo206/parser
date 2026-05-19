@@ -753,7 +753,9 @@ class Parser(object):
             logger.error(f"Parsing failed due to an exception:\n\n{err.__class__.__name__}: {err}\n\nCurrent ProcessTree:\n{repr(process_tree)}")
             raise
         logger.info(f"Finished parsing '{self.path}'")
-        logger.debug(f"Program structure:\n{repr(process_tree)}")
+        logger.debug("Program structure:")
+        for line in repr(process_tree).splitlines():
+            logger.debug(line)
         return process_tree
 
     def compile(self, tree: ProcessTree) -> Program:
@@ -884,7 +886,9 @@ class Parser(object):
             lst += _r_compile(branch)
         program = Program(lst, ClosureLabel.GLOBAL, self.external_references)
         logger.info(f"Finish compiling '{self.path}'")
-        logger.debug(f"Compiled program:\n{str(program)}")
+        logger.debug("Compiled program:")
+        for line in str(program).splitlines():
+            logger.debug(line)
         return program
     
     def compile_from_file(self) -> Program:

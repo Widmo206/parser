@@ -46,7 +46,7 @@ class Matrix(Generic[T]):
     def __str__(self) -> str:
         # I'm sorry
         return "(\n{}\n)".format("\n".join(
-            "   ({}),".format(", ".join(
+            "    ({}),".format(", ".join(
                 str(self.get(x, y))
                 for x in range(self.width)
             ))

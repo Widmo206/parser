@@ -20,4 +20,4 @@ class TileData:
         object.__setattr__(self, "tile_direction", Direction.normalize(self.tile_direction))
 
     def __str__(self) -> str:
-        return f"{self.tile_type.character}{self.tile_direction.character}"
+        return f"'{self.tile_type.character}{self.tile_direction.character}'"
