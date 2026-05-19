@@ -742,6 +742,9 @@ class Parser(object):
                             case _:
                                 raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented keyword {current_token.value}")
 
+                    case TokenType.COLON:
+                        raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): unexpected :")
+
                     case _:
                         raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented token {current_token.type}")
             for expression in expressions:
