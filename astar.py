@@ -15,6 +15,7 @@ from matrix import Matrix
 
 @dataclass(frozen=True)
 class Node:
+    """Represents a pathfinding node with direction, cost, and parent."""
     direction: Direction
     cost: int = 0
     parent: Node | None = None
@@ -36,9 +37,11 @@ class Node:
         return move_cost + turn_cost
 
     def get_total_cost(self, dx: int, dy: int) -> int:
+        """Return the current cost plus the estimated future cost."""
         return self.cost + self.get_future_cost(dx, dy)
 
     def get_sequence(self) -> tuple[Direction, ...]:
+        """Return the direction sequence from the root to this node."""
         if self.parent is None:
             return ()
 

@@ -40,6 +40,7 @@ class Event:
 
     @classmethod
     def connect(cls, callback: Callable[[Event], None]) -> None:
+        """Register a callback to receive this event."""
         logger.debug(
             "Connecting method '%s' to event '%s'",
             callback.__name__,
@@ -49,6 +50,7 @@ class Event:
 
     @classmethod
     def disconnect(cls, callback: Callable[[Event], None]) -> None:
+        """Unregister a previously connected callback."""
         logger.debug(
             "Disconnecting method '%s' from event '%s'",
             callback.__name__,

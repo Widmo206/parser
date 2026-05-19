@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class EditorTab(ttk.Frame):
+    """Tab widget with a text editor, line numbers, and zoom support."""
     DELTA_PER_ZOOM = 120
 
     path: Path | None
@@ -57,9 +58,17 @@ class EditorTab(ttk.Frame):
         **kwargs,
     ) -> None:
         if path is not None and path.suffix != PYSCRIPT_EXTENSION:
-            logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in path '{path}'")
+            logger.warning(
+                "Expected file extension '%s' in path '%s'",
+                PYSCRIPT_EXTENSION,
+                path,
+            )
         if default_path is not None and default_path.suffix != PYSCRIPT_EXTENSION:
-            logger.warning(f"Expected file extension '{PYSCRIPT_EXTENSION}' in default path '{default_path}'")
+            logger.warning(
+                "Expected file extension '%s' in default path '%s'",
+                PYSCRIPT_EXTENSION,
+                default_path,
+            )
 
         super().__init__(master, **kwargs)
 
@@ -117,6 +126,63 @@ class EditorTab(ttk.Frame):
             fg=self._normal_color,
         )
 
+        self._init_bind()
+        self._init_load()
+
+    def get_content(self) -> str:
+        """Return the current editor contents without the trailing newline."""
+        return self.text.get("1.0", "end-1c")
+
+    def mark_saved(self) -> None:
+        """Mark the current content as saved and clear the dirty flag."""
+        self._saved_content = self.get_content()
+        self._set_dirty(False)
+
+    def reload_default(self) -> None:
+        """Reload the editor content from the default path."""
+        logger.debug("Reloading default tab content")
+        if self.default_path is None:
+            message_error("Current tab has no default path")
+            return
+
+        self._try_load(self.default_path)
+
+    def set_state(self, state: str) -> None:
+        """Set the text widget state and update its foreground color."""
+        self.text.configure(
+            state=state,
+            fg = (
+                self._disabled_color
+                if state == tk.DISABLED
+                else self._normal_color
+            ),
+        )
+
+    def undo(self) -> None:
+        """Undo the most recent edit if possible."""
+        try:
+            self.text.edit_undo()
+        except tk.TclError:
+            logger.debug("No undo action available")
+        else:
+            logger.debug("Undoing text change")
+            self.text.edit_modified(False)
+            self._update_line_numbers()
+            self._refresh_dirty_state()
+
+    def redo(self) -> None:
+        """Redo the most recently undone edit if possible."""
+        try:
+            self.text.edit_redo()
+        except tk.TclError:
+            logger.debug("No redo action available")
+        else:
+            logger.debug("Redoing text change")
+            self.text.edit_modified(False)
+            self._update_line_numbers()
+            self._refresh_dirty_state()
+
+    def _init_bind(self) -> None:
         self.text.bind("<<Modified>>", self._on_change)
         self.text.bind("<Configure>", self._on_change)
         self.text.bind("<KeyRelease>", self._on_change)
@@ -128,13 +194,14 @@ class EditorTab(ttk.Frame):
 
         # Unbind text selection for line numbers.
         for seqence in (
-            "<Button-1>",
-            "<B1-Motion>",
-            "<Double-Button-1>",
-            "<Triple-Button-1>",
+                "<Button-1>",
+                "<B1-Motion>",
+                "<Double-Button-1>",
+                "<Triple-Button-1>",
         ):
             self.line_text.bind(seqence, lambda _: "break")
 
+    def _init_load(self) -> None:
         if self.path is None:
             self.mark_saved()
             return
@@ -154,53 +221,6 @@ class EditorTab(ttk.Frame):
                 logger.debug("Keeping empty tab")
 
         self.mark_saved()
-
-    def get_content(self) -> str:
-        return self.text.get("1.0", "end-1c")
-
-    def mark_saved(self) -> None:
-        self._saved_content = self.get_content()
-        self._set_dirty(False)
-
-    def reload_default(self) -> None:
-        logger.debug("Reloading default tab content")
-        if self.default_path is None:
-            message_error("Current tab has no default path")
-            return
-
-        self._try_load(self.default_path)
-
-    def set_state(self, state: str) -> None:
-        self.text.configure(
-            state=state,
-            fg = (
-                self._disabled_color
-                if state == tk.DISABLED
-                else self._normal_color
-            ),
-        )
-
-    def undo(self) -> None:
-        try:
-            self.text.edit_undo()
-        except tk.TclError:
-            logger.debug("No undo action available")
-        else:
-            logger.debug("Undoing text change")
-            self.text.edit_modified(False)
-            self._update_line_numbers()
-            self._refresh_dirty_state()
-
-    def redo(self) -> None:
-        try:
-            self.text.edit_redo()
-        except tk.TclError:
-            logger.debug("No redo action available")
-        else:
-            logger.debug("Redoing text change")
-            self.text.edit_modified(False)
-            self._update_line_numbers()
-            self._refresh_dirty_state()
 
     def _refresh_dirty_state(self) -> None:
         self._set_dirty(self.get_content() != self._saved_content)

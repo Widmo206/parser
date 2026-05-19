@@ -17,12 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 class App:
+    """Application root that wires the interface, scheduler, and game controller."""
     interface: Interface
     scheduler: Scheduler
     game_controller: GameController | None
     save: Save
 
     def __init__(self) -> None:
+        """Initialize the application state and event wiring."""
         SOLUTIONS_DIR.mkdir(parents=True, exist_ok=True)
 
         self.save = Save.from_path(SAVE_PATH) if SAVE_PATH.exists() else Save()
@@ -36,6 +38,7 @@ class App:
         events.LevelSelected.connect(self._on_level_selected)
 
     def run(self) -> None:
+        """Start the GUI event loop."""
         self.interface.mainloop()
 
     def _on_close_level_requested(self, _event: events.CloseLevelRequested) -> None:

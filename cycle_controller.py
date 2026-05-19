@@ -10,6 +10,7 @@ from scheduler import Scheduler
 
 
 class CycleController:
+    """Controls periodic cycle events using the scheduler."""
     CYCLE_DELAY = 500
 
     scheduler: Scheduler
@@ -22,11 +23,13 @@ class CycleController:
         self.after_id = None
 
     def start(self) -> None:
+        """Start cycling and emit the initial toggle event."""
         self.is_running = True
         events.CyclingToggled(True)
         self._cycle()
 
     def stop(self) -> None:
+        """Stop cycling and cancel any scheduled callbacks."""
         self.scheduler.after_cancel(self.after_id)
         self.is_running = False
         self.after_id = None

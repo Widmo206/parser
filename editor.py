@@ -30,6 +30,7 @@ UNSAVED_TAB_SUFFIX = "*"
 
 
 class Editor(ttk.Notebook):
+    """Notebook widget managing editor tabs and file actions."""
     style: ttk.Style
     is_level_active: bool
 
@@ -39,6 +40,7 @@ class Editor(ttk.Notebook):
         style: ttk.Style,
         **kwargs,
     ) -> None:
+        """Initialize the editor and connect event handlers."""
         kwargs.setdefault("padding", 0)
         super().__init__(master, **kwargs)
 
@@ -58,6 +60,7 @@ class Editor(ttk.Notebook):
         events.RedoRequested.connect(self._on_redo_requested)
 
     def destroy(self) -> None:
+        """Disconnect event handlers and destroy the widget."""
         events.ActivePyscriptRequested.disconnect(self._on_active_pyscript_requested)
         events.FileNewRequested.disconnect(self._on_file_new_requested)
         events.FileOpenRequested.disconnect(self._on_file_open_requested)
@@ -139,7 +142,7 @@ class Editor(ttk.Notebook):
             message_error("Cannot overwrite built-in file '%s'", absolute_path)
             return
 
-        logger.debug(f"Saving tab to file '{active_tab.path}'")
+        logger.debug("Saving tab to file '%s'", active_tab.path)
         active_tab.path.write_text(active_tab.get_content())
         active_tab.mark_saved()
         self._update_tab_title(active_tab)

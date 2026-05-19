@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class Interface(ttk.Window):
+    """Main application window wiring UI panels and event handlers."""
     MIN_RIGHT_PANEL_SIZE = 500
 
     main_frame: ttk.Frame
@@ -33,6 +34,7 @@ class Interface(ttk.Window):
     level_complete_popup: LevelCompletePopup | None
 
     def __init__(self, save: Save, **kwargs) -> None:
+        """Initialize the main window and compose child interfaces."""
         kwargs.setdefault("title", "PyScript")
         kwargs.setdefault("themename", "darkly")
         super().__init__(**kwargs)
@@ -87,6 +89,7 @@ class Interface(ttk.Window):
         events.ToggleFullscreenRequested.connect(self._on_toggle_fullscreen_requested)
 
     def destroy(self) -> None:
+        """Disconnect event handlers and dispose of the window."""
         events.ClosePopupRequested.disconnect(self._on_close_popup_requested)
         events.CloseLevelRequested.disconnect(self._on_close_level_requested)
         events.RestartRequested.disconnect(self._on_restart_requested)
@@ -94,6 +97,7 @@ class Interface(ttk.Window):
         super().destroy()
 
     def open_level_complete_popup(self, level_name: str, level_score: LevelScore) -> None:
+        """Show the level completion popup for the given level."""
         self._close_popup()
         self.level_complete_popup = LevelCompletePopup(self, level_name, level_score)
 
@@ -115,5 +119,5 @@ class Interface(ttk.Window):
 
     def _on_toggle_fullscreen_requested(self, _event: events.ToggleFullscreenRequested) -> None:
         new_mode = not self.attributes("-fullscreen")
-        logger.debug(f"Setting fullscreen mode to {new_mode}")
+        logger.debug("Setting fullscreen mode to %s", new_mode)
         self.attributes("-fullscreen", new_mode)

@@ -59,33 +59,39 @@ def print_enum(enum: Enum) -> None:
 
 
 def ask_open_pyscript() -> Path | None:
+    """Prompt the user to select a PyScript file to open."""
     logger.debug("Asking user for PyScript file to open")
     path_str = askopenfilename(**FILE_DIALOG_OPTIONS)
     return Path(path_str) if path_str != "" else None
 
 
 def ask_save_as_pyscript() -> Path | None:
+    """Prompt the user for a PyScript save path."""
     logger.debug("Asking user for PyScript file save path")
     path_str = asksaveasfilename(**FILE_DIALOG_OPTIONS)
     return Path(path_str) if path_str != "" else None
 
 
 def get_solution_path(path: Path) -> Path | None:
+    """Return the solution path for a given PyScript file."""
     logger.debug("Creating solution path for %s", path.name)
     return SOLUTIONS_DIR / f"{path.stem}_solution{PYSCRIPT_EXTENSION}"
 
 
 def message_info(message: str, *args) -> None:
+    """Log an info message and show an information dialog."""
     logger.info(message, *args)
     showinfo("Info", message % args)
 
 
 def message_error(message: str, *args) -> None:
+    """Log an error message and show an error dialog."""
     logger.error(message, *args)
     showerror("Error", message % args)
 
 
 def message_warning(message: str, *args) -> None:
+    """Log a warning message and show a warning dialog."""
     logger.warning(message, *args)
     showwarning("Warning", message % args)
 
@@ -98,6 +104,7 @@ def normalize_path(value: Path | str) -> Path:
 
 
 def open_user_dir() -> None:
+    """Open the user data directory in the system file browser."""
     try:
         if sys.platform == "win32":
             os.startfile(str(USER_DATA_DIR))

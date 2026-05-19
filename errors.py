@@ -8,22 +8,18 @@ Contributors:
 
 class EditorTabCreationError(ValueError):
     """Raised when trying to create an editor tab from an invalid file."""
-    pass
 
 
 class InvalidSpecialMoveError(ValueError):
     """Raised when trying to execute a special move that doesn't exist."""
-    pass
 
 
 class UnknownDirectionError(ValueError):
     """Raised when trying to convert a character to a direction that doesn't exist."""
-    pass
 
 
 class UnknownTileTypeError(ValueError):
     """Raised when trying to convert a character to a tile type that doesn't exist."""
-    pass
 
 
 class PyScriptError(ValueError):
@@ -32,12 +28,12 @@ class PyScriptError(ValueError):
 
 class PyScriptSyntaxError(PyScriptError):
     """Raised when any step of the parser finds an issue with the user's code."""
-    pass
 
 
 class PyScriptNameError(PyScriptError):
-    """Raised when the code refers to an undefined reference or tries to redefine a reference in the same scope."""
-    pass
+    """Raised when the code refers to an undefined reference or tries to
+    redefine a reference in the same scope.
+    """
 
 
 class PyScriptTypeError(PyScriptError):
@@ -45,7 +41,6 @@ class PyScriptTypeError(PyScriptError):
     
     e.g. trying to call a variable
     """
-    pass
 
 
 class EndOfProgram(PyScriptError):

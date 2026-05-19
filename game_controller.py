@@ -13,6 +13,7 @@ from level_model import LevelModel
 from scheduler import Scheduler
 
 class GameController:
+    """Coordinate level progression with the cycle controller and events."""
     cycle_controller: CycleController
     level_model: LevelModel
 
@@ -29,6 +30,7 @@ class GameController:
         events.StepForwardRequested.connect(self._on_step_forward_requested)
 
     def destroy(self) -> None:
+        """Stop running cycles, unsubscribe from events, and reset state."""
         if self.cycle_controller.is_running:
             self.cycle_controller.stop()
 

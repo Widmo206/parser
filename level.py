@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Level:
+    """Immutable level definition loaded from YAML and parsed layouts."""
     PATHS = (
         Path("levels/tutorial.yaml"),
         Path("levels/bend.yaml"),
@@ -51,6 +52,7 @@ class Level:
 
     @classmethod
     def from_path(cls, path: Path) -> Level:
+        """Load a level from the given YAML path, falling back to defaults on error."""
         logger.debug("Loading level from '%s'", path)
 
         try:
@@ -76,7 +78,6 @@ class Level:
             )
             object.__setattr__(self, "layout", "")
             object.__setattr__(self, "direction_layout", "")
-            return
 
         if self.layout == "":
             object.__setattr__(self, "width", 0)
@@ -109,6 +110,7 @@ class Level:
             raise_dimension_mismatch()
 
     def get_tile_data_matrix(self) -> Matrix[TileData]:
+        """Return a matrix of TileData derived from layout and direction layout."""
         return Matrix(
             self.width,
             self.height,

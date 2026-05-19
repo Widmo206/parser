@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class ClosureLabel(Enum):
+    """Labels used to classify closure scopes during parsing."""
     GLOBAL      = auto()
     FUNCTION    = auto()
     LOOP        = auto()
@@ -32,6 +33,7 @@ class ClosureLabel(Enum):
 
 
 class Direction(Enum):
+    """Cardinal directions with movement vectors and optional image rotation."""
     UP    = ("U",  0, -1, Image.Transpose.ROTATE_90)
     DOWN  = ("D",  0,  1, Image.Transpose.ROTATE_270)
     LEFT  = ("L", -1,  0, Image.Transpose.ROTATE_180)
@@ -72,7 +74,7 @@ class Direction(Enum):
 
     @classmethod
     def _missing_(cls, value: Any) -> Direction:
-        raise UnknownDirectionError("No direction matching value %s", value)
+        raise UnknownDirectionError(f"No direction matching value {value}")
 
     def __neg__(self) -> Direction:
         for direction in Direction:
@@ -82,6 +84,7 @@ class Direction(Enum):
         raise ValueError("Invalid direction negation")
 
     def rotate(self, clockwise: bool = False) -> Direction:
+        """Return the direction rotated 90 degrees."""
         if clockwise:
             new_x, new_y = -self.y, self.x
         else:
@@ -95,6 +98,7 @@ class Direction(Enum):
 
 
 class Keyword(Enum):
+    """Language keywords recognized by the lexer."""
     CONST  = auto()
     VAR    = auto()
     FUNC   = auto()
@@ -121,6 +125,7 @@ class NodeType(Enum):
 
 
 class OperatorMixin(NamedTuple):
+    """Shared operator metadata used by Operator."""
     chars:            str
     priority:         int
     # when chaining, whether the rightmost instance should be evaluated first
@@ -130,6 +135,7 @@ class OperatorMixin(NamedTuple):
 
 
 class Operator(OperatorMixin, Enum):
+    """Operators with precedence and associativity metadata."""
     EQUALS    = ('==', 5)
     NOTEQUALS = ('!=', 5)
     LESS_EQ   = ('<=', 5)
@@ -153,6 +159,7 @@ class Operator(OperatorMixin, Enum):
 
 
 class OutputType(Enum):
+    """Severity levels for output messages."""
     NORMAL = auto()
     INFO = auto()
     WARNING = auto()
@@ -160,8 +167,10 @@ class OutputType(Enum):
 
 
 class PPUInstruction(Enum):
+    """Instruction set for the PyScript Processing Unit."""
     # PyScript Processing Unit
-    # STRT = auto() # start of a subprogram; should be replaced with a corresponding EXEC before it reaches the processor
+    # STRT = auto() # start of a subprogram; should be replaced with
+    # a corresponding EXEC before it reaches the processor
     NOOP = auto() # no operation; basically just pass
     PUSH = auto() # push a value onto the stack
     PULL = auto() # pull a value from the stack
@@ -180,6 +189,7 @@ class PPUInstruction(Enum):
 
 
 class TileAction(Enum):
+    """Actions that tiles can trigger in the game logic."""
     MOVE_FORWARD = auto()
     MOVE_BACK    = auto()
     TURN_LEFT    = auto()
@@ -189,6 +199,7 @@ class TileAction(Enum):
 
 
 class TileType(Enum):
+    """Tile definitions with sprites, walkability, and action priority."""
     BLOCKED    = ("X", None,                          None,                     False, 2)
     EMPTY      = ("O", "sprites/tile_background.png", None,                     True,  2)
     PLAYER     = ("P", "sprites/tile_background.png", "sprites/player.png",     False, 0)
@@ -248,10 +259,11 @@ class TileType(Enum):
 
     @classmethod
     def _missing_(cls, value: Any) -> TileType:
-        raise UnknownTileTypeError("No tile type matching value %s", value)
+        raise UnknownTileTypeError(f"No tile type matching value {value}")
 
 
 class TokenType(Enum):
+    """Token categories produced by the lexer."""
     NOP         = auto() # pass
     EOF         = auto() # end of file
     KEYWORD     = auto()
