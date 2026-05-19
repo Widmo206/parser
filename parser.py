@@ -742,7 +742,10 @@ class Parser(object):
             ]
             for child in closure_node.get_children():
                 program += _r_compile(child)
-            if program[-1].instruction != PPUInstruction.EXIT:
+            if program == []:
+                last_line = closure_node.get_line()
+                program.append(Instruction(PPUInstruction.EXIT, False, last_line)) # EXIT needed to exit closure; False = no return value
+            elif program[-1].instruction != PPUInstruction.EXIT:
                 last_line = closure_node.get_children()[-1].get_line()
                 program.append(Instruction(PPUInstruction.EXIT, False, last_line)) # EXIT needed to exit closure; False = no return value
 
