@@ -54,7 +54,8 @@ class LevelView(ttk.Frame):
         ttk.Frame.destroy(self)
 
     def _update_tile_size(self) -> None:
-        padding = int(str(self.cget("padding")[0])) # TODO: clean up this weird conversion issue
+        padding_value = self.cget("padding")[0]
+        padding = self.tk.getint(padding_value)
         tile_size = floor(min(
             (self.winfo_width() - padding * 2) / self.tile_label_matrix.width,
             (self.winfo_height() - padding * 2) / self.tile_label_matrix.height,
