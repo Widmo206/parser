@@ -161,6 +161,7 @@ class ParseRequested(Event):
 class PyscriptOutputRequested(Event):
     processor_id: int = 0
     text: Any = ""
+    is_error: bool = False
 
 
 @dataclass(frozen=True, slots=True)

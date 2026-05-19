@@ -1,4 +1,4 @@
 # Level 2 - Bend
 
-move_forward()
-turn_right()
+move_forward();
+turn_right();

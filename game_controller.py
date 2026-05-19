@@ -29,7 +29,9 @@ class GameController:
         events.StepForwardRequested.connect(self._on_step_forward_requested)
 
     def destroy(self) -> None:
-        events.LevelStateChanged(False)
+        if self.cycle_controller.is_running:
+            self.cycle_controller.stop()
+
         events.Cycled.disconnect(self._on_cycled)
         events.LevelComplete.disconnect(self._on_level_complete)
         events.ParseRequested.disconnect(self._on_parse_requested)
@@ -37,6 +39,7 @@ class GameController:
         events.RunPauseRequested.disconnect(self._on_run_pause_requested)
         events.StepBackRequested.disconnect(self._on_step_back_requested)
         events.StepForwardRequested.disconnect(self._on_step_forward_requested)
+        events.LevelStateChanged(False)
 
     def _on_cycled(self, _event: events.Cycled) -> None:
         self.level_model.step_forward()

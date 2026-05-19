@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 
 from enums import Direction, TileAction, TileType
-from errors import InvalidSpecialMoveError
+from errors import InvalidSpecialMoveError, PyScriptError
 import events
 from level import Level
 from matrix import Matrix
@@ -75,14 +75,19 @@ class LevelModel:
             external_references = processor.generate_action_functions()
 
             parser = Parser(pyscript_path, external_references)
-            processor.load(parser.compile_from_file())
+            try:
+                processor.load(parser.compile_from_file())
+            except PyScriptError as e:
+                events.PyscriptOutputRequested(processor_id, e, True)
+            else:
+                events.PyscriptOutputRequested(processor_id, pyscript_path)
+                new_tile_model = TileModel(
+                    tile_model.tile_data,
+                    processor,
+                    tile_model.floor_tile_data,
+                )
+                self.tile_model_matrix.set(x, y, new_tile_model)
 
-            new_tile_model = TileModel(
-                tile_model.tile_data,
-                processor,
-                tile_model.floor_tile_data,
-            )
-            self.tile_model_matrix.set(x, y, new_tile_model)
             processor_id += 1
 
         assert parser is not None

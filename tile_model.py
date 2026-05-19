@@ -37,10 +37,6 @@ class TileModel:
     # Hm yes the floor here is made out of floor.
     floor_tile_data: TileData = field(default_factory=TileData)
 
-    def __post_init__(self) -> None:
-        if self.processor is None and self.tile_data.tile_type is TileType.PLAYER:
-            object.__setattr__(self, "processor", Processor([]))
-
     def get_action(
         self,
         self_x: int,

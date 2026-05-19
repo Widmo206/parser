@@ -30,3 +30,4 @@ if __name__ == "__main__":
     App().run()
 
 # TODO: Ensure all events get disconnected on widget destroy.
+# TODO: Ensure tile labels don't shrink down when a whole row is empty (blocked).
