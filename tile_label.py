@@ -6,9 +6,9 @@ Contributors:
 """
 
 import logging
-from PIL import ImageTk, Image
 import tkinter as tk
 
+from PIL import ImageTk, Image
 import ttkbootstrap as ttk
 
 from tile_data import TileData
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class TileLabel(ttk.Label):
+    """Tkinter label that renders a tile image at a configured size."""
     MIN_SIZE = 32
     PADDING_RATIO = 0.05
 
@@ -39,10 +40,12 @@ class TileLabel(ttk.Label):
         self._update_image()
 
     def set_tile_data(self, tile_data: TileData) -> None:
+        """Set the tile data and refresh the rendered image."""
         self.tile_data = tile_data
         self._update_image()
 
     def set_tile_size(self, tile_size: int) -> None:
+        """Set the tile size (bounded by MIN_SIZE) and refresh the image."""
         self.tile_size = max(tile_size, self.MIN_SIZE)
         self._update_image()
 

@@ -12,6 +12,7 @@ from enums import Direction, TileType
 
 @dataclass(frozen=True)
 class TileData:
+    """Immutable container for tile type and direction."""
     tile_type: TileType = TileType.EMPTY
     tile_direction: Direction = Direction.RIGHT
 
@@ -20,4 +21,5 @@ class TileData:
         object.__setattr__(self, "tile_direction", Direction.normalize(self.tile_direction))
 
     def __str__(self) -> str:
+        """Return a compact string representation of the tile."""
         return f"'{self.tile_type.character}{self.tile_direction.character}'"

@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 class PyscriptInterface(tk.PanedWindow):
+    """Paned window that hosts the editor and output views."""
+
     editor: Editor
     output: Output
 

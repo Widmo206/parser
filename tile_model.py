@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class TileModel:
+    """Immutable tile model with optional processor and floor state."""
     INPUT_ACTION_MAP = {
         "w": TileAction.MOVE_FORWARD,
         "s": TileAction.MOVE_BACK,
@@ -43,6 +44,7 @@ class TileModel:
         self_y: int,
         tile_data_matrix: Matrix[TileData]
     ) -> TileAction | None:
+        """Compute this tile's next action based on its position and level state."""
         if self.processor is not None:
             return self.processor.advance(
                 ProcessorLevelData(self_x, self_y, tile_data_matrix)
@@ -84,7 +86,7 @@ class TileModel:
             case TileType.PLAYER:
                 if to_tile_type is TileType.FLAG:
                     return TileModel(TileData(TileType.WIN))
-                elif to_tile_type is TileType.KEY:
+                if to_tile_type is TileType.KEY:
                     return TileModel(
                         TileData(TileType.PLAYER_KEY, self.tile_data.tile_direction),
                         self.processor,
@@ -93,7 +95,7 @@ class TileModel:
             case TileType.PLAYER_KEY:
                 if to_tile_type is TileType.FLAG:
                     return TileModel(TileData(TileType.WIN))
-                elif to_tile_type is TileType.DOOR:
+                if to_tile_type is TileType.DOOR:
                     return TileModel(
                         TileData(TileType.PLAYER, self.tile_data.tile_direction),
                         self.processor,
@@ -102,12 +104,12 @@ class TileModel:
             case TileType.ENEMY:
                 if to_tile_type is TileType.PLAYER:
                     return self
-                elif to_tile_type is TileType.PLAYER_KEY:
+                if to_tile_type is TileType.PLAYER_KEY:
                     return TileModel(
                         TileData(TileType.ENEMY_KEY, self.tile_data.tile_direction),
                         self.processor,
                     )
-                elif to_tile_type is TileType.KEY:
+                if to_tile_type is TileType.KEY:
                     return TileModel(
                         TileData(TileType.ENEMY_KEY, self.tile_data.tile_direction),
                         self.processor,
@@ -116,13 +118,13 @@ class TileModel:
             case TileType.ENEMY_KEY:
                 if to_tile_type is TileType.PLAYER:
                     return self
-                elif to_tile_type is TileType.PLAYER_KEY:
+                if to_tile_type is TileType.PLAYER_KEY:
                     return TileModel(
                         TileData(TileType.ENEMY_KEY, self.tile_data.tile_direction),
                         self.processor,
                         TileData(TileType.KEY),
                     )
-                elif to_tile_type is TileType.DOOR:
+                if to_tile_type is TileType.DOOR:
                     return TileModel(
                         TileData(TileType.ENEMY, self.tile_data.tile_direction),
                         self.processor,

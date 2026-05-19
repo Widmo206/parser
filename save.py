@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class LevelScore:
+    """Immutable score data for a completed level."""
+
     solution_path: Path
     step_count: int
     token_count: int
@@ -28,6 +30,8 @@ class LevelScore:
 
 @dataclass(frozen=True)
 class Save:
+    """Immutable save data with per-level scores and YAML persistence."""
+
     DACITE_CONFIG = dacite.Config(
         type_hooks={Path: normalize_path},
         strict=True,
@@ -37,6 +41,7 @@ class Save:
 
     @classmethod
     def from_path(cls, path: Path) -> Save:
+        """Load save data from a YAML file, returning an empty save on errors."""
         logger.debug("Loading save from '%s'", path)
 
         try:
@@ -53,6 +58,7 @@ class Save:
         return cls()
 
     def save(self, path: Path) -> None:
+        """Write the save data to a YAML file at the given path."""
         logger.debug("Saving save to '%s'", path)
 
         data = asdict(self)

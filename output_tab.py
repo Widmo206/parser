@@ -16,6 +16,7 @@ from enums import OutputType
 
 
 class OutputTab(ScrolledText):
+    """Scrolled text widget for displaying processor output with zoom support."""
     DELTA_PER_ZOOM = 120
 
     font: str
@@ -63,11 +64,13 @@ class OutputTab(ScrolledText):
         self.text.bind("<Control-MouseWheel>", self._on_zoom)
 
     def clear(self) -> None:
+        """Clear all output from the tab."""
         self.text.configure(state=tk.NORMAL)
         self.text.delete("1.0", tk.END)
         self.text.configure(state=tk.DISABLED)
 
     def print(self, text: Any = "", output_type: OutputType = OutputType.NORMAL) -> None:
+        """Append a line of output tagged by output type."""
         self.text.configure(state=tk.NORMAL)
         self.text.insert(tk.END, str(text) + "\n", output_type.name)
         self.text.configure(state=tk.DISABLED)

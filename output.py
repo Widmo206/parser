@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Output(ttk.Notebook):
+    """Notebook managing per-processor output tabs and routing output events."""
     style: ttk.Style
     output_tabs: dict[int, OutputTab]
 
@@ -31,6 +32,7 @@ class Output(ttk.Notebook):
         events.PyscriptOutputRequested.connect(self._on_processor_output_requested)
 
     def destroy(self) -> None:
+        """Disconnect output event handlers and destroy the widget."""
         events.ParseRequested.disconnect(self._on_parse_requested)
         events.PyscriptOutputRequested.disconnect(self._on_processor_output_requested)
         super().destroy()
