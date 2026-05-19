@@ -69,6 +69,10 @@ class EditorTab(ttk.Frame):
         self.is_dirty = False
         self._saved_content = ""
         self._on_dirty_changed = on_dirty_changed
+
+        self._normal_color = style.colors.fg
+        self._disabled_color = style.colors.selectbg
+
         self.font = font
         self.font_size = font_size
         self.min_font_size = min_font_size
@@ -105,8 +109,12 @@ class EditorTab(ttk.Frame):
             font=(self.font, self.font_size),
             padx=self.font_size * self.padx_ratio,
             highlightthickness=0,
-            bg=style.colors.bg,
             yscrollcommand=self._on_text_scroll,
+            undo=True,
+            autoseparators=True,
+            maxundo=-1,
+            bg=style.colors.bg,
+            fg=self._normal_color,
         )
 
         self.text.bind("<<Modified>>", self._on_change)
@@ -162,6 +170,38 @@ class EditorTab(ttk.Frame):
 
         self._try_load(self.default_path)
 
+    def set_state(self, state: str) -> None:
+        self.text.configure(
+            state=state,
+            fg = (
+                self._disabled_color
+                if state == tk.DISABLED
+                else self._normal_color
+            ),
+        )
+
+    def undo(self) -> None:
+        try:
+            self.text.edit_undo()
+        except tk.TclError:
+            logger.debug("No undo action available")
+        else:
+            logger.debug("Undoing text change")
+            self.text.edit_modified(False)
+            self._update_line_numbers()
+            self._refresh_dirty_state()
+
+    def redo(self) -> None:
+        try:
+            self.text.edit_redo()
+        except tk.TclError:
+            logger.debug("No redo action available")
+        else:
+            logger.debug("Redoing text change")
+            self.text.edit_modified(False)
+            self._update_line_numbers()
+            self._refresh_dirty_state()
+
     def _refresh_dirty_state(self) -> None:
         self._set_dirty(self.get_content() != self._saved_content)
 
@@ -177,6 +217,8 @@ class EditorTab(ttk.Frame):
         try:
             self.text.delete("1.0", tk.END)
             self.text.insert("1.0", path.read_text(encoding="utf-8"))
+            self.text.edit_reset()
+            self.text.edit_modified(False)
         except (OSError, UnicodeDecodeError) as error:
             logger.error("Failed to load text from '%s'", path)
             raise EditorTabCreationError from error

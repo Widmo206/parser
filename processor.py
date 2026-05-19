@@ -284,8 +284,6 @@ class Processor(object):
         )
 
     def _check_forward(self) -> str:
-        events.PyscriptOutputRequested(self.processor_id, "Checking forward", OutputType.INFO)
-
         if self.level_data is None:
             logger.error("Processor %d has no level data", self.processor_id)
             return "Missing level data"
@@ -297,7 +295,14 @@ class Processor(object):
         scan_x = self.level_data.x + self_tile_data.tile_direction.x
         scan_y = self.level_data.y + self_tile_data.tile_direction.y
         scan_tile_data = self.level_data.tile_data_matrix.get(scan_x, scan_y)
-        return scan_tile_data.tile_type.name.lower()
+        result = scan_tile_data.tile_type.name.lower()
+
+        events.PyscriptOutputRequested(
+            self.processor_id,
+            f"Checking forward: {result}",
+            OutputType.INFO
+        )
+        return result
 
     def _print(self, text: Any = "") -> None:
         events.PyscriptOutputRequested(self.processor_id, text)

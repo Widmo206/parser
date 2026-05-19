@@ -54,6 +54,8 @@ class Editor(ttk.Notebook):
         events.LevelSelectOpened.connect(self._on_level_select_opened)
         events.LevelStateChanged.connect(self._on_level_state_changed)
         events.ReloadDefaultRequested.connect(self._on_reload_default_requested)
+        events.UndoRequested.connect(self._on_undo_requested)
+        events.RedoRequested.connect(self._on_redo_requested)
 
     def destroy(self) -> None:
         events.ActivePyscriptRequested.disconnect(self._on_active_pyscript_requested)
@@ -65,6 +67,8 @@ class Editor(ttk.Notebook):
         events.LevelSelectOpened.disconnect(self._on_level_select_opened)
         events.LevelStateChanged.disconnect(self._on_level_state_changed)
         events.ReloadDefaultRequested.disconnect(self._on_reload_default_requested)
+        events.UndoRequested.disconnect(self._on_undo_requested)
+        events.RedoRequested.disconnect(self._on_redo_requested)
         super().destroy()
 
     def _add_tab(
@@ -92,7 +96,7 @@ class Editor(ttk.Notebook):
         tab = self.nametowidget(tab_id)
         tab_state = tk.DISABLED if self.is_level_active else tk.NORMAL
         self.tab(tab_id, state=tab_state)
-        tab.text.config(state=tab_state)
+        tab.set_state(tab_state)
         self._update_tab_title(tab)
         self.select(tab_id)
 
@@ -180,15 +184,9 @@ class Editor(ttk.Notebook):
         )
         for tab_id in self.tabs():
             is_active_tab = tab_id == active_tab_id
+            tab = self.nametowidget(tab_id)
             self.tab(tab_id, state=tk.NORMAL if is_active_tab else tab_state)
-            self.nametowidget(tab_id).text.config(
-                state=tab_state,
-                fg=(
-                    self.style.colors.selectbg
-                    if is_active_tab and self.is_level_active
-                    else self.style.colors.fg
-                ),
-            )
+            tab.set_state(tab_state)
 
     def _update_tab_title(self, tab: EditorTab) -> None:
         raw = tab.path.name if tab.path is not None else UNTITLED_TAB_NAME
@@ -242,3 +240,19 @@ class Editor(ttk.Notebook):
             return
 
         active_tab.reload_default()
+
+    def _on_undo_requested(self, _event: events.UndoRequested) -> None:
+        active_tab = self._get_active_tab()
+        if active_tab is None:
+            message_error("No active tab to undo")
+            return
+
+        active_tab.undo()
+
+    def _on_redo_requested(self, _event: events.RedoRequested) -> None:
+        active_tab = self._get_active_tab()
+        if active_tab is None:
+            message_error("No active tab to undo")
+            return
+
+        active_tab.redo()

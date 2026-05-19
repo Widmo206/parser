@@ -55,12 +55,17 @@ class FileMenuCommand(MenuCommandEnum):
     EXIT             = ("Exit",       events.ExitRequested,       "Ctrl+Q",       "<Control-q>")
 
 
+class EditMenuCommand(MenuCommandEnum):
+    UNDO = ("Undo", events.UndoRequested, "Ctrl+Z", "<Control-z>")
+    REDO = ("Redo", events.RedoRequested, "Ctrl+Y", "<Control-y>")
+
+
 class ViewMenuCommand(MenuCommandEnum):
     TOGGLE_FULLSCREEN = ("Toggle fullscreen", events.ToggleFullscreenRequested, "F11", "<F11>")
 
 
 def _test() -> None:
-    for enum in (FileMenuCommand, ViewMenuCommand):
+    for enum in (FileMenuCommand, EditMenuCommand, ViewMenuCommand):
         if len(enum) == 0:
             continue
         print()
