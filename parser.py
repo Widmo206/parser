@@ -490,12 +490,34 @@ class Parser(object):
                     case TokenType.DEINDENT:
                         if current_closure.label == ClosureLabel.GLOBAL:
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") # why
+                        elif current_closure.label == ClosureLabel.CONDITIONAL:
+                            # just making sure; (index -2 bc we haven't left the closure yet)
+                            assert code_stack[-2].get_type() == NodeType.CONDITION
                         try:
                             step_out_of(NodeType.CLOSURE)
                         except AssertionError as e:
                             raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected {'}'}") from e
-                        if code_stack[-1].get_type() == NodeType.DEFINE:
+                        parent_node = code_stack[-1]
+                        if parent_node.get_type() == NodeType.DEFINE:
                             step_out_of(NodeType.DEFINE)
+                        elif parent_node.get_type() == NodeType.CONDITION:
+                            # just making sure I didn't mess up elsewhere
+                            components = parent_node.get_children()
+                            assert 2 <= len(components) <= 3
+                            assert components[0].get_type() == NodeType.PARENTHESIS
+                            assert components[1].get_type() == NodeType.CLOSURE
+                            if len(components) == 3:
+                                assert components[2].get_type() == NodeType.CLOSURE
+                                step_out_of(NodeType.CONDITION)
+                            else:
+                                if is_next_token(TokenType.KEYWORD) and tokens[0].value == Keyword.ELSE:
+                                    tokens.pop(0) # pop the else (no need to verify bc we just checked)
+                                    bracket = tokens.pop(0)
+                                    if bracket.type != TokenType.INDENT:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected closure after else statement")
+                                    step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
+                                else:
+                                    parent_node.add_child(ProcessNode(parent_node, NodeType.CLOSURE, parent_node.get_line(), Closure(ClosureLabel.CONDITIONAL, current_closure))) # add an empty else block
 
                     case TokenType.INT_LIT:
                         ensure_expression(current_token.line)
