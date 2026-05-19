@@ -6,15 +6,13 @@ Ye've been warned
 Created on 2026.01.14
 Contributors:
     Widmo
-    
+
 TODO list:
     add checks for unterminated parens/closures/strings/expressions/...
     add arg type/count checking to all functions
-    add while loop
     add things I forgot to add
     validate expressions while parsing
     fix bugs
-    add lists?
 """
 
 from __future__ import annotations
@@ -392,14 +390,14 @@ class Parser(object):
             try:
                 return tokens.pop(0)
             except IndexError:
-                return Token(TokenType.EOF, None, None)
+                return Token(TokenType.EOF, None, 0)
 
         def peek_next_token(lookahead: int=0) -> Token:
             nonlocal tokens
             try:
                 return tokens[lookahead]
             except IndexError:
-                return Token(TokenType.EOF, None, None)
+                return Token(TokenType.EOF, None, 0)
 
         def is_next_token(token_type: TokenType, lookahead: int=0) -> bool:
             nonlocal tokens
@@ -812,7 +810,7 @@ class Parser(object):
                             for arg in function.args:
                                 args.append(Variable(arg[0], arg[1], None))
                             function_body = compile_subprogram(closure_node, args)
-                            function.program = function_body
+                            function.subprogram = function_body
                             instructions.append(Instruction(PPUInstruction.DEFF, function, node.get_line()))
                         case _:
                             raise NotImplementedError
