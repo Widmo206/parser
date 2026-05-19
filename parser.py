@@ -694,6 +694,8 @@ class Parser(object):
                                 # honestly could have done something similar for Functions
                                 # and I *thought* about it... should've listened to myself
 
+                            case Keyword.ELSE:
+                                raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): unexpected else statement")
 
                             # TODO add other keywords
                             case _:
