@@ -14,6 +14,7 @@ from menu_command import EditMenuCommand, FileMenuCommand, ViewMenuCommand
 
 
 class MenuBar(ttk.Frame):
+    """Menu bar frame wiring File/Edit/View commands."""
     file_menu_button: ttk.Menubutton
     edit_menu_button: ttk.Menubutton
     view_menu_button: ttk.Menubutton

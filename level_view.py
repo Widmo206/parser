@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class LevelView(ttk.Frame):
+    """Display a level grid and keep tile labels in sync with tile data."""
     grid_frame: ttk.Frame
     tile_label_matrix: Matrix[TileLabel]
 
@@ -50,6 +51,7 @@ class LevelView(ttk.Frame):
         events.TileDataMatrixChanged.connect(self._on_tile_data_matrix_changed)
 
     def destroy(self) -> None:
+        """Disconnect event handlers before destroying the widget."""
         events.TileDataMatrixChanged.disconnect(self._on_tile_data_matrix_changed)
         ttk.Frame.destroy(self)
 

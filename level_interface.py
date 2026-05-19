@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class LevelInterface(ttk.Frame):
+    """Container that switches between level select and level player views."""
     save: Save
     level_player: LevelPlayer | None
     level_select: LevelSelect | None
@@ -37,7 +38,7 @@ class LevelInterface(ttk.Frame):
         self._open_level_select()
 
     def _open_level_player(self, level: Level) -> None:
-        logger.debug(f"Opening level player for '{level.name}'")
+        logger.debug("Opening level player for '%s'", level.name)
 
         if self.level_select is not None:
             self.level_select.pack_forget()
@@ -48,7 +49,7 @@ class LevelInterface(ttk.Frame):
         self.level_player.pack(anchor=tk.CENTER, fill=tk.BOTH, expand=True)
 
     def _open_level_select(self) -> None:
-        logger.debug(f"Opening level select")
+        logger.debug("Opening level select")
 
         if self.level_player is not None:
             self.level_player.pack_forget()

@@ -15,6 +15,7 @@ U = TypeVar('U')
 
 @dataclass(frozen=True)
 class Matrix(Generic[T]):
+    """Fixed-size 2D matrix stored in row-major order."""
     width: int
     height: int
     _elements: list[T]
@@ -54,24 +55,28 @@ class Matrix(Generic[T]):
         ))
 
     def get(self, x: int, y: int) -> T:
+        """Return the element at (x, y)."""
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
             raise IndexError("Matrix indices out of range")
 
         return self._elements[y * self.width + x]
 
     def set(self, x: int, y: int, value: T) -> None:
+        """Set the element at (x, y)."""
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
             raise IndexError("Matrix indices out of range")
 
         self._elements[y * self.width + x] = value
 
     def iter_xy(self) -> Iterator[tuple[int, int, T]]:
+        """Yield (x, y, value) for each cell in row-major order."""
         # Equivalent of enumerate but 2D
         for y in range(self.height):
             for x in range(self.width):
                 yield x, y, self.get(x, y)
 
     def map(self, func: Callable[[T], U]) -> Matrix[U]:
+        """Return a new matrix with func applied to each element."""
         return Matrix(
             self.width,
             self.height,
@@ -79,6 +84,7 @@ class Matrix(Generic[T]):
         )
 
     def map_xy(self, func: Callable[[int, int, T], U]) -> Matrix[U]:
+        """Return a new matrix with func applied to each (x, y, value)."""
         return Matrix(
             self.width,
             self.height,

@@ -16,6 +16,7 @@ from level_entry import LevelEntry
 
 
 class LevelSelect(ScrolledFrame):
+    """Scrollable list of level entries."""
     def __init__(
         self,
         master: tk.Misc,

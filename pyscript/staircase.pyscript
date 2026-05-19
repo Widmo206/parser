@@ -1,5 +1,5 @@
 # Level 3 - Staircase
 
-while(true){
+while(true) {
     move_forward();
 }

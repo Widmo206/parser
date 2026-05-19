@@ -16,6 +16,7 @@ from errors import InvalidSpecialMoveError, PyScriptError
 import events
 from level import Level
 from matrix import Matrix
+# Pylint complains about parser from std lib, ignore it.
 from parser import Parser
 from processor import Processor
 from save import LevelScore
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class LevelModel:
+    """Model that simulates level steps and tracks history."""
     ATTACK_DURATION = 250
 
     level: Level
@@ -38,6 +40,7 @@ class LevelModel:
 
     @classmethod
     def from_path(cls, path: Path) -> LevelModel:
+        """Create a level model from a level file path."""
         level = Level.from_path(path)
         tile_data_matrix = level.get_tile_data_matrix()
         tile_model_matrix = tile_data_matrix.map(TileModel)
@@ -47,6 +50,7 @@ class LevelModel:
 
     @property
     def model_step(self) -> int:
+        """Return the latest model step index."""
         return len(self.history) - 1
 
     def load_processors(self, pyscript_path: Path) -> None:
@@ -95,18 +99,21 @@ class LevelModel:
         self.token_count = parser.token_count
 
     def restart(self) -> None:
+        """Reset the view to the initial step."""
         if self.view_step == 0:
             return
 
         self._set_view_step(0)
 
     def step_back(self) -> None:
+        """Move the view back one step if possible."""
         if self.view_step == 0:
             return
 
         self._set_view_step(self.view_step - 1)
 
     def step_forward(self) -> None:
+        """Advance the view one step, simulating if at the end."""
         if self.view_step == self.model_step:
             # Early check looks redundant but is necessary
             # to avoid stepping when level is already complete.

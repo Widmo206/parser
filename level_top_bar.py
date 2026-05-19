@@ -14,6 +14,7 @@ import events
 from save import LevelScore
 
 class LevelTopBar(ttk.Frame):
+    """Top bar showing the level name and best scores."""
     name_label: ttk.Label
     step_count_label: ttk.Label
     token_count_label: ttk.Label
@@ -65,6 +66,7 @@ class LevelTopBar(ttk.Frame):
         events.LevelScoreUpdated.connect(self._on_level_score_updated)
 
     def destroy(self) -> None:
+        """Disconnect event handlers before destroying the widget."""
         events.LevelScoreUpdated.disconnect(self._on_level_score_updated)
         super().destroy()
 

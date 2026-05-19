@@ -14,6 +14,7 @@ from app import App
 
 
 def setup_logging() -> None:
+    """Configure logging to latest.log and reduce noisy PIL logs."""
     open("latest.log", "w", encoding="utf-8").close() # Clears the previous logs
     logging.basicConfig(
         filename='latest.log',

@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class LevelPlayer(ttk.Frame):
+    """Frame that renders a level with top bar, view, and bottom bar."""
     level: Level
 
     level_bottom_bar: LevelBottomBar

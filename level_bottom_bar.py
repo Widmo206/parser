@@ -6,9 +6,9 @@ Contributors:
 """
 
 from pathlib import Path
-from PIL import ImageTk, Image
 import tkinter as tk
 
+from PIL import ImageTk, Image
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
@@ -16,6 +16,7 @@ import events
 
 
 class LevelBottomBar(ttk.Frame):
+    """Bottom bar with playback controls for a level."""
     restart_image_tk: ImageTk.PhotoImage
     step_back_image_tk: ImageTk.PhotoImage
     run_image_tk: ImageTk.PhotoImage
@@ -72,7 +73,9 @@ class LevelBottomBar(ttk.Frame):
         )
         self.run_button.grid(column=3, row=1)
 
-        self.step_forward_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/step_forward.png")))
+        self.step_forward_image_tk = ImageTk.PhotoImage(
+            Image.open(Path("sprites/step_forward.png"))
+        )
         self.step_forward_button = ttk.Button(
             self,
             command=events.StepForwardRequested,
@@ -82,8 +85,10 @@ class LevelBottomBar(ttk.Frame):
             bootstyle=kwargs["bootstyle"],
         )
         self.step_forward_button.grid(column=4, row=1)
-        
-        self.level_select_image_tk = ImageTk.PhotoImage(Image.open(Path("sprites/level_select.png")))
+
+        self.level_select_image_tk = ImageTk.PhotoImage(
+            Image.open(Path("sprites/level_select.png"))
+        )
         self.level_select_button = ttk.Button(
             self,
             command=events.CloseLevelRequested,
@@ -97,6 +102,7 @@ class LevelBottomBar(ttk.Frame):
         events.CyclingToggled.connect(self._on_cycling_toggled)
 
     def destroy(self) -> None:
+        """Disconnect event handlers and destroy the widget."""
         events.CyclingToggled.disconnect(self._on_cycling_toggled)
         super().destroy()
 
@@ -105,4 +111,3 @@ class LevelBottomBar(ttk.Frame):
             text="Pause" if event.is_running else "Run",
             image=self.pause_image_tk if event.is_running else self.run_image_tk
         )
-

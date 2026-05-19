@@ -17,6 +17,7 @@ from level import Level
 
 
 class LevelEntry(ttk.Frame):
+    """Clickable entry that displays a level number and name."""
     number: int
     path: Path
 

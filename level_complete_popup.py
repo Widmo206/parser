@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class LevelCompletePopup(ttk.Toplevel):
+    """Modal popup showing level completion stats and actions."""
     SIZE = (440, 320)
 
     def __init__(
