@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 
-from enums import Direction, TileAction, TileType
+from enums import Direction, OutputType, TileAction, TileType
 from errors import InvalidSpecialMoveError, PyScriptError
 import events
 from level import Level
@@ -78,7 +78,7 @@ class LevelModel:
             try:
                 processor.load(parser.compile_from_file())
             except PyScriptError as e:
-                events.PyscriptOutputRequested(processor_id, e, True)
+                events.PyscriptOutputRequested(processor_id, e, OutputType.ERROR)
             else:
                 events.PyscriptOutputRequested(processor_id, pyscript_path)
                 new_tile_model = TileModel(

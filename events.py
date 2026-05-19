@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, ClassVar
 
+from enums import OutputType
 from level import Level
 from save import LevelScore
 from tile_data import TileData
@@ -161,7 +162,7 @@ class ParseRequested(Event):
 class PyscriptOutputRequested(Event):
     processor_id: int = 0
     text: Any = ""
-    is_error: bool = False
+    output_type: OutputType = OutputType.NORMAL
 
 
 @dataclass(frozen=True, slots=True)
