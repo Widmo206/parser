@@ -22,6 +22,7 @@ import logging
 from pathlib import Path
 from string import ascii_letters, digits, whitespace
 from typing import Type, Any, Collection
+import uuid
 
 from enums import TokenType, NodeType, Operator, ClosureLabel, PPUInstruction, Keyword
 from errors import PyScriptSyntaxError, PyScriptNameError, PyScriptTypeError, PyScriptError
@@ -130,6 +131,7 @@ class Parser(object):
                      or previous_node.get_type() == NodeType.OPERATION)
                 ):
                 node._value = Operator.NEGATIVE # yes I'm modifying a private attribute
+            previous_node = node
         # Step 2: Rearrange expression into postfix notation; thanks to:
         # https://www.geeksforgeeks.org/dsa/convert-infix-expression-to-postfix-expression/
         operation_stack = []
@@ -383,7 +385,7 @@ class Parser(object):
             """
             nonlocal code_stack
             if code_stack[-1].get_type() != NodeType.CLOSURE:
-                raise PyScriptSyntaxError(f"{self.path} (line {current_line.line}): You cannot {action_description} here; maybe you forgot a semicolon?")
+                raise PyScriptSyntaxError(f"{self.path} (line {current_line}): You cannot {action_description} here; maybe you forgot a semicolon?")
         
         def pop_token() -> Token:
             nonlocal tokens
@@ -464,6 +466,11 @@ class Parser(object):
                                     if bracket.type != TokenType.INDENT:
                                         raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected closure after if statement")
                                     step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
+                                elif code_stack[-1].get_type() == NodeType.LOOP:
+                                    bracket = pop_token()
+                                    if bracket.type != TokenType.INDENT:
+                                        raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected loop body after while")
+                                    step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.LOOP, current_closure))
                             case _:
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): Unexpected )")
 
@@ -531,6 +538,13 @@ class Parser(object):
                                     step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
                                 else:
                                     parent_node.add_child(ProcessNode(parent_node, NodeType.CLOSURE, parent_node.get_line(), Closure(ClosureLabel.CONDITIONAL, current_closure))) # add an empty else block
+                        elif parent_node.get_type() == NodeType.LOOP:
+                            # just making sure I didn't mess up elsewhere
+                            components = parent_node.get_children()
+                            assert len(components) == 2
+                            assert components[0].get_type() == NodeType.PARENTHESIS
+                            assert components[1].get_type() == NodeType.CLOSURE
+                            step_out_of(NodeType.LOOP)
 
                     case TokenType.INT_LIT:
                         ensure_expression(current_token.line)
@@ -716,7 +730,15 @@ class Parser(object):
                             case Keyword.ELSE:
                                 raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): unexpected else statement")
 
-                            # TODO add other keywords
+                            case Keyword.WHILE:
+                                step_into(NodeType.LOOP, current_token.line, None)
+                                paren = pop_token()
+                                if paren.type != TokenType.OPEN_PAREN:
+                                    raise PyScriptSyntaxError(f"{self.path} (line {paren.line}): expected (condition) after while")
+                                step_into(NodeType.PARENTHESIS, paren.line, None)
+                                step_into(NodeType.EXPRESSION, paren.line, None)
+                                # just copy-pasted from IF
+                            
                             case _:
                                 raise NotImplementedError(f"{self.path} (line {current_token.line}): Unimplemented keyword {current_token.value}")
 
@@ -831,6 +853,24 @@ class Parser(object):
                         compile_subprogram(components[2], []),
                         components[2].get_line()
                     ))
+                case NodeType.LOOP:
+                    components = node.get_children()
+                    assert len(components) == 2
+                    return_id = uuid.uuid4()
+                    entry_id = uuid.uuid4()
+                    instructions.append(Instruction(PPUInstruction.JUMP, entry_id, node.get_line()))
+                    instructions.append(Instruction(PPUInstruction.LABL, return_id, 0))
+                    instructions.append(Instruction( # loop body
+                        PPUInstruction.EXEC,
+                        compile_subprogram(components[1], []),
+                        components[1].get_line()
+                    ))
+                    instructions.append(Instruction(PPUInstruction.LABL, entry_id, 0))
+                    instructions += _r_compile(components[0]) # condition
+                    instructions.append(Instruction(PPUInstruction.IFEL, None, node.get_line()))
+                    instructions.append(Instruction(PPUInstruction.JUMP, return_id, node.get_line()))
+                    instructions.append(Instruction(PPUInstruction.NOOP, None, node.get_line()))
+
                 case _:
                     raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions

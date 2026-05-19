@@ -170,6 +170,9 @@ class Processor(object):
             self.next_action = None
 
             match instruction.instruction: # I sure love match/case, don't I?
+                case PPUInstruction.NOOP:
+                    pass
+
                 case PPUInstruction.PUSH:
                     self.push(instruction.parameter)
 
@@ -193,7 +196,9 @@ class Processor(object):
                     args.reverse() # args are back-to-front on the stack
 
                     if isinstance(function, ExternalFunction):
-                        self.push(function.call(*args))
+                        call_result = function.call(*args)
+                        logger.debug(f"{function} = {call_result}")
+                        self.push(call_result)
                         if function.pauses_execution:
                             self.level_data = yield self.next_action
                             self._log_advance()
@@ -202,6 +207,7 @@ class Processor(object):
                         assert len(args) == len(function.args)
                         for arg, value in zip(function.args, args):
                             function_call_args.append(Variable(arg[0], arg[1], value))
+                    
 
                 case PPUInstruction.EVAL:
                     operator: Operator = instruction.parameter
@@ -209,10 +215,13 @@ class Processor(object):
                     # TODO: check operand type
                     if operator.is_unary:
                         result = self.OPERATIONS[operator](b)
+                        logger.debug(f"{operator.chars}{b} = {result}")
                     else:
                         a = self.pull()
                         result = self.OPERATIONS[operator](a, b)
+                        logger.debug(f"{a} {operator.chars} {b} = {result}")
                     self.push(result)
+                    
 
                 case PPUInstruction.DEFC:
                     current_closure.add(Constant(instruction.parameter.name, instruction.parameter.type, self.pull()))

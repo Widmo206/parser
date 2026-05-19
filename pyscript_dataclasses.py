@@ -365,11 +365,25 @@ class Program(object):
             else:
                 raise EndOfProgram
             match instruction.instruction:
+                case PPUInstruction.LABL:
+                    self.index += 1 # skip
+                    continue
+                case PPUInstruction.JUMP:
+                    id = instruction.parameter
+                    for i, inst in enumerate(self.instructions):
+                        if inst.instruction != PPUInstruction.LABL:
+                            continue
+                        if inst.parameter != id:
+                            continue
+                        self.index = i
+                    continue
                 case PPUInstruction.IFEL:
                     if instruction.parameter is True:
+                        instruction.parameter = None # reset
                         self.index += 1 # skip to the if block
                         continue
                     elif instruction.parameter is False:
+                        instruction.parameter = None # reset
                         self.index += 2 # skip to the else block
                         continue
                     else:

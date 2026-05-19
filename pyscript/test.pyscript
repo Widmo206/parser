@@ -17,6 +17,12 @@ func equal(arg1: int, arg2: int) -> (bool) {
     return arg1 == arg2;
 }
 
+var i = 5;
+while (i > 0){
+    print(i);
+    i = i - 1;
+}
+
 if (equal(1, 2)) {
     print("what");
 }

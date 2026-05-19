@@ -108,6 +108,7 @@ class NodeType(Enum):
     """Used by Parser to organize a list of tokens into a ProcessTree."""
     CLOSURE     = auto()
     CONDITION   = auto()
+    LOOP        = auto()
     PARENTHESIS = auto()
     EXPRESSION  = auto()
     READ        = auto()
@@ -160,7 +161,8 @@ class OutputType(Enum):
 
 class PPUInstruction(Enum):
     # PyScript Processing Unit
-    STRT = auto() # start of a subprogram; should be replaced with a corresponding EXEC before it reaches the processor
+    # STRT = auto() # start of a subprogram; should be replaced with a corresponding EXEC before it reaches the processor
+    NOOP = auto() # no operation; basically just pass
     PUSH = auto() # push a value onto the stack
     PULL = auto() # pull a value from the stack
     READ = auto() # read from a const or var
@@ -173,6 +175,8 @@ class PPUInstruction(Enum):
     EXEC = auto() # step into a subprogram (anything in a closure)
     EXIT = auto() # exit a subprogram
     IFEL = auto() # if/else
+    LABL = auto() # target for a jump
+    JUMP = auto() # unconditional jump to a specific label in the same subprogram
 
 
 class TileAction(Enum):
