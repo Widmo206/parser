@@ -321,7 +321,7 @@ class Closure(object):
             return self.list(), *self.get_parent().list_all() # same as above
 
 
-@dataclass(frozen=True)
+@dataclass # (frozen=True)
 class Instruction(object):
     instruction: PPUInstruction # Naming things is hard
     parameter: Any
@@ -365,8 +365,22 @@ class Program(object):
             else:
                 raise EndOfProgram
             match instruction.instruction:
+                case PPUInstruction.IFEL:
+                    if instruction.parameter is True:
+                        self.index += 1 # skip to the if block
+                        continue
+                    elif instruction.parameter is False:
+                        self.index += 2 # skip to the else block
+                        continue
+                    else:
+                        assert instruction.parameter is None
+                        break # fetch the instruction, let the PPU decide what to do
                 case PPUInstruction.EXEC:
                     # logger.debug("EXEC instruction")
+                    # check if the before-previous instruction was an if
+                    if self.instructions[max(0, self.index-2)].instruction == PPUInstruction.IFEL and self.instructions[max(0, self.index-2)].parameter is True:
+                        self.index += 1
+                        continue # skip because this is an else block and the if was True
                     subprogram_provider = instruction.parameter
                     if self.current_subprogram is None:
                         # logger.debug("No subprogram; loading...")

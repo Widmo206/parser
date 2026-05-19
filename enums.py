@@ -264,6 +264,7 @@ class PPUInstruction(Enum):
     DEFF = auto() # define a function
     EXEC = auto() # step into a subprogram (anything in a closure)
     EXIT = auto() # exit a subprogram
+    IFEL = auto() # if/else
 
 
 def _test() -> None:

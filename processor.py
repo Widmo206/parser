@@ -6,6 +6,7 @@ Contributors:
     Romcode
 """
 
+
 from functools import partial
 import logging
 from typing import Generator, Any, TypeAlias
@@ -135,7 +136,7 @@ class Processor(object):
         return self.value_stack.pop(-1)
 
     def make_action_generator(self) -> ActionGenerator:
-        """Run the Processor until it runs into a function that makes it pass the turn, then yield a chosen TileAction.
+        """Create a generator that will run the Processor until it runs into a function that makes it pass the turn, then yield a chosen TileAction.
         
         If the program terminates, the Processor will continue to yield None
         """
@@ -239,6 +240,10 @@ class Processor(object):
                         logger.debug(f"Trimmed {trimmed_values} values from value_stack")
                     if return_value is not None:
                         self.push(return_value)
+
+                case PPUInstruction.IFEL:
+                    condition = bool(self.pull())
+                    instruction.parameter = condition # awful design but the deadline is today x(
 
                 case _:
                     raise NotImplementedError(f"Unimplemented instruction: {instruction.instruction.name}")
