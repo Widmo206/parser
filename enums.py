@@ -170,6 +170,7 @@ class Keyword(Enum):
 
 class TokenType(Enum):
     NOP         = auto() # pass
+    EOF         = auto() # end of file
     KEYWORD     = auto()
     REFERENCE   = auto()
     # control flow

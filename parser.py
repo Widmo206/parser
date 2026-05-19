@@ -383,18 +383,32 @@ class Parser(object):
             """
             nonlocal code_stack
             if code_stack[-1].get_type() != NodeType.CLOSURE:
-                raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): You cannot {action_description} here; maybe you forgot a semicolon?")
+                raise PyScriptSyntaxError(f"{self.path} (line {current_line.line}): You cannot {action_description} here; maybe you forgot a semicolon?")
         
+        def pop_token() -> Token:
+            nonlocal tokens
+            try:
+                return tokens.pop(0)
+            except IndexError:
+                return Token(TokenType.EOF, None, None)
+
+        def peek_next_token(lookahead: int=0) -> Token:
+            nonlocal tokens
+            try:
+                return tokens[lookahead]
+            except IndexError:
+                return Token(TokenType.EOF, None, None)
+
         def is_next_token(token_type: TokenType, lookahead: int=0) -> bool:
             nonlocal tokens
-            return tokens[lookahead].type == token_type
-
+            return peek_next_token(lookahead).type == token_type
+        
         try:
             while len(tokens) > 0:
-                current_token = tokens.pop(0)
+                current_token = pop_token()
                 match current_token.type:
                     case TokenType.REFERENCE:
-                        match tokens[0].type:
+                        match peek_next_token().type:
                             case TokenType.OPEN_PAREN:
                                 # looks like a function call
                                 function = current_closure.find(current_token.value)
@@ -406,11 +420,11 @@ class Parser(object):
                                     step_into(NodeType.EXPRESSION, current_token.line, None)
                                 step_into(NodeType.CALL, current_token.line, function)
                                 if is_next_token(TokenType.CLOSE_PAREN, 1): # no arguments
-                                    tokens.pop(0) # consume the OPEN_PAREN
-                                    tokens.pop(0) # consume the CLOSE_PAREN
+                                    pop_token() # consume the OPEN_PAREN
+                                    pop_token() # consume the CLOSE_PAREN
                                     step_out_of(NodeType.CALL)
                                 else:
-                                    step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the OPEN_PAREN + step into first arg
+                                    step_into(NodeType.EXPRESSION, pop_token().line, None) # consumes the OPEN_PAREN + step into first arg
                             case TokenType.ASSIGN:
                                 require_closure(current_token.line, "assign a value to a variable")
                                 variable = current_closure.find(current_token.value)
@@ -419,7 +433,7 @@ class Parser(object):
                                 elif not isinstance(variable, Variable):
                                     raise PyScriptTypeError(f"{self.path} (line {current_token.line}): {current_token.value} is not a variable")
                                 step_into(NodeType.WRITE, current_token.line, variable)
-                                step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
+                                step_into(NodeType.EXPRESSION, pop_token().line, None) # consumes the '='
                             case _:
                                 value = current_closure.find(current_token.value)
                                 if value is None:
@@ -446,7 +460,7 @@ class Parser(object):
                             case NodeType.PARENTHESIS:
                                 step_out_of(NodeType.PARENTHESIS)
                                 if code_stack[-1].get_type() == NodeType.CONDITION:
-                                    bracket = tokens.pop(0)
+                                    bracket = pop_token()
                                     if bracket.type != TokenType.INDENT:
                                         raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected closure after if statement")
                                     step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
@@ -509,9 +523,9 @@ class Parser(object):
                                 assert components[2].get_type() == NodeType.CLOSURE
                                 step_out_of(NodeType.CONDITION)
                             else:
-                                if is_next_token(TokenType.KEYWORD) and tokens[0].value == Keyword.ELSE:
-                                    tokens.pop(0) # pop the else (no need to verify bc we just checked)
-                                    bracket = tokens.pop(0)
+                                if is_next_token(TokenType.KEYWORD) and peek_next_token().value == Keyword.ELSE:
+                                    pop_token() # pop the else (no need to verify bc we just checked)
+                                    bracket = pop_token()
                                     if bracket.type != TokenType.INDENT:
                                         raise PyScriptSyntaxError(f"{self.path} (line {bracket.line}): expected closure after else statement")
                                     step_into(NodeType.CLOSURE, bracket.line, Closure(ClosureLabel.CONDITIONAL, current_closure))
@@ -544,15 +558,15 @@ class Parser(object):
                             # \begin{word soup}
                                 require_closure(current_token.line, "define a variable")
                                 var_type: Type = Any # idek what Pylance is complaining about here
-                                var_token = tokens.pop(0) # declared variable name
+                                var_token = pop_token() # declared variable name
                                 if var_token.type != TokenType.REFERENCE:
                                     raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): var must be followed by a valid name")
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
                                 if is_next_token(TokenType.COLON):
-                                    tokens.pop(0) # consume the :
-                                    type_token = tokens.pop(0)
+                                    pop_token() # consume the :
+                                    type_token = pop_token()
                                     if type_token.type != TokenType.REFERENCE:
                                         raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): incomplete type declaration of var {var_name}")
                                     type_ref = current_closure.find(type_token.value)
@@ -566,21 +580,21 @@ class Parser(object):
                                 step_into(NodeType.DEFINE, var_token.line, variable)
                                 if not is_next_token(TokenType.ASSIGN):
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): var {var_name} must be followed by assignment operator: =")
-                                step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
+                                step_into(NodeType.EXPRESSION, pop_token().line, None) # consumes the '='
                             
                             # word soup 2: electric boogaloo
                             case Keyword.CONST: # literally copy-pasted the case for var
                                 require_closure(current_token.line, "define a constant")
                                 var_type: Type = Any # idek what Pylance is complaining about here
-                                var_token = tokens.pop(0) # declared variable name
+                                var_token = pop_token() # declared variable name
                                 if var_token.type != TokenType.REFERENCE:
                                     raise PyScriptSyntaxError(f"{self.path} (line {current_token.line}): const must be followed by a valid name")
                                 var_name: str = var_token.value
                                 if current_closure.has(var_name):
                                     raise PyScriptNameError(f"{self.path} (line {var_token.line}): {var_name} is already defined in the current scope")
                                 if is_next_token(TokenType.COLON):
-                                    tokens.pop(0) # consume the :
-                                    type_token = tokens.pop(0)
+                                    pop_token() # consume the :
+                                    type_token = pop_token()
                                     if type_token.type != TokenType.REFERENCE:
                                         raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): incomplete type declaration of const {var_name}")
                                     type_ref = current_closure.find(type_token.value)
@@ -594,12 +608,12 @@ class Parser(object):
                                 step_into(NodeType.DEFINE, var_token.line, variable)
                                 if not is_next_token(TokenType.ASSIGN):
                                     raise PyScriptSyntaxError(f"{self.path} (line {var_token.line}): const {var_name} must be followed by assignment operator: =")
-                                step_into(NodeType.EXPRESSION, tokens.pop(0).line, None) # consumes the '='
+                                step_into(NodeType.EXPRESSION, pop_token().line, None) # consumes the '='
 
                             # I should be banned from using Pathon again
                             case Keyword.FUNC:
                                 require_closure(current_token.line, "define a function")
-                                name_token = tokens.pop(0) # function name
+                                name_token = pop_token() # function name
                                 func_name = name_token.value
                                 logger.debug(f"Defining func {func_name}")
                                 # Verify that name is free
@@ -609,11 +623,11 @@ class Parser(object):
                                     raise PyScriptNameError(f"{self.path} (line {name_token.line}): {func_name} is already defined in the current scope")
                                 # Find arguments
                                 arguments: list[FunctionArg] = []
-                                open_paren = tokens.pop(0)
+                                open_paren = pop_token()
                                 if open_paren.type != TokenType.OPEN_PAREN:
                                     raise PyScriptSyntaxError(f"{self.path} (line {open_paren.line}): func {name_token.value} must be followed by a parenthesis with function arguments")
                                 while True:
-                                    arg_token = tokens.pop(0)
+                                    arg_token = pop_token()
                                     arg_type: Type = Any
                                     # Verify arg name
                                     if arg_token.type != TokenType.REFERENCE:
@@ -621,8 +635,8 @@ class Parser(object):
                                     arg_name = arg_token.value
                                     # check for type declaration
                                     if is_next_token(TokenType.COLON):
-                                        tokens.pop(0) # consume :
-                                        type_token = tokens.pop(0)
+                                        pop_token() # consume :
+                                        type_token = pop_token()
                                         # Verify that it's a valid type
                                         if type_token.type != TokenType.REFERENCE:
                                             raise PyScriptSyntaxError(f"{self.path} (line {arg_token.line}): incomplete type declaration of argument {arg_name}")
@@ -635,7 +649,7 @@ class Parser(object):
                                     # finalize argument
                                     arguments.append((arg_name, arg_type))
                                     # check if there's another one
-                                    separator_token = tokens.pop(0)
+                                    separator_token = pop_token()
                                     if separator_token.type == TokenType.CLOSE_PAREN:
                                         break
                                     elif separator_token.type == TokenType.COMMA:
@@ -644,14 +658,14 @@ class Parser(object):
                                         raise PyScriptSyntaxError(f"{self.path} (line {separator_token.line}): expected ',' or ')' in function definition")
                                 logger.debug(f"Found arguments: {arguments}")
                                 # check for the arrow: func name(args) -> (return_type)
-                                arrow_token = tokens.pop(0)
+                                arrow_token = pop_token()
                                 if arrow_token.type != TokenType.OPERATOR or arrow_token.value != Operator.ARROW:
                                     raise PyScriptSyntaxError(f"{self.path} (line {arrow_token.line}): expected '->' after function arguments")
                                 # check for the return type
-                                open_paren = tokens.pop(0)
+                                open_paren = pop_token()
                                 if open_paren.type != TokenType.OPEN_PAREN:
                                     raise PyScriptSyntaxError(f"{self.path} (line {open_paren.line}): expected parenthesis with function return type")
-                                return_type_token = tokens.pop(0)
+                                return_type_token = pop_token()
                                 if return_type_token.type != TokenType.REFERENCE:
                                     raise PyScriptSyntaxError(f"{self.path} (line {return_type_token.line}): expected function return type")
                                 type_ref = current_closure.find(return_type_token.value)
@@ -661,11 +675,11 @@ class Parser(object):
                                     raise PyScriptTypeError(f"{self.path} (line {return_type_token.line}): {return_type_token.value} is not a data type")
                                 return_type = type_ref.type
                                 logger.debug(f"found return type: {return_type}")
-                                close_paren = tokens.pop(0)
+                                close_paren = pop_token()
                                 if close_paren.type != TokenType.CLOSE_PAREN:
                                     raise PyScriptSyntaxError(f"{self.path} (line {close_paren.line}): expected ')' after return type")
                                 # check for function body
-                                open_closure = tokens.pop(0)
+                                open_closure = pop_token()
                                 if open_closure.type != TokenType.INDENT:
                                     raise PyScriptSyntaxError(f"{self.path} (line {open_closure.line}): expected function body after definition")
                                 # create function with values found above
@@ -690,7 +704,7 @@ class Parser(object):
                             
                             case Keyword.IF:
                                 step_into(NodeType.CONDITION, current_token.line, None)
-                                paren = tokens.pop(0)
+                                paren = pop_token()
                                 if paren.type != TokenType.OPEN_PAREN:
                                     raise PyScriptSyntaxError(f"{self.path} (line {paren.line}): expected (condition) after if statement")
                                 step_into(NodeType.PARENTHESIS, paren.line, None)
