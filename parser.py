@@ -793,7 +793,22 @@ class Parser(object):
                         instructions.append(Instruction(PPUInstruction.EXIT, True, node.get_line()))
                     else:
                         instructions.append(Instruction(PPUInstruction.EXIT, False, node.get_line()))
-                    
+                case NodeType.CONDITION:
+                    # if not node.has_children(): # nah, this should get caught by the parser
+                    components = node.get_children()
+                    assert len(components) == 3
+                    instructions += _r_compile(components[0]) # condition
+                    instructions.append(Instruction(PPUInstruction.IFEL, None, node.get_line()))
+                    instructions.append(Instruction( # if True
+                        PPUInstruction.EXEC,
+                        compile_subprogram(components[1], []),
+                        components[1].get_line()
+                    ))
+                    instructions.append(Instruction( # if False
+                        PPUInstruction.EXEC,
+                        compile_subprogram(components[2], []),
+                        components[2].get_line()
+                    ))
                 case _:
                     raise NotImplementedError(f"{self.path} (line {node.get_line()}): Unimplemented node {node.get_type()}")
             return instructions
